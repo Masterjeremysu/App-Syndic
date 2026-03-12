@@ -4,9 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#111827">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="CoproSync">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
   <meta name="description" content="Gestion opérationnelle de copropriété">
   <title>CoproSync</title>
   <link rel="manifest" href="manifest.json">
@@ -1098,28 +1101,40 @@ async function doAuth() {
   if (!email || !pass) { showAuthError('Email et mot de passe requis'); return; }
   $('auth-btn').disabled = true;
   $('auth-btn-text').textContent = '...';
+  $('auth-error').style.display = 'none';
 
-  let res;
-  if (_authMode === 'login') {
-    res = await sb.auth.signInWithPassword({ email, password: pass });
-  } else {
-    res = await sb.auth.signUp({ email, password: pass });
-  }
-
-  if (res.error) {
-    showAuthError(res.error.message === 'Invalid login credentials' ? 'Email ou mot de passe incorrect' : res.error.message);
+  const resetBtn = () => {
     $('auth-btn').disabled = false;
     $('auth-btn-text').textContent = _authMode === 'login' ? 'Se connecter' : 'Créer mon compte';
-    return;
-  }
+  };
 
-  if (_authMode === 'signup') {
-    toast('Compte créé ! Vérifiez votre email pour confirmer.', 'ok');
-    $('auth-btn').disabled = false;
-    $('auth-btn-text').textContent = 'Créer mon compte';
-    return;
+  if (_authMode === 'login') {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+
+    if (error) {
+      const msg = {
+        'Invalid login credentials': 'Email ou mot de passe incorrect.',
+        'Email not confirmed': 'Email non confirmé — vérifiez votre boîte mail (et les spams).',
+        'Too many requests': 'Trop de tentatives, attendez quelques minutes.',
+      }[error.message] || error.message;
+      showAuthError(msg);
+      resetBtn();
+      return;
+    }
+
+    if (data?.session && data?.user) {
+      user = data.user;
+      await loadProfile();
+      await bootApp();
+    }
+
+  } else {
+    const { error } = await sb.auth.signUp({ email, password: pass });
+    if (error) { showAuthError(error.message); resetBtn(); return; }
+    $('auth-error').style.color = 'var(--green, #16a34a)';
+    showAuthError('✅ Compte créé — confirmez votre email avant de vous connecter.');
+    resetBtn();
   }
-  // Login success handled by onAuthStateChange
 }
 
 async function forgotPassword(e) {
@@ -1148,12 +1163,15 @@ sb.auth.onAuthStateChange(async (event, session) => {
   if (session?.user) {
     user = session.user;
     await loadProfile();
-    $('login-screen').style.display = 'none';
-    $('app').style.display = 'flex';
-    initUI();
-    await loadAll();
-    nav('dashboard');
-    registerSW();
+    if (!profile) {
+      // Profil pas encore créé (race condition après signup)
+      setTimeout(async () => {
+        await loadProfile();
+        if (profile) bootApp();
+      }, 1500);
+      return;
+    }
+    bootApp();
   } else {
     $('login-screen').style.display = 'flex';
     $('app').style.display = 'none';
@@ -1161,9 +1179,26 @@ sb.auth.onAuthStateChange(async (event, session) => {
   }
 });
 
+async function bootApp() {
+  try {
+    $('login-screen').style.display = 'none';
+    $('app').style.display = 'flex';
+    initUI();
+    await loadAll();
+    nav('dashboard');
+    registerSW();
+  } catch(e) {
+    console.error('bootApp error:', e);
+    toast('Erreur au chargement : ' + e.message, 'err');
+  }
+}
+
 async function loadProfile() {
-  const { data } = await sb.from('profiles').select('*').eq('id', user.id).single();
-  profile = data;
+  // Refresh la session pour que le JWT reflète les dernières données auth
+  try { await sb.auth.refreshSession(); } catch(_) {}
+  const { data, error } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  if (error && error.code !== 'PGRST116') console.warn('loadProfile:', error.message);
+  profile = data || { id: user.id, email: user.email, nom: user.email.split('@')[0], role: 'copropriétaire' };
 }
 
 function initUI() {
@@ -1187,9 +1222,18 @@ function initUI() {
 }
 
 async function loadAll() {
-  await Promise.all([loadTickets(), isManager() ? loadContrats() : null, loadCles()].filter(Boolean));
-  if (isManager()) loadJournal();
-  updateBadges();
+  try {
+    const tasks = [loadTickets()];
+    if (isManager()) tasks.push(loadContrats());
+    tasks.push(loadCles());
+    await Promise.all(tasks);
+    if (isManager()) await loadJournal();
+    updateBadges();
+    checkNotifications();
+  } catch(e) {
+    console.error('loadAll error:', e);
+  }
+}
   checkNotifications();
 }
 
@@ -1201,9 +1245,9 @@ async function loadTickets() {
 }
 
 async function loadContrats() {
-  const { data } = await sb.from('contrats').select('*').order('date_echeance', { ascending: true });
+  const { data, error } = await sb.from('contrats').select('*').order('date_echeance', { ascending: true });
+  if (error) { console.warn('loadContrats:', error.message); return; }
   if (data) cache.contrats = data;
-  return data;
 }
 
 async function loadCles() {
@@ -1222,14 +1266,14 @@ async function loadStats() {
 }
 
 function updateBadges() {
-  const open = cache.tickets.filter(t => t.statut !== 'résolu' && t.statut !== 'clos').length;
+  const open = (cache.tickets||[]).filter(t => t.statut !== 'résolu' && t.statut !== 'clos').length;
   const nc = $('nc-tickets');
-  if (open > 0) { nc.textContent = open; nc.style.display = ''; } else nc.style.display = 'none';
+  if (nc) { if (open > 0) { nc.textContent = open; nc.style.display = ''; } else nc.style.display = 'none'; }
 
   if (isManager()) {
-    const expiring = cache.contrats.filter(c => { const d = daysUntil(c.date_echeance); return d >= 0 && d <= 90; }).length;
+    const expiring = (cache.contrats||[]).filter(c => { const d = daysUntil(c.date_echeance); return d !== null && d >= 0 && d <= 90; }).length;
     const nc2 = $('nc-contrats');
-    if (expiring > 0) { nc2.style.display = ''; } else nc2.style.display = 'none';
+    if (nc2) { if (expiring > 0) { nc2.style.display = ''; } else nc2.style.display = 'none'; }
   }
 }
 
