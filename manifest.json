@@ -1,0 +1,16 @@
+{
+  "name": "CoproSync — Gestion Copropriété",
+  "short_name": "CoproSync",
+  "description": "Gestion opérationnelle de copropriété",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f4f1",
+  "theme_color": "#111827",
+  "orientation": "portrait-primary",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "categories": ["productivity", "utilities"],
+  "lang": "fr"
+}

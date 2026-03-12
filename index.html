@@ -1,0 +1,2109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#111827">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="CoproSync">
+  <meta name="description" content="Gestion opérationnelle de copropriété">
+  <title>CoproSync</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<style>
+/* ═══════════════════════════════════════════
+   COPROSYNC v2 — Design System
+   Aesthetic: Clean utility-first, warm whites
+   French professional minimalism
+═══════════════════════════════════════════ */
+:root {
+  /* Palette */
+  --bg: #f5f4f1;
+  --surface: #ffffff;
+  --surface-2: #f9f8f6;
+  --border: #e8e5df;
+  --border-strong: #d0cdc7;
+
+  --text: #1a1917;
+  --text-2: #6b6860;
+  --text-3: #9b9890;
+
+  --accent: #2563eb;
+  --accent-light: #eff6ff;
+  --accent-hover: #1d4ed8;
+
+  --red: #dc2626;
+  --red-light: #fef2f2;
+  --red-border: #fecaca;
+
+  --orange: #ea580c;
+  --orange-light: #fff7ed;
+  --orange-border: #fed7aa;
+
+  --green: #16a34a;
+  --green-light: #f0fdf4;
+  --green-border: #bbf7d0;
+
+  --amber: #d97706;
+  --amber-light: #fffbeb;
+  --amber-border: #fde68a;
+
+  --blue-light: #eff6ff;
+  --blue-border: #bfdbfe;
+
+  --violet: #7c3aed;
+
+  /* Typography */
+  --font-head: 'Syne', sans-serif;
+  --font-body: 'Instrument Sans', sans-serif;
+
+  /* Spacing & Shape */
+  --r: 10px;
+  --r-sm: 7px;
+  --r-lg: 16px;
+  --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
+  --shadow-lg: 0 20px 40px rgba(0,0,0,.12);
+  --sidebar-w: 248px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── LAYOUT ── */
+#app { display: flex; min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+#sidebar {
+  width: var(--sidebar-w);
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  position: fixed; top: 0; left: 0; bottom: 0;
+  display: flex; flex-direction: column;
+  z-index: 200;
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+  overflow-y: auto;
+}
+
+.sidebar-brand {
+  padding: 20px 18px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.brand-icon {
+  width: 34px; height: 34px;
+  background: var(--text);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.brand-icon svg { width: 18px; height: 18px; fill: white; }
+.brand-name { font-family: var(--font-head); font-size: 16px; font-weight: 700; letter-spacing: -.3px; }
+.brand-sub { font-size: 11px; color: var(--text-3); margin-top: 1px; }
+
+.nav-section {
+  padding: 18px 12px 6px;
+  font-size: 10px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .1em;
+  color: var(--text-3);
+}
+
+.nav-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 9px 12px;
+  border-radius: var(--r-sm);
+  margin: 1px 6px;
+  cursor: pointer;
+  color: var(--text-2);
+  font-size: 13.5px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all .15s;
+  user-select: none;
+}
+.nav-item:hover { background: var(--bg); color: var(--text); }
+.nav-item.active {
+  background: var(--text);
+  color: white;
+}
+.nav-item svg { width: 16px; height: 16px; flex-shrink: 0; opacity: .7; }
+.nav-item.active svg { opacity: 1; }
+.nav-count {
+  margin-left: auto;
+  font-size: 11px; font-weight: 700;
+  background: var(--red); color: white;
+  padding: 1px 6px; border-radius: 20px;
+  min-width: 20px; text-align: center;
+}
+.nav-item.active .nav-count { background: rgba(255,255,255,.2); }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 12px;
+  border-top: 1px solid var(--border);
+}
+.user-pill {
+  display: flex; align-items: center; gap: 9px;
+  padding: 10px 10px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background .15s;
+}
+.user-pill:hover { background: var(--bg); }
+.user-av {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--text);
+  color: white; font-family: var(--font-head);
+  font-size: 13px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.user-av.role-admin { background: var(--violet); }
+.user-av.role-syndic { background: var(--accent); }
+.user-av.role-cs { background: var(--orange); }
+.user-name-small { font-size: 13px; font-weight: 600; line-height: 1.2; }
+.user-role-small { font-size: 11px; color: var(--text-3); }
+.btn-logout {
+  margin-left: auto; padding: 4px 8px;
+  background: none; border: 1px solid var(--border);
+  border-radius: var(--r-sm); cursor: pointer;
+  color: var(--text-2); font-size: 11px;
+  transition: all .15s;
+}
+.btn-logout:hover { background: var(--red-light); border-color: var(--red-border); color: var(--red); }
+
+/* ── MAIN ── */
+#main { margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-height: 100vh; }
+
+/* ── TOPBAR ── */
+#topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 56px;
+  display: flex; align-items: center; gap: 12px;
+  position: sticky; top: 0; z-index: 100;
+}
+.topbar-title { font-family: var(--font-head); font-size: 17px; font-weight: 700; flex: 1; }
+#menu-btn { display: none; background: none; border: none; cursor: pointer; padding: 6px; color: var(--text-2); }
+
+/* ── PAGE ── */
+#page { flex: 1; padding: 24px; max-width: 1280px; }
+
+/* ── PAGE HEADER ── */
+.ph { margin-bottom: 22px; }
+.ph h1 { font-family: var(--font-head); font-size: 24px; font-weight: 800; letter-spacing: -.5px; margin-bottom: 2px; }
+.ph p { font-size: 13px; color: var(--text-2); }
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+}
+.card-body { padding: 20px; }
+.card-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px;
+}
+.card-title { font-family: var(--font-head); font-size: 14px; font-weight: 700; }
+
+/* ── STATS ── */
+.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 22px; }
+.stat {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  padding: 18px 20px;
+  cursor: pointer; transition: border-color .15s, box-shadow .15s;
+}
+.stat:hover { border-color: var(--border-strong); box-shadow: var(--shadow-md); }
+.stat-num { font-family: var(--font-head); font-size: 32px; font-weight: 800; line-height: 1; margin-bottom: 4px; }
+.stat-label { font-size: 12px; color: var(--text-2); font-weight: 500; }
+.stat-sub { font-size: 11px; color: var(--text-3); margin-top: 3px; }
+.stat.red .stat-num { color: var(--red); }
+.stat.orange .stat-num { color: var(--orange); }
+.stat.green .stat-num { color: var(--green); }
+.stat.blue .stat-num { color: var(--accent); }
+
+/* ── BADGES ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 20px;
+  font-size: 11.5px; font-weight: 600;
+  white-space: nowrap;
+}
+.badge-critique { background: var(--red-light); color: var(--red); border: 1px solid var(--red-border); }
+.badge-important { background: var(--orange-light); color: var(--orange); border: 1px solid var(--orange-border); }
+.badge-normal { background: var(--blue-light); color: var(--accent); border: 1px solid var(--blue-border); }
+.badge-nouveau { background: #f5f3ff; color: var(--violet); border: 1px solid #ddd6fe; }
+.badge-en_cours { background: var(--orange-light); color: var(--orange); border: 1px solid var(--orange-border); }
+.badge-transmis_syndic { background: var(--amber-light); color: var(--amber); border: 1px solid var(--amber-border); }
+.badge-attente_intervention { background: var(--blue-light); color: var(--accent); border: 1px solid var(--blue-border); }
+.badge-résolu { background: var(--green-light); color: var(--green); border: 1px solid var(--green-border); }
+.badge-clos { background: var(--bg); color: var(--text-3); border: 1px solid var(--border); }
+
+/* ── TABLE ── */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th {
+  text-align: left; padding: 10px 14px;
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .06em;
+  color: var(--text-3);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap; background: var(--surface-2);
+}
+td { padding: 12px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tbody tr { cursor: pointer; transition: background .1s; }
+tbody tr:hover td { background: var(--bg); }
+
+/* ── BUTTONS ── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 9px 16px; border-radius: var(--r-sm);
+  font-family: var(--font-body); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all .15s;
+  border: 1px solid transparent; text-decoration: none;
+  white-space: nowrap;
+}
+.btn-primary { background: var(--text); color: white; border-color: var(--text); }
+.btn-primary:hover { background: #2d2b27; }
+.btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border); }
+.btn-secondary:hover { background: var(--bg); border-color: var(--border-strong); }
+.btn-ghost { background: none; color: var(--text-2); border: none; }
+.btn-ghost:hover { color: var(--text); background: var(--bg); }
+.btn-danger { background: var(--red-light); color: var(--red); border-color: var(--red-border); }
+.btn-danger:hover { background: #fee2e2; }
+.btn-sm { padding: 6px 11px; font-size: 12px; }
+.btn-xs { padding: 4px 8px; font-size: 11px; }
+.btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* ── FORMS ── */
+.fg { margin-bottom: 16px; }
+.label {
+  display: block; font-size: 12px; font-weight: 600;
+  color: var(--text-2); margin-bottom: 6px;
+  text-transform: uppercase; letter-spacing: .05em;
+}
+.input, .select, .textarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 9px 12px;
+  font-family: var(--font-body); font-size: 14px; color: var(--text);
+  outline: none; transition: border-color .15s, box-shadow .15s;
+}
+.input:focus, .select:focus, .textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(37,99,235,.1);
+}
+.input::placeholder, .textarea::placeholder { color: var(--text-3); }
+.textarea { resize: vertical; min-height: 80px; }
+.select { cursor: pointer; }
+.fg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.fg-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+
+/* ── URGENCY SELECTOR ── */
+.urgency-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.urgency-opt {
+  padding: 10px; border-radius: var(--r-sm); border: 2px solid var(--border);
+  cursor: pointer; text-align: center; font-size: 13px; font-weight: 600;
+  transition: all .15s; background: var(--surface-2);
+}
+.urgency-opt.sel-critique { border-color: var(--red); background: var(--red-light); color: var(--red); }
+.urgency-opt.sel-important { border-color: var(--orange); background: var(--orange-light); color: var(--orange); }
+.urgency-opt.sel-normal { border-color: var(--accent); background: var(--blue-light); color: var(--accent); }
+
+/* ── PHOTO UPLOAD ── */
+.photo-area {
+  border: 2px dashed var(--border); border-radius: var(--r);
+  padding: 28px 16px; text-align: center; cursor: pointer;
+  transition: all .15s; background: var(--surface-2);
+  position: relative; overflow: hidden;
+}
+.photo-area:hover { border-color: var(--accent); background: var(--blue-light); }
+.photo-area.loaded { padding: 0; border-style: solid; }
+.photo-area img { width: 100%; max-height: 180px; object-fit: cover; display: block; }
+.photo-label { font-size: 13px; color: var(--text-2); margin-top: 6px; }
+.photo-icon { font-size: 28px; margin-bottom: 6px; opacity: .5; }
+
+/* ── MODAL ── */
+.overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.4);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  display: flex; align-items: flex-end; justify-content: center;
+  padding: 0;
+  opacity: 0; pointer-events: none;
+  transition: opacity .2s;
+}
+@media (min-width: 640px) {
+  .overlay { align-items: center; padding: 20px; }
+}
+.overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--surface); width: 100%; max-width: 580px;
+  border-radius: var(--r-lg) var(--r-lg) 0 0;
+  max-height: 92vh; overflow-y: auto;
+  transform: translateY(30px);
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+  box-shadow: var(--shadow-lg);
+}
+@media (min-width: 640px) { .modal { border-radius: var(--r-lg); transform: translateY(12px); } }
+.overlay.open .modal { transform: translateY(0); }
+.modal-wide { max-width: 720px; }
+.mh {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+}
+.mh-title { font-family: var(--font-head); font-size: 16px; font-weight: 700; flex: 1; }
+.mclose {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--bg); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: var(--text-2); transition: all .15s;
+}
+.mclose:hover { background: var(--red-light); color: var(--red); }
+.mb { padding: 20px; }
+.mf { padding: 16px 20px; border-top: 1px solid var(--border); display: flex; gap: 8px; justify-content: flex-end; }
+
+/* ── TICKET DETAIL ── */
+.detail-photo { width: 100%; max-height: 260px; object-fit: cover; border-radius: var(--r); display: block; margin-bottom: 16px; }
+.meta-strip { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 16px; }
+.meta-item { display: flex; align-items: center; gap: 5px; font-size: 13px; color: var(--text-2); }
+.meta-item strong { color: var(--text); }
+.comments-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.comment-bubble {
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 11px 14px;
+}
+.comment-bubble.private { background: var(--amber-light); border-color: var(--amber-border); }
+.cm-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px; }
+.cm-author { font-size: 12px; font-weight: 700; color: var(--text); }
+.cm-date { font-size: 11px; color: var(--text-3); }
+.cm-text { font-size: 13px; color: var(--text); line-height: 1.5; }
+
+/* ── JOURNAL ── */
+.journal-line {
+  display: flex; gap: 10px; align-items: flex-start;
+  padding: 10px 0; border-bottom: 1px solid var(--border);
+}
+.journal-line:last-child { border-bottom: none; }
+.jdot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); margin-top: 5px; flex-shrink: 0; }
+.jtime { font-size: 11px; color: var(--text-3); white-space: nowrap; min-width: 110px; }
+.jact { font-size: 13px; color: var(--text); }
+.juser { font-size: 11.5px; color: var(--text-2); margin-top: 1px; }
+
+/* ── KEY CARDS ── */
+.keys-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px,1fr)); gap: 12px; }
+.key-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 16px; display: flex; gap: 12px;
+  transition: border-color .15s, box-shadow .15s;
+}
+.key-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow); }
+.key-ic {
+  width: 38px; height: 38px; border-radius: var(--r-sm);
+  background: var(--amber-light); display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.key-nm { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.key-inf { font-size: 12px; color: var(--text-2); }
+.key-tag {
+  margin-left: auto; align-self: flex-start;
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px; border-radius: 20px;
+}
+.key-ok { background: var(--green-light); color: var(--green); }
+.key-out { background: var(--orange-light); color: var(--orange); }
+
+/* ── FILTER BAR ── */
+.fbar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; align-items: center; }
+.fbar .input { max-width: 220px; }
+.fbar .select { width: auto; }
+
+/* ── ACTIVITY ── */
+.act-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.act-item:last-child { border-bottom: none; }
+.act-ic { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; margin-top: 1px; }
+.act-txt { font-size: 13px; line-height: 1.4; }
+.act-sub { font-size: 11.5px; color: var(--text-2); margin-top: 2px; }
+.act-time { font-size: 11px; color: var(--text-3); }
+
+/* ── EMPTY STATE ── */
+.empty { text-align: center; padding: 48px 20px; }
+.empty-ico { font-size: 40px; opacity: .3; margin-bottom: 10px; }
+.empty-txt { font-size: 14px; color: var(--text-2); }
+
+/* ── GRID ── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
+
+/* ── MAP ── */
+#map { height: 480px; border-radius: var(--r-lg); overflow: hidden; border: 1px solid var(--border); }
+.leaflet-popup-content-wrapper { border-radius: var(--r-sm) !important; box-shadow: var(--shadow-md) !important; font-family: var(--font-body) !important; }
+.leaflet-popup-content { font-family: var(--font-body) !important; font-size: 13px !important; }
+
+/* ── TOAST ── */
+#toasts {
+  position: fixed; bottom: 20px; right: 20px;
+  z-index: 9999; display: flex; flex-direction: column; gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  background: var(--text); color: white;
+  padding: 11px 16px; border-radius: var(--r);
+  font-size: 13px; font-weight: 500;
+  display: flex; align-items: center; gap: 8px;
+  animation: tslide .25s ease; box-shadow: var(--shadow-lg);
+  pointer-events: all; max-width: 320px;
+}
+.toast.ok { border-left: 3px solid var(--green); }
+.toast.err { border-left: 3px solid var(--red); }
+.toast.warn { border-left: 3px solid var(--amber); }
+@keyframes tslide { from { transform: translateX(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ── LOADING ── */
+.spin {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--border);
+  border-top-color: var(--accent);
+  animation: spin .7s linear infinite; display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.page-loading { display: flex; align-items: center; justify-content: center; min-height: 300px; }
+
+/* ── LOGIN ── */
+#login-screen {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 9999; padding: 20px;
+}
+.login-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 36px;
+  width: 100%; max-width: 400px;
+  box-shadow: var(--shadow-lg);
+}
+.login-brand { font-family: var(--font-head); font-size: 26px; font-weight: 800; letter-spacing: -1px; margin-bottom: 2px; }
+.login-tag { font-size: 13px; color: var(--text-2); margin-bottom: 28px; }
+
+/* ── NOTIFICATION BELL ── */
+.notif-btn {
+  position: relative; width: 36px; height: 36px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: var(--r-sm); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.notif-btn:hover { background: var(--surface-2); }
+.notif-dot {
+  position: absolute; top: 5px; right: 5px;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--red); border: 2px solid var(--surface);
+  display: none;
+}
+.notif-dot.visible { display: block; }
+
+/* ── CONTRAT STATUS ── */
+.expiring td:first-child { border-left: 3px solid var(--amber); }
+.expired td:first-child { border-left: 3px solid var(--red); }
+
+/* ── RAPPORT ── */
+.rapport-summary {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 20px; margin-bottom: 20px;
+}
+
+/* ── SCROLL ── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  #sidebar { transform: translateX(-100%); }
+  #sidebar.open { transform: translateX(0); box-shadow: var(--shadow-lg); }
+  #main { margin-left: 0; }
+  #menu-btn { display: flex; }
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  #page { padding: 16px; }
+  .g2, .g3, .fg-row, .fg-row-3 { grid-template-columns: 1fr; }
+}
+@media (max-width: 480px) {
+  .stats-row { grid-template-columns: 1fr 1fr; }
+  .fbar .input { max-width: none; flex: 1; }
+}
+@media print {
+  #sidebar, #topbar, .no-print { display: none !important; }
+  #main { margin-left: 0 !important; }
+  .card { border: 1px solid #ddd !important; page-break-inside: avoid; }
+}
+
+/* SIDEBAR OVERLAY */
+#so { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 199; }
+#so.open { display: block; }
+
+/* ── ROLE BADGE ── */
+.role-pill {
+  display: inline-block; padding: 2px 8px; border-radius: 20px;
+  font-size: 10.5px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.role-administrateur { background: #f5f3ff; color: var(--violet); border: 1px solid #ddd6fe; }
+.role-syndic { background: var(--blue-light); color: var(--accent); border: 1px solid var(--blue-border); }
+.role-membre_cs { background: var(--orange-light); color: var(--orange); border: 1px solid var(--orange-border); }
+.role-copropriétaire { background: var(--green-light); color: var(--green); border: 1px solid var(--green-border); }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-brand">CoproSync</div>
+    <div class="login-tag">Gestion de copropriété — Connexion sécurisée</div>
+    <div id="auth-form">
+      <div class="fg">
+        <label class="label">Email</label>
+        <input type="email" id="auth-email" class="input" placeholder="votre@email.com" autocomplete="email">
+      </div>
+      <div class="fg">
+        <label class="label">Mot de passe</label>
+        <input type="password" id="auth-pass" class="input" placeholder="••••••••" autocomplete="current-password">
+      </div>
+      <div id="auth-error" style="color:var(--red);font-size:12px;margin-bottom:12px;display:none;"></div>
+      <button class="btn btn-primary" style="width:100%;justify-content:center;" id="auth-btn" onclick="doAuth()">
+        <span id="auth-btn-text">Se connecter</span>
+      </button>
+      <div style="text-align:center;margin-top:14px;">
+        <a href="#" onclick="toggleAuthMode(event)" style="font-size:12px;color:var(--text-2);text-decoration:underline;" id="auth-toggle-link">
+          Pas encore de compte ? Créer un compte
+        </a>
+      </div>
+      <div style="text-align:center;margin-top:6px;">
+        <a href="#" onclick="forgotPassword(event)" style="font-size:12px;color:var(--text-3);text-decoration:underline;">
+          Mot de passe oublié ?
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none">
+  <div id="so" onclick="closeSidebar()"></div>
+  <nav id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22" fill="white" stroke="none"/></svg>
+      </div>
+      <div>
+        <div class="brand-name">CoproSync</div>
+        <div class="brand-sub" id="sb-copro-name">Résidence</div>
+      </div>
+    </div>
+
+    <div class="nav-section">Tableau de bord</div>
+    <a class="nav-item active" data-page="dashboard" onclick="nav('dashboard')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Vue d'ensemble
+    </a>
+
+    <div class="nav-section">Signalements</div>
+    <a class="nav-item" data-page="tickets" onclick="nav('tickets')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Signalements
+      <span class="nav-count" id="nc-tickets" style="display:none">0</span>
+    </a>
+    <a class="nav-item" data-page="map" onclick="nav('map')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3,6 9,3 15,6 21,3 21,18 15,21 9,18 3,21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+      Carte
+    </a>
+
+    <div class="nav-section nav-admin-only" id="nav-section-gestion">Gestion</div>
+    <a class="nav-item nav-manager-only" data-page="contrats" onclick="nav('contrats')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/></svg>
+      Contrats
+      <span class="nav-count" id="nc-contrats" style="display:none;background:var(--amber)">!</span>
+    </a>
+    <a class="nav-item nav-manager-only" data-page="cles" onclick="nav('cles')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+      Clés
+    </a>
+    <a class="nav-item nav-manager-only" data-page="journal" onclick="nav('journal')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z"/></svg>
+      Journal
+    </a>
+
+    <div class="nav-section nav-admin-only">Administration</div>
+    <a class="nav-item nav-admin-only" data-page="users" onclick="nav('users')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+      Utilisateurs
+    </a>
+    <a class="nav-item nav-manager-only" data-page="rapport" onclick="nav('rapport')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Rapport syndic
+    </a>
+
+    <div class="sidebar-footer">
+      <div class="user-pill" onclick="nav('profile')">
+        <div class="user-av" id="nav-av">?</div>
+        <div>
+          <div class="user-name-small" id="nav-nom">...</div>
+          <div class="user-role-small" id="nav-role">...</div>
+        </div>
+        <button class="btn-logout" onclick="event.stopPropagation();doLogout()">Quitter</button>
+      </div>
+    </div>
+  </nav>
+
+  <div id="main">
+    <div id="topbar">
+      <button id="menu-btn" onclick="toggleSidebar()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <span class="topbar-title" id="topbar-title">Vue d'ensemble</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="notif-btn" id="notif-btn" onclick="nav('notifications')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="notif-dot" id="notif-dot"></span>
+        </button>
+        <button class="btn btn-primary btn-sm" onclick="openNewTicket()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Signaler
+        </button>
+      </div>
+    </div>
+    <div id="page"></div>
+  </div>
+</div>
+
+<!-- MODAL TICKET -->
+<div class="overlay" id="m-ticket">
+  <div class="modal">
+    <div class="mh">
+      <span class="mh-title" id="m-ticket-title">Nouveau signalement</span>
+      <button class="mclose" onclick="closeModal('m-ticket')">×</button>
+    </div>
+    <div class="mb">
+      <div class="fg">
+        <label class="label">Titre *</label>
+        <input type="text" id="t-titre" class="input" placeholder="Décrivez le problème en quelques mots...">
+      </div>
+      <div class="fg">
+        <label class="label">Urgence *</label>
+        <div class="urgency-grid">
+          <div class="urgency-opt" id="urg-critique" onclick="setUrgency('critique')">🔴 Critique</div>
+          <div class="urgency-opt" id="urg-important" onclick="setUrgency('important')">🟠 Important</div>
+          <div class="urgency-opt" id="urg-normal" onclick="setUrgency('normal')">🔵 Normal</div>
+        </div>
+      </div>
+      <div class="fg-row">
+        <div class="fg" style="margin:0;">
+          <label class="label">Bâtiment *</label>
+          <select id="t-bat" class="select">
+            <option value="">Choisir...</option>
+            <option>Bâtiment A</option>
+            <option>Bâtiment B</option>
+            <option>Bâtiment C</option>
+            <option>Parties communes</option>
+            <option>Parking</option>
+            <option>Cave / sous-sol</option>
+            <option>Extérieur / jardins</option>
+          </select>
+        </div>
+        <div class="fg" style="margin:0;">
+          <label class="label">Étage / Zone</label>
+          <input type="text" id="t-zone" class="input" placeholder="RDC, étage 3, cage A...">
+        </div>
+      </div>
+      <div class="fg" style="margin-top:14px;">
+        <label class="label">Catégorie</label>
+        <select id="t-cat" class="select">
+          <option value="autre">Autre</option>
+          <option value="fuite">💧 Fuite / eau</option>
+          <option value="electricite">⚡ Électricité</option>
+          <option value="ascenseur">🛗 Ascenseur</option>
+          <option value="securite">🔒 Sécurité</option>
+          <option value="proprete">🧹 Propreté</option>
+          <option value="serrurerie">🔑 Serrurerie</option>
+          <option value="espaces_verts">🌿 Espaces verts</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label class="label">Description</label>
+        <textarea id="t-desc" class="textarea" placeholder="Détaillez le problème : depuis quand, risques, observations..."></textarea>
+      </div>
+      <div class="fg">
+        <label class="label">Photo</label>
+        <div class="photo-area" id="photo-area" onclick="document.getElementById('photo-in').click()">
+          <div class="photo-icon">📷</div>
+          <div class="photo-label">Appuyer pour prendre une photo ou choisir depuis la galerie</div>
+        </div>
+        <input type="file" id="photo-in" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(event)">
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-secondary" onclick="closeModal('m-ticket')">Annuler</button>
+      <button class="btn btn-primary" id="submit-ticket-btn" onclick="submitTicket()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>
+        Créer le signalement
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DETAIL TICKET -->
+<div class="overlay" id="m-detail">
+  <div class="modal modal-wide">
+    <div class="mh">
+      <span class="mh-title" id="m-detail-title">Détail</span>
+      <button class="mclose" onclick="closeModal('m-detail')">×</button>
+    </div>
+    <div class="mb" id="m-detail-body"></div>
+    <div class="mf" id="m-detail-footer"></div>
+  </div>
+</div>
+
+<!-- MODAL CONTRAT -->
+<div class="overlay" id="m-contrat">
+  <div class="modal">
+    <div class="mh"><span class="mh-title">Ajouter un contrat</span><button class="mclose" onclick="closeModal('m-contrat')">×</button></div>
+    <div class="mb">
+      <div class="fg-row">
+        <div class="fg" style="margin:0;">
+          <label class="label">Fournisseur *</label>
+          <input type="text" id="c-four" class="input" placeholder="Nom de l'entreprise">
+        </div>
+        <div class="fg" style="margin:0;">
+          <label class="label">Type *</label>
+          <select id="c-type" class="select">
+            <option>Ascenseurs</option><option>Chauffage</option><option>Nettoyage</option>
+            <option>Gardiennage</option><option>Espaces verts</option><option>Assurance</option>
+            <option>Électricité PC</option><option>Eau / plomberie</option><option>Autre</option>
+          </select>
+        </div>
+      </div>
+      <div class="fg-row" style="margin-top:14px;">
+        <div class="fg" style="margin:0;"><label class="label">Date début</label><input type="date" id="c-deb" class="input"></div>
+        <div class="fg" style="margin:0;"><label class="label">Échéance *</label><input type="date" id="c-ech" class="input"></div>
+      </div>
+      <div class="fg-row" style="margin-top:14px;">
+        <div class="fg" style="margin:0;"><label class="label">Contact</label><input type="text" id="c-cont" class="input" placeholder="Nom, tél, email..."></div>
+        <div class="fg" style="margin:0;"><label class="label">Montant annuel (€)</label><input type="number" id="c-mont" class="input" placeholder="0"></div>
+      </div>
+      <div class="fg" style="margin-top:14px;"><label class="label">Notes</label><textarea id="c-notes" class="textarea" placeholder="Conditions, numéro contrat..."></textarea></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-secondary" onclick="closeModal('m-contrat')">Annuler</button>
+      <button class="btn btn-primary" onclick="submitContrat()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CLÉ -->
+<div class="overlay" id="m-cle">
+  <div class="modal">
+    <div class="mh"><span class="mh-title">Gérer une clé</span><button class="mclose" onclick="closeModal('m-cle')">×</button></div>
+    <div class="mb">
+      <div class="fg"><label class="label">Nom de la clé *</label><input type="text" id="k-nom" class="input" placeholder="Ex: Local technique sous-sol"></div>
+      <div class="fg"><label class="label">Détenteur actuel</label><input type="text" id="k-det" class="input" placeholder="Nom complet"></div>
+      <div class="fg"><label class="label">Date de sortie</label><input type="date" id="k-date" class="input"></div>
+      <div class="fg"><label class="label">Notes</label><textarea id="k-notes" class="textarea" placeholder="Accès autorisés, copies..."></textarea></div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-secondary" onclick="closeModal('m-cle')">Annuler</button>
+      <button class="btn btn-primary" onclick="submitCle()">Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL INVITE USER -->
+<div class="overlay" id="m-invite">
+  <div class="modal">
+    <div class="mh"><span class="mh-title">Inviter un utilisateur</span><button class="mclose" onclick="closeModal('m-invite')">×</button></div>
+    <div class="mb">
+      <div class="fg"><label class="label">Email *</label><input type="email" id="inv-email" class="input" placeholder="prenom.nom@email.com"></div>
+      <div class="fg-row">
+        <div class="fg" style="margin:0;"><label class="label">Prénom</label><input type="text" id="inv-prenom" class="input"></div>
+        <div class="fg" style="margin:0;"><label class="label">Nom</label><input type="text" id="inv-nom" class="input"></div>
+      </div>
+      <div class="fg-row" style="margin-top:14px;">
+        <div class="fg" style="margin:0;">
+          <label class="label">Rôle *</label>
+          <select id="inv-role" class="select">
+            <option value="copropriétaire">Copropriétaire</option>
+            <option value="membre_cs">Membre Conseil Syndical</option>
+            <option value="syndic">Syndic</option>
+            <option value="administrateur">Administrateur</option>
+          </select>
+        </div>
+        <div class="fg" style="margin:0;"><label class="label">Lot / appartement</label><input type="text" id="inv-lot" class="input" placeholder="Ex: A-204"></div>
+      </div>
+      <div style="background:var(--blue-light);border:1px solid var(--blue-border);border-radius:var(--r-sm);padding:10px 14px;font-size:12px;color:var(--accent);margin-top:8px;">
+        📧 Un email d'invitation sera envoyé avec le lien de création de mot de passe.
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-secondary" onclick="closeModal('m-invite')">Annuler</button>
+      <button class="btn btn-primary" id="inv-btn" onclick="submitInvite()">Envoyer l'invitation</button>
+    </div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+// ══════════════════════════════════════════════════════
+//  COPROSYNC v2 — Production App
+//  Supabase backend, PWA, multi-rôles, emails
+// ══════════════════════════════════════════════════════
+
+const SUPA_URL = 'https://sifjbqtnrfydxcemhsnz.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZmpicXRucmZ5ZHhjZW1oc256Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzIyMjYsImV4cCI6MjA4ODkwODIyNn0.aRZUunTn1W5hLNHRXDSWjp7hKcBtxQlFKSM05MTQyVE';
+
+const { createClient } = supabase;
+const sb = createClient(SUPA_URL, SUPA_KEY);
+
+// ── STATE ──
+let user = null;
+let profile = null;
+let currentPage = 'dashboard';
+let urgencySelected = 'normal';
+let photoFile = null;
+let mapInstance = null;
+let mapMarkers = [];
+let cache = { tickets: [], profiles: [], contrats: [], cles: [], journal: [], stats: null };
+let authMode = 'login';
+
+// ── HELPERS ──
+const $ = id => document.getElementById(id);
+const d = (el, html) => { if(el) el.innerHTML = html; };
+
+function fmt(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' });
+}
+function fmtD(iso) {
+  if (!iso) return '—';
+  return new Date(iso).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+function daysUntil(d) {
+  return Math.ceil((new Date(d) - new Date()) / 864e5);
+}
+function isManager() {
+  return profile && ['administrateur','syndic','membre_cs'].includes(profile.role);
+}
+function isAdmin() {
+  return profile && profile.role === 'administrateur';
+}
+function isSyndicOrAdmin() {
+  return profile && ['administrateur','syndic'].includes(profile.role);
+}
+
+function toast(msg, type='ok') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span>${type==='ok'?'✓':type==='err'?'✕':'⚠'}</span>${msg}`;
+  $('toasts').appendChild(t);
+  setTimeout(() => t.remove(), 4000);
+}
+
+function badgeUrgence(u) {
+  const m = { critique:'badge-critique', important:'badge-important', normal:'badge-normal' };
+  const l = { critique:'🔴 Critique', important:'🟠 Important', normal:'🔵 Normal' };
+  return `<span class="badge ${m[u]||'badge-normal'}">${l[u]||u}</span>`;
+}
+function badgeStatut(s) {
+  const m = {
+    nouveau:'badge-nouveau', en_cours:'badge-en_cours',
+    transmis_syndic:'badge-transmis_syndic', attente_intervention:'badge-attente_intervention',
+    résolu:'badge-résolu', clos:'badge-clos'
+  };
+  const l = {
+    nouveau:'Nouveau', en_cours:'En cours', transmis_syndic:'Transmis syndic',
+    attente_intervention:'En attente', résolu:'Résolu', clos:'Clos'
+  };
+  return `<span class="badge ${m[s]||'badge-nouveau'}">${l[s]||s}</span>`;
+}
+
+// ── AUTH ──
+let _authMode = 'login';
+function toggleAuthMode(e) {
+  e.preventDefault();
+  _authMode = _authMode === 'login' ? 'signup' : 'login';
+  $('auth-btn-text').textContent = _authMode === 'login' ? 'Se connecter' : 'Créer mon compte';
+  $('auth-toggle-link').textContent = _authMode === 'login' ? 'Pas encore de compte ? Créer un compte' : 'Déjà un compte ? Se connecter';
+  $('auth-error').style.display = 'none';
+}
+
+async function doAuth() {
+  const email = $('auth-email').value.trim();
+  const pass = $('auth-pass').value.trim();
+  if (!email || !pass) { showAuthError('Email et mot de passe requis'); return; }
+  $('auth-btn').disabled = true;
+  $('auth-btn-text').textContent = '...';
+
+  let res;
+  if (_authMode === 'login') {
+    res = await sb.auth.signInWithPassword({ email, password: pass });
+  } else {
+    res = await sb.auth.signUp({ email, password: pass });
+  }
+
+  if (res.error) {
+    showAuthError(res.error.message === 'Invalid login credentials' ? 'Email ou mot de passe incorrect' : res.error.message);
+    $('auth-btn').disabled = false;
+    $('auth-btn-text').textContent = _authMode === 'login' ? 'Se connecter' : 'Créer mon compte';
+    return;
+  }
+
+  if (_authMode === 'signup') {
+    toast('Compte créé ! Vérifiez votre email pour confirmer.', 'ok');
+    $('auth-btn').disabled = false;
+    $('auth-btn-text').textContent = 'Créer mon compte';
+    return;
+  }
+  // Login success handled by onAuthStateChange
+}
+
+async function forgotPassword(e) {
+  e.preventDefault();
+  const email = $('auth-email').value.trim();
+  if (!email) { showAuthError('Entrez votre email ci-dessus d\'abord'); return; }
+  const { error } = await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.href
+  });
+  if (error) { showAuthError(error.message); return; }
+  toast('Email de réinitialisation envoyé !', 'ok');
+}
+
+function showAuthError(msg) {
+  $('auth-error').textContent = msg;
+  $('auth-error').style.display = 'block';
+}
+
+async function doLogout() {
+  await sb.auth.signOut();
+  location.reload();
+}
+
+// ── INIT ──
+sb.auth.onAuthStateChange(async (event, session) => {
+  if (session?.user) {
+    user = session.user;
+    await loadProfile();
+    $('login-screen').style.display = 'none';
+    $('app').style.display = 'flex';
+    initUI();
+    await loadAll();
+    nav('dashboard');
+    registerSW();
+  } else {
+    $('login-screen').style.display = 'flex';
+    $('app').style.display = 'none';
+    user = null; profile = null;
+  }
+});
+
+async function loadProfile() {
+  const { data } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  profile = data;
+}
+
+function initUI() {
+  if (!profile) return;
+  const init = (profile.nom || '').charAt(0).toUpperCase() + (profile.prenom || '').charAt(0).toUpperCase();
+  const avEl = $('nav-av');
+  avEl.textContent = init || '?';
+  const roleCls = { administrateur:'role-admin', syndic:'role-syndic', membre_cs:'role-cs' };
+  avEl.className = `user-av ${roleCls[profile.role] || ''}`;
+  $('nav-nom').textContent = [profile.prenom, profile.nom].filter(Boolean).join(' ') || profile.email;
+  const roleLabels = { administrateur:'Administrateur', syndic:'Syndic', membre_cs:'Conseil Syndical', 'copropriétaire':'Copropriétaire' };
+  $('nav-role').textContent = roleLabels[profile.role] || profile.role;
+
+  // Hide manager-only items for copropriétaires
+  if (!isManager()) {
+    document.querySelectorAll('.nav-manager-only').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.nav-admin-only').forEach(el => el.style.display = 'none');
+  } else if (!isAdmin()) {
+    document.querySelectorAll('.nav-admin-only').forEach(el => el.style.display = 'none');
+  }
+}
+
+async function loadAll() {
+  await Promise.all([loadTickets(), isManager() ? loadContrats() : null, loadCles()].filter(Boolean));
+  if (isManager()) loadJournal();
+  updateBadges();
+  checkNotifications();
+}
+
+// ── DATA LOADERS ──
+async function loadTickets() {
+  const { data, error } = await sb.from('v_tickets').select('*').order('created_at', { ascending: false });
+  if (!error && data) cache.tickets = data;
+  return data;
+}
+
+async function loadContrats() {
+  const { data } = await sb.from('contrats').select('*').order('date_echeance', { ascending: true });
+  if (data) cache.contrats = data;
+  return data;
+}
+
+async function loadCles() {
+  const { data } = await sb.from('cles').select('*').order('nom');
+  if (data) cache.cles = data;
+}
+
+async function loadJournal() {
+  const { data } = await sb.from('journal').select('*,profiles(nom,prenom)').order('created_at', { ascending: false }).limit(200);
+  if (data) cache.journal = data;
+}
+
+async function loadStats() {
+  const { data } = await sb.from('v_stats').select('*').single();
+  return data;
+}
+
+function updateBadges() {
+  const open = cache.tickets.filter(t => t.statut !== 'résolu' && t.statut !== 'clos').length;
+  const nc = $('nc-tickets');
+  if (open > 0) { nc.textContent = open; nc.style.display = ''; } else nc.style.display = 'none';
+
+  if (isManager()) {
+    const expiring = cache.contrats.filter(c => { const d = daysUntil(c.date_echeance); return d >= 0 && d <= 90; }).length;
+    const nc2 = $('nc-contrats');
+    if (expiring > 0) { nc2.style.display = ''; } else nc2.style.display = 'none';
+  }
+}
+
+function checkNotifications() {
+  const critiques = cache.tickets.filter(t => t.urgence === 'critique' && t.statut !== 'résolu').length;
+  if (critiques > 0) $('notif-dot').classList.add('visible');
+}
+
+// ── LOGGING ──
+async function addLog(action, entite, entite_id, details) {
+  await sb.from('journal').insert({
+    user_id: user.id,
+    user_nom: [profile?.prenom, profile?.nom].filter(Boolean).join(' ') || user.email,
+    action, entite, entite_id, details
+  });
+}
+
+// ── EMAIL (via Supabase Edge Function ou notification en DB) ──
+async function sendEmailNotif(type, data) {
+  // Insère une notification en DB - à connecter à une Edge Function ou Resend
+  try {
+    // Récupérer admins et membres CS pour notifier
+    const { data: managers } = await sb.from('profiles')
+      .select('id, email, nom, prenom')
+      .in('role', ['administrateur', 'syndic', 'membre_cs'])
+      .eq('actif', true);
+
+    const notifs = [];
+    const subjects = {
+      nouveau_ticket: `🚨 Nouveau signalement : ${data.titre}`,
+      ticket_critique: `🔴 URGENT — Signalement critique : ${data.titre}`,
+      statut_change: `📋 Signalement mis à jour : ${data.titre}`,
+      commentaire: `💬 Nouveau commentaire : ${data.titre}`,
+    };
+    const subject = subjects[type] || `CoproSync — ${type}`;
+
+    if (managers) {
+      managers.forEach(m => {
+        notifs.push({
+          destinataire_id: m.id,
+          destinataire_email: m.email,
+          sujet: subject,
+          corps: buildEmailBody(type, data, m),
+          type,
+          reference_id: data.id,
+        });
+      });
+    }
+
+    // Aussi notifier l'auteur du ticket si changement de statut
+    if ((type === 'statut_change' || type === 'commentaire') && data.auteur_id && data.auteur_id !== user.id) {
+      const auteurProfile = cache.tickets.find(t => t.id === data.id);
+      if (auteurProfile?.auteur_id) {
+        const { data: auteur } = await sb.from('profiles').select('id,email,nom').eq('id', auteurProfile.auteur_id).single();
+        if (auteur) notifs.push({ destinataire_id: auteur.id, destinataire_email: auteur.email, sujet: subject, corps: buildEmailBody(type, data, auteur), type, reference_id: data.id });
+      }
+    }
+
+    if (notifs.length > 0) {
+      await sb.from('notifications').insert(notifs);
+    }
+  } catch(e) { console.warn('Email notif failed:', e); }
+}
+
+function buildEmailBody(type, data, recipient) {
+  const name = [recipient.prenom, recipient.nom].filter(Boolean).join(' ') || recipient.email;
+  return `Bonjour ${name},\n\n${getEmailText(type, data)}\n\nAccédez à l'application : ${window.location.href}\n\n— CoproSync`;
+}
+
+function getEmailText(type, data) {
+  const m = {
+    nouveau_ticket: `Un nouveau signalement a été créé.\n\nTitre : ${data.titre}\nUrgence : ${data.urgence}\nBâtiment : ${data.batiment}\nDécrit par : ${data.auteur_nom || 'N/A'}`,
+    ticket_critique: `⚠️ SIGNALEMENT CRITIQUE nécessitant une action immédiate.\n\nTitre : ${data.titre}\nBâtiment : ${data.batiment}\nZone : ${data.zone || 'N/A'}\nDescription : ${data.description || 'Aucune'}`,
+    statut_change: `Le statut du signalement a été mis à jour.\n\nTitre : ${data.titre}\nNouveau statut : ${data.statut}`,
+    commentaire: `Un nouveau commentaire a été ajouté sur un signalement.\n\nSignalement : ${data.titre}`,
+  };
+  return m[type] || `Action : ${type}`;
+}
+
+// ── NAVIGATION ──
+function nav(page, noClose) {
+  currentPage = page;
+  if (!noClose) closeSidebar();
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  const active = document.querySelector(`[data-page="${page}"]`);
+  if (active) active.classList.add('active');
+  const titles = {
+    dashboard:'Vue d\'ensemble', tickets:'Signalements', map:'Carte',
+    contrats:'Contrats', cles:'Clés', journal:'Journal', users:'Utilisateurs',
+    rapport:'Rapport syndic', notifications:'Notifications', profile:'Mon profil'
+  };
+  $('topbar-title').textContent = titles[page] || page;
+  renderPage(page);
+}
+
+function toggleSidebar() {
+  $('sidebar').classList.toggle('open');
+  $('so').classList.toggle('open');
+}
+function closeSidebar() {
+  $('sidebar').classList.remove('open');
+  $('so').classList.remove('open');
+}
+
+// ── MODAL ──
+function openModal(id) { $(id).classList.add('open'); }
+function closeModal(id) { $(id).classList.remove('open'); }
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.overlay.open').forEach(o => o.classList.remove('open'));
+    closeSidebar();
+  }
+});
+
+// ── RENDER ──
+function renderPage(p) {
+  const el = $('page');
+  if (p === 'dashboard') renderDashboard();
+  else if (p === 'tickets') renderTickets();
+  else if (p === 'map') { renderMapPage(); setTimeout(initMap, 100); }
+  else if (p === 'contrats') renderContrats();
+  else if (p === 'cles') renderCles();
+  else if (p === 'journal') renderJournal();
+  else if (p === 'users') renderUsers();
+  else if (p === 'rapport') renderRapport();
+  else if (p === 'notifications') renderNotifications();
+  else if (p === 'profile') renderProfile();
+}
+
+// ── DASHBOARD ──
+async function renderDashboard() {
+  const el = $('page');
+  const t = cache.tickets;
+  const ouverts = t.filter(x => x.statut !== 'résolu' && x.statut !== 'clos');
+  const critiques = t.filter(x => x.urgence === 'critique' && x.statut !== 'résolu' && x.statut !== 'clos');
+  const syndic = t.filter(x => x.statut === 'transmis_syndic');
+  const resolus = t.filter(x => x.statut === 'résolu' || x.statut === 'clos');
+  const recent = t.slice(0, 6);
+
+  // Contrats expirants
+  const expirants = isManager() ? cache.contrats.filter(c => { const d = daysUntil(c.date_echeance); return d >= 0 && d <= 90; }) : [];
+
+  el.innerHTML = `
+  <div style="padding:24px;" id="dash-content">
+    <div class="ph">
+      <h1>Bonjour, ${profile?.prenom || profile?.nom || 'bienvenue'} 👋</h1>
+      <p>${new Date().toLocaleDateString('fr-FR', {weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat orange" onclick="nav('tickets')">
+        <div class="stat-num">${ouverts.length}</div>
+        <div class="stat-label">Ouverts</div>
+        <div class="stat-sub">Signalements actifs</div>
+      </div>
+      <div class="stat red" onclick="nav('tickets')">
+        <div class="stat-num">${critiques.length}</div>
+        <div class="stat-label">Critiques</div>
+        <div class="stat-sub">Action requise</div>
+      </div>
+      ${isManager() ? `
+      <div class="stat blue">
+        <div class="stat-num">${syndic.length}</div>
+        <div class="stat-label">Transmis syndic</div>
+        <div class="stat-sub">En attente réponse</div>
+      </div>` : `
+      <div class="stat blue">
+        <div class="stat-num">${t.filter(x=>x.auteur_id===user.id).length}</div>
+        <div class="stat-label">Mes signalements</div>
+        <div class="stat-sub">Créés par moi</div>
+      </div>`}
+      <div class="stat green">
+        <div class="stat-num">${resolus.length}</div>
+        <div class="stat-label">Résolus</div>
+        <div class="stat-sub">Total traités</div>
+      </div>
+    </div>
+
+    ${critiques.length > 0 ? `
+    <div style="background:var(--red-light);border:1px solid var(--red-border);border-radius:var(--r-lg);padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;gap:12px;">
+      <span style="font-size:20px;">🚨</span>
+      <div>
+        <div style="font-weight:700;color:var(--red);font-family:var(--font-head);">${critiques.length} signalement(s) critique(s) actif(s)</div>
+        <div style="font-size:12px;color:var(--red);opacity:.8;margin-top:2px;">${critiques.map(c=>c.titre).join(' · ')}</div>
+      </div>
+      <button class="btn btn-danger btn-sm" style="margin-left:auto;" onclick="nav('tickets')">Voir →</button>
+    </div>` : ''}
+
+    <div class="g2">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Signalements récents</span>
+          <button class="btn btn-ghost btn-sm" onclick="nav('tickets')">Tout voir →</button>
+        </div>
+        <div style="padding:8px 0;">
+          ${recent.length === 0 ? '<div class="empty"><div class="empty-ico">📋</div><div class="empty-txt">Aucun signalement</div></div>' :
+            recent.map(t => `
+              <div class="act-item" style="padding:10px 20px;cursor:pointer;" onclick="openDetail('${t.id}')">
+                <div class="act-ic" style="background:${t.urgence==='critique'?'var(--red-light)':t.urgence==='important'?'var(--orange-light)':'var(--blue-light)'};">
+                  ${t.urgence==='critique'?'🔴':t.urgence==='important'?'🟠':'🔵'}
+                </div>
+                <div style="flex:1;min-width:0;">
+                  <div class="act-txt" style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.titre}</div>
+                  <div class="act-sub">${t.batiment || ''}${t.zone?' · '+t.zone:''} · ${badgeStatut(t.statut)}</div>
+                </div>
+                <div class="act-time" style="flex-shrink:0;">${fmtD(t.created_at)}</div>
+              </div>`).join('')}
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:18px;">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Par bâtiment</span>
+          </div>
+          <div style="padding:16px 20px;">
+            ${['Bâtiment A','Bâtiment B','Bâtiment C','Parking','Parties communes'].map(bat => {
+              const cnt = ouverts.filter(t => t.batiment === bat).length;
+              if (cnt === 0) return '';
+              return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <div style="font-size:13px;flex:1;">${bat}</div>
+                <div style="background:var(--bg);border-radius:4px;height:8px;flex:2;overflow:hidden;">
+                  <div style="background:var(--accent);height:100%;width:${Math.min(100,cnt*20)}%;border-radius:4px;"></div>
+                </div>
+                <div style="font-size:13px;font-weight:700;color:var(--accent);min-width:20px;text-align:right;">${cnt}</div>
+              </div>`;
+            }).join('') || '<div style="font-size:13px;color:var(--text-3);">Aucun problème ouvert 🎉</div>'}
+          </div>
+        </div>
+
+        ${expirants.length > 0 ? `
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title" style="color:var(--amber);">⚠️ Contrats à renouveler</span>
+            <button class="btn btn-ghost btn-sm" onclick="nav('contrats')">Voir →</button>
+          </div>
+          <div style="padding:8px 16px 12px;">
+            ${expirants.map(c => {
+              const d = daysUntil(c.date_echeance);
+              return `<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);">
+                <div>
+                  <div style="font-size:13px;font-weight:600;">${c.fournisseur}</div>
+                  <div style="font-size:11px;color:var(--text-3);">${c.type_contrat}</div>
+                </div>
+                <span style="font-size:12px;font-weight:700;color:${d<=30?'var(--red)':'var(--amber)'};">${d}j</span>
+              </div>`;
+            }).join('')}
+          </div>
+        </div>` : ''}
+
+        <div class="card">
+          <div class="card-body" style="text-align:center;">
+            <div style="font-size:24px;margin-bottom:8px;">📱</div>
+            <div style="font-family:var(--font-head);font-weight:700;margin-bottom:6px;">Installer l'app</div>
+            <div style="font-size:12px;color:var(--text-2);margin-bottom:12px;">iPhone : Safari → Partager → "Sur l'écran d'accueil"<br>Android : Chrome → ⋮ → "Installer l'application"</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── TICKETS ──
+function renderTickets() {
+  const canFilter = true;
+  const myTickets = !isManager();
+
+  $('page').innerHTML = `
+  <div style="padding:24px;">
+    <div class="ph">
+      <h1>Signalements</h1>
+      <p>${cache.tickets.length} au total · ${cache.tickets.filter(t=>t.statut!=='résolu'&&t.statut!=='clos').length} ouverts</p>
+    </div>
+    <div class="fbar">
+      <input type="text" class="input" id="f-search" placeholder="🔍 Rechercher..." oninput="filterTickets()" style="flex:1;min-width:150px;">
+      <select class="select" id="f-statut" onchange="filterTickets()" style="width:auto;">
+        <option value="">Tous statuts</option>
+        <option value="nouveau">Nouveau</option>
+        <option value="en_cours">En cours</option>
+        <option value="transmis_syndic">Transmis syndic</option>
+        <option value="attente_intervention">En attente</option>
+        <option value="résolu">Résolu</option>
+        <option value="clos">Clos</option>
+      </select>
+      <select class="select" id="f-urgence" onchange="filterTickets()" style="width:auto;">
+        <option value="">Urgence</option>
+        <option value="critique">Critique</option>
+        <option value="important">Important</option>
+        <option value="normal">Normal</option>
+      </select>
+      <select class="select" id="f-bat" onchange="filterTickets()" style="width:auto;">
+        <option value="">Bâtiment</option>
+        <option>Bâtiment A</option><option>Bâtiment B</option><option>Bâtiment C</option>
+        <option>Parking</option><option>Parties communes</option><option>Extérieur / jardins</option>
+      </select>
+      <button class="btn btn-primary" onclick="openNewTicket()">+ Signaler</button>
+    </div>
+    <div class="card">
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Signalement</th><th>Urgence</th><th>Statut</th><th>Bâtiment</th><th>Date</th><th></th></tr>
+          </thead>
+          <tbody id="tickets-tbody">
+            ${renderTicketsRows(cache.tickets)}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderTicketsRows(list) {
+  if (!list.length) return `<tr><td colspan="6"><div class="empty"><div class="empty-ico">📋</div><div class="empty-txt">Aucun signalement</div></div></td></tr>`;
+  return list.map(t => `
+    <tr onclick="openDetail('${t.id}')">
+      <td>
+        <div style="font-weight:600;">${t.titre}</div>
+        <div style="font-size:11.5px;color:var(--text-3);margin-top:2px;">${t.categorie || ''} ${t.zone?'· '+t.zone:''}</div>
+      </td>
+      <td>${badgeUrgence(t.urgence)}</td>
+      <td>${badgeStatut(t.statut)}</td>
+      <td style="font-size:12px;color:var(--text-2);">${t.batiment||'—'}</td>
+      <td style="font-size:12px;color:var(--text-3);white-space:nowrap;">${fmtD(t.created_at)}</td>
+      <td><button class="btn btn-ghost btn-sm">Voir →</button></td>
+    </tr>`).join('');
+}
+
+function filterTickets() {
+  const s = $('f-search')?.value.toLowerCase() || '';
+  const st = $('f-statut')?.value || '';
+  const u = $('f-urgence')?.value || '';
+  const b = $('f-bat')?.value || '';
+  const f = cache.tickets.filter(t =>
+    (!s || t.titre.toLowerCase().includes(s) || (t.description||'').toLowerCase().includes(s) || (t.batiment||'').toLowerCase().includes(s))
+    && (!st || t.statut === st)
+    && (!u || t.urgence === u)
+    && (!b || t.batiment === b)
+  );
+  d($('tickets-tbody'), renderTicketsRows(f));
+}
+
+// ── TICKET DETAIL ──
+async function openDetail(id) {
+  const t = cache.tickets.find(x => x.id === id);
+  if (!t) return;
+
+  // Load comments
+  const { data: comments } = await sb.from('commentaires')
+    .select('*, profiles(nom, prenom, role)')
+    .eq('ticket_id', id)
+    .order('created_at');
+
+  const canManage = isManager();
+  const isAuthor = t.auteur_id === user.id;
+
+  $('m-detail-title').textContent = t.titre;
+  d($('m-detail-body'), `
+    ${t.photo_url ? `<img src="${t.photo_url}" class="detail-photo" alt="Photo">` : ''}
+    <div class="meta-strip">
+      ${badgeUrgence(t.urgence)}
+      ${badgeStatut(t.statut)}
+      <span class="meta-item">📍 <strong>${t.batiment||'?'}</strong>${t.zone?' — '+t.zone:''}</span>
+      <span class="meta-item">👤 <strong>${[t.auteur_prenom,t.auteur_nom].filter(Boolean).join(' ')||'N/A'}</strong>${t.auteur_lot?' · Lot '+t.auteur_lot:''}</span>
+      <span class="meta-item">📅 <strong>${fmt(t.created_at)}</strong></span>
+    </div>
+    ${t.description ? `<p style="font-size:13.5px;line-height:1.6;margin-bottom:16px;color:var(--text);">${t.description}</p>` : ''}
+
+    ${canManage ? `
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px;padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);">
+      <label style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;">Statut :</label>
+      <select class="select" style="width:auto;" onchange="changeStatut('${t.id}',this.value)">
+        ${['nouveau','en_cours','transmis_syndic','attente_intervention','résolu','clos'].map(s =>
+          `<option value="${s}" ${s===t.statut?'selected':''}>${{nouveau:'Nouveau',en_cours:'En cours',transmis_syndic:'Transmis syndic',attente_intervention:'En attente',résolu:'Résolu',clos:'Clos'}[s]}</option>`
+        ).join('')}
+      </select>
+      ${t.note_interne ? `<div style="font-size:12px;background:var(--amber-light);border:1px solid var(--amber-border);border-radius:var(--r-sm);padding:6px 10px;flex:1;"><strong>Note interne :</strong> ${t.note_interne}</div>` : ''}
+    </div>` : ''}
+
+    <div style="margin-top:4px;">
+      <div style="font-family:var(--font-head);font-weight:700;font-size:14px;margin-bottom:12px;">
+        💬 Commentaires (${(comments||[]).length})
+      </div>
+      <div id="comments-list">
+        ${(comments||[]).length === 0
+          ? '<div style="font-size:13px;color:var(--text-3);margin-bottom:12px;">Aucun commentaire pour l\'instant.</div>'
+          : (comments||[]).map(c => `
+            <div class="comment-bubble${c.prive?' private':''}">
+              <div class="cm-head">
+                <span class="cm-author">${[c.profiles?.prenom,c.profiles?.nom].filter(Boolean).join(' ')||'?'}${c.prive?' 🔒':''}</span>
+                <span class="cm-date">${fmt(c.created_at)}</span>
+              </div>
+              <div class="cm-text">${c.texte}</div>
+            </div>`).join('')}
+      </div>
+      <textarea id="new-comment" class="textarea" style="min-height:66px;" placeholder="Ajouter un commentaire..."></textarea>
+      ${canManage ? `
+      <div style="display:flex;gap:6px;margin-top:7px;align-items:center;">
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;color:var(--text-2);">
+          <input type="checkbox" id="comment-prive"> Note interne (non visible copropriétaires)
+        </label>
+      </div>` : ''}
+      <button class="btn btn-secondary btn-sm" style="margin-top:8px;" onclick="submitComment('${t.id}')">Publier</button>
+    </div>
+  `);
+
+  d($('m-detail-footer'), `
+    <button class="btn btn-secondary" onclick="closeModal('m-detail')">Fermer</button>
+    ${(canManage || isAuthor) && t.statut !== 'clos' ? `
+    <button class="btn btn-ghost btn-sm" onclick="deleteTicket('${t.id}')">Supprimer</button>` : ''}
+  `);
+  openModal('m-detail');
+}
+
+async function changeStatut(id, statut) {
+  const { error } = await sb.from('tickets').update({ statut, updated_at: new Date().toISOString() }).eq('id', id);
+  if (error) { toast('Erreur mise à jour', 'err'); return; }
+  const t = cache.tickets.find(x => x.id === id);
+  if (t) t.statut = statut;
+  await addLog('Statut modifié', 'ticket', id, { statut });
+  await sendEmailNotif('statut_change', { ...t, statut });
+  toast('Statut mis à jour', 'ok');
+  updateBadges();
+  // Refresh ticket list if on tickets page
+  if (currentPage === 'tickets') filterTickets();
+  if (currentPage === 'dashboard') renderDashboard();
+}
+
+async function submitComment(ticketId) {
+  const texte = $('new-comment')?.value.trim();
+  if (!texte) return;
+  const prive = $('comment-prive')?.checked || false;
+  const { error } = await sb.from('commentaires').insert({ ticket_id: ticketId, auteur_id: user.id, texte, prive });
+  if (error) { toast('Erreur commentaire', 'err'); return; }
+  const t = cache.tickets.find(x => x.id === ticketId);
+  await addLog('Commentaire', 'ticket', ticketId, { prive });
+  await sendEmailNotif('commentaire', t);
+  toast('Commentaire publié', 'ok');
+  openDetail(ticketId);
+}
+
+async function deleteTicket(id) {
+  if (!confirm('Supprimer ce signalement ?')) return;
+  const { error } = await sb.from('tickets').delete().eq('id', id);
+  if (error) { toast('Erreur suppression', 'err'); return; }
+  cache.tickets = cache.tickets.filter(t => t.id !== id);
+  closeModal('m-detail');
+  toast('Signalement supprimé', 'ok');
+  updateBadges();
+  renderPage(currentPage);
+}
+
+// ── NEW TICKET ──
+function openNewTicket() {
+  setUrgency('normal');
+  ['t-titre','t-desc','t-zone'].forEach(id => { if($(id)) $(id).value = ''; });
+  if($('t-bat')) $('t-bat').value = '';
+  if($('t-cat')) $('t-cat').value = 'autre';
+  $('photo-area').innerHTML = '<div class="photo-icon">📷</div><div class="photo-label">Appuyer pour prendre une photo ou choisir depuis la galerie</div>';
+  $('photo-area').classList.remove('loaded');
+  photoFile = null;
+  openModal('m-ticket');
+}
+
+function setUrgency(u) {
+  urgencySelected = u;
+  ['critique','important','normal'].forEach(x => {
+    const el = $(`urg-${x}`);
+    el.className = `urgency-opt${u===x ? ' sel-'+x : ''}`;
+  });
+}
+
+function handlePhoto(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  photoFile = f;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const area = $('photo-area');
+    area.classList.add('loaded');
+    area.innerHTML = `<img src="${ev.target.result}" alt="Photo"><div style="padding:6px;text-align:center;font-size:11px;color:var(--text-3);">Toucher pour changer</div>`;
+  };
+  reader.readAsDataURL(f);
+}
+
+async function submitTicket() {
+  const titre = $('t-titre')?.value.trim();
+  const batiment = $('t-bat')?.value;
+  if (!titre) { toast('Le titre est obligatoire', 'err'); return; }
+  if (!batiment) { toast('Choisissez un bâtiment', 'err'); return; }
+
+  const btn = $('submit-ticket-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Envoi...';
+
+  let photo_url = null;
+  if (photoFile) {
+    const ext = photoFile.name.split('.').pop();
+    const path = `${user.id}/${Date.now()}.${ext}`;
+    const { data: upData, error: upErr } = await sb.storage.from('tickets').upload(path, photoFile, { upsert: true });
+    if (!upErr) {
+      const { data: urlData } = sb.storage.from('tickets').getPublicUrl(path);
+      photo_url = urlData?.publicUrl;
+    }
+  }
+
+  const ticket = {
+    titre,
+    batiment,
+    zone: $('t-zone')?.value || null,
+    urgence: urgencySelected,
+    categorie: $('t-cat')?.value || 'autre',
+    description: $('t-desc')?.value || null,
+    auteur_id: user.id,
+    photo_url,
+    statut: 'nouveau',
+  };
+
+  const { data, error } = await sb.from('tickets').insert(ticket).select().single();
+  btn.disabled = false;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>Créer le signalement';
+
+  if (error) { toast('Erreur: ' + error.message, 'err'); return; }
+
+  await addLog('Ticket créé', 'ticket', data.id, { titre, urgence: urgencySelected });
+  await sendEmailNotif(urgencySelected === 'critique' ? 'ticket_critique' : 'nouveau_ticket', {
+    ...data,
+    auteur_nom: [profile?.prenom, profile?.nom].filter(Boolean).join(' ') || user.email
+  });
+
+  // Reload and update cache
+  await loadTickets();
+  updateBadges();
+  closeModal('m-ticket');
+  toast('Signalement créé avec succès', 'ok');
+  if (currentPage === 'tickets') renderTickets();
+  if (currentPage === 'dashboard') renderDashboard();
+}
+
+// ── MAP ──
+function renderMapPage() {
+  $('page').innerHTML = `
+  <div style="padding:24px;">
+    <div class="ph"><h1>Carte des signalements</h1><p>${cache.tickets.length} signalement(s) géolocalisé(s)</p></div>
+    <div id="map" style="margin-bottom:16px;"></div>
+    <div class="card">
+      <div class="card-body" style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
+        <span style="font-size:12px;font-weight:600;color:var(--text-2);">Légende :</span>
+        ${[['#dc2626','Critique'],['#ea580c','Important'],['#2563eb','Normal'],['#16a34a','Résolu']].map(([c,l])=>
+          `<span style="display:flex;align-items:center;gap:5px;font-size:13px;">
+            <span style="width:10px;height:10px;border-radius:50%;background:${c};display:inline-block;"></span>${l}
+          </span>`
+        ).join('')}
+        <div style="margin-left:auto;font-size:12px;color:var(--text-3);">Cliquer sur un marqueur pour voir les détails</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function initMap() {
+  if (!$('map')) return;
+  if (mapInstance) { mapInstance.remove(); mapInstance = null; }
+
+  mapInstance = L.map('map').setView([48.8566, 2.352], 15);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap', maxZoom: 19
+  }).addTo(mapInstance);
+
+  mapMarkers = [];
+  cache.tickets.forEach(t => {
+    const lat = t.lat || (48.856 + (Math.random() - 0.5) * 0.008);
+    const lng = t.lng || (2.352 + (Math.random() - 0.5) * 0.008);
+    const c = t.statut === 'résolu' || t.statut === 'clos' ? '#16a34a' :
+              t.urgence === 'critique' ? '#dc2626' :
+              t.urgence === 'important' ? '#ea580c' : '#2563eb';
+
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="width:14px;height:14px;border-radius:50%;background:${c};border:2.5px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3);"></div>`,
+      iconSize: [14,14], iconAnchor: [7,7]
+    });
+    const m = L.marker([lat, lng], { icon }).addTo(mapInstance);
+    m.bindPopup(`
+      <div style="min-width:190px;font-family:var(--font-body);">
+        <div style="font-weight:700;margin-bottom:5px;">${t.titre}</div>
+        <div style="font-size:12px;color:#666;margin-bottom:8px;">📍 ${t.batiment||''}${t.zone?' · '+t.zone:''}</div>
+        <button onclick="openDetail('${t.id}')"
+          style="width:100%;background:${c};color:white;border:none;padding:6px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">
+          Voir le signalement
+        </button>
+      </div>
+    `);
+    mapMarkers.push(m);
+  });
+  setTimeout(() => mapInstance.invalidateSize(), 150);
+}
+
+// ── CONTRATS ──
+function renderContrats() {
+  $('page').innerHTML = `
+  <div style="padding:24px;">
+    <div class="ph"><h1>Contrats fournisseurs</h1><p>${cache.contrats.length} contrat(s)</p></div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+      <button class="btn btn-primary" onclick="openModal('m-contrat')">+ Ajouter un contrat</button>
+    </div>
+    <div class="card">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Fournisseur</th><th>Type</th><th>Début</th><th>Échéance</th><th>Délai</th><th>Montant/an</th><th>Contact</th></tr></thead>
+          <tbody>
+            ${cache.contrats.length === 0 ? '<tr><td colspan="7"><div class="empty"><div class="empty-ico">📄</div><div class="empty-txt">Aucun contrat enregistré</div></div></td></tr>' :
+              cache.contrats.map(c => {
+                const days = daysUntil(c.date_echeance);
+                const cls = days < 0 ? 'expired' : days <= 90 ? 'expiring' : '';
+                const dl = days < 0
+                  ? `<span style="color:var(--red);font-weight:700;">Expiré (${-days}j)</span>`
+                  : days <= 30 ? `<span style="color:var(--red);font-weight:700;">${days} jours ⚠️</span>`
+                  : days <= 90 ? `<span style="color:var(--amber);font-weight:700;">${days} jours</span>`
+                  : `<span style="color:var(--green);">${days} jours</span>`;
+                return `<tr class="${cls}">
+                  <td><div style="font-weight:600;">${c.fournisseur}</div>${c.notes?`<div style="font-size:11px;color:var(--text-3);">${c.notes.substring(0,50)}...</div>`:''}</td>
+                  <td><span class="badge badge-normal">${c.type_contrat}</span></td>
+                  <td style="font-size:12px;">${fmtD(c.date_debut)}</td>
+                  <td style="font-size:12px;">${fmtD(c.date_echeance)}</td>
+                  <td>${dl}</td>
+                  <td style="font-size:13px;">${c.montant_annuel ? c.montant_annuel.toLocaleString('fr-FR')+'€' : '—'}</td>
+                  <td style="font-size:12px;color:var(--text-2);">${c.contact_nom||''} ${c.contact_tel||''}</td>
+                </tr>`;
+              }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function submitContrat() {
+  const four = $('c-four')?.value.trim();
+  const ech = $('c-ech')?.value;
+  if (!four || !ech) { toast('Fournisseur et échéance requis', 'err'); return; }
+  const { data, error } = await sb.from('contrats').insert({
+    fournisseur: four,
+    type_contrat: $('c-type')?.value,
+    date_debut: $('c-deb')?.value || null,
+    date_echeance: ech,
+    contact_nom: $('c-cont')?.value || null,
+    montant_annuel: parseFloat($('c-mont')?.value) || null,
+    notes: $('c-notes')?.value || null,
+    created_by: user.id
+  }).select().single();
+  if (error) { toast('Erreur: ' + error.message, 'err'); return; }
+  await addLog('Contrat ajouté', 'contrat', data.id, { fournisseur: four });
+  await loadContrats();
+  closeModal('m-contrat');
+  toast('Contrat enregistré', 'ok');
+  updateBadges();
+  renderContrats();
+}
+
+// ── CLÉS ──
+function renderCles() {
+  $('page').innerHTML = `
+  <div style="padding:24px;">
+    <div class="ph"><h1>Gestion des clés</h1><p>${cache.cles.filter(c=>c.statut==='sortie').length} clé(s) sortie(s) sur ${cache.cles.length}</p></div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+      ${isManager() ? `<button class="btn btn-primary" onclick="openModal('m-cle')">+ Ajouter une clé</button>` : ''}
+    </div>
+    <div class="keys-grid">
+      ${cache.cles.length === 0 ? '<div class="empty"><div class="empty-ico">🔑</div><div class="empty-txt">Aucune clé enregistrée</div></div>' :
+        cache.cles.map(c => `
+          <div class="key-card">
+            <div class="key-ic">🔑</div>
+            <div style="flex:1;">
+              <div class="key-nm">${c.nom}</div>
+              <div class="key-inf">${c.statut==='sortie' ? `<strong>Chez : ${c.detenteur_nom||'?'}</strong>` : '<span style="color:var(--green);">Disponible</span>'}</div>
+              ${c.date_sortie ? `<div style="font-size:11px;color:var(--text-3);margin-top:3px;">Depuis le ${fmtD(c.date_sortie)}</div>` : ''}
+              ${c.notes ? `<div style="font-size:11px;color:var(--text-3);margin-top:3px;">${c.notes}</div>` : ''}
+              ${isManager() ? `
+              <button class="btn btn-xs" style="margin-top:8px;${c.statut==='sortie'?'background:var(--green-light);color:var(--green);border-color:var(--green-border);':'background:var(--orange-light);color:var(--orange);border-color:var(--orange-border);'}" onclick="moveCle('${c.id}','${c.statut}')">
+                ${c.statut==='sortie' ? '✓ Marquer rendue' : '→ Sortir la clé'}
+              </button>` : ''}
+            </div>
+            <span class="key-tag ${c.statut==='disponible'?'key-ok':'key-out'}">${c.statut==='disponible'?'Dispo':'Sortie'}</span>
+          </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+async function submitCle() {
+  const nom = $('k-nom')?.value.trim();
+  if (!nom) { toast('Nom obligatoire', 'err'); return; }
+  const det = $('k-det')?.value.trim() || null;
+  const { error } = await sb.from('cles').insert({
+    nom, detenteur_nom: det,
+    date_sortie: det ? ($('k-date')?.value || new Date().toISOString()) : null,
+    statut: det ? 'sortie' : 'disponible',
+    notes: $('k-notes')?.value || null,
+    created_by: user.id
+  });
+  if (error) { toast('Erreur: ' + error.message, 'err'); return; }
+  await addLog('Clé ajoutée', 'cle', null, { nom });
+  await loadCles();
+  closeModal('m-cle');
+  toast('Clé enregistrée', 'ok');
+  renderCles();
+}
+
+async function moveCle(id, statut) {
+  const cle = cache.cles.find(c => c.id === id);
+  if (!cle) return;
+  if (statut === 'sortie') {
+    await sb.from('cles').update({ statut: 'disponible', detenteur_nom: null, date_sortie: null }).eq('id', id);
+    await sb.from('cles_historique').insert({ cle_id: id, action: 'retour', personne_nom: cle.detenteur_nom, created_by: user.id });
+    await addLog('Retour de clé', 'cle', id, { cle: cle.nom });
+    toast('Clé marquée comme rendue', 'ok');
+  } else {
+    const det = prompt('Nom du destinataire :');
+    if (!det) return;
+    await sb.from('cles').update({ statut: 'sortie', detenteur_nom: det, date_sortie: new Date().toISOString() }).eq('id', id);
+    await sb.from('cles_historique').insert({ cle_id: id, action: 'sortie', personne_nom: det, created_by: user.id });
+    await addLog('Sortie de clé', 'cle', id, { cle: cle.nom, personne: det });
+    toast(`Clé remise à ${det}`, 'ok');
+  }
+  await loadCles();
+  renderCles();
+}
+
+// ── JOURNAL ──
+function renderJournal() {
+  $('page').innerHTML = `
+  <div style="padding:24px;">
+    <div class="ph"><h1>Journal d'activité</h1><p>Historique immuable de toutes les actions</p></div>
+    <div class="card">
+      <div class="card-body">
+        ${cache.journal.length === 0 ? '<div class="empty"><div class="empty-ico">📋</div><div class="empty-txt">Aucune entrée</div></div>' :
+          cache.journal.map(j => `
+            <div class="journal-line">
+              <div class="jdot" style="background:${j.action.includes('créé')||j.action.includes('ajouté')?'var(--green)':j.action.includes('supprimé')?'var(--red)':j.action.includes('modifié')||j.action.includes('Statut')?'var(--amber)':'var(--accent)'}"></div>
+              <div style="min-width:120px;flex-shrink:0;">
+                <div class="jtime">${fmt(j.created_at)}</div>
+              </div>
+              <div>
+                <div class="jact">${j.action}${j.details?.titre?' — '+j.details.titre:j.details?.nom?' — '+j.details.nom:''}</div>
+                <div class="juser">${j.user_nom || 'Système'}</div>
+              </div>
+            </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── USERS ──
+async function renderUsers() {
+  const { data: users } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
+  const roleL = { administrateur:'Administrateur', syndic:'Syndic', membre_cs:'Conseil Syndical', 'copropriétaire':'Copropriétaire' };
+
+  $('page').innerHTML = `
+  <div style="padding:24px;">
+    <div class="ph"><h1>Utilisateurs</h1><p>${(users||[]).length} compte(s) enregistré(s)</p></div>
+    <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
+      <button class="btn btn-primary" onclick="openModal('m-invite')">+ Inviter un utilisateur</button>
+    </div>
+    <div class="card">
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Utilisateur</th><th>Rôle</th><th>Lot</th><th>Email</th><th>Inscrit le</th><th></th></tr></thead>
+          <tbody>
+            ${(users||[]).map(u => `
+              <tr>
+                <td>
+                  <div style="display:flex;align-items:center;gap:10px;">
+                    <div class="user-av ${['administrateur','syndic','membre_cs'].includes(u.role)?'role-'+u.role:''}" style="width:30px;height:30px;font-size:12px;">
+                      ${(u.prenom||u.nom||u.email).charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <div style="font-weight:600;">${[u.prenom,u.nom].filter(Boolean).join(' ')||u.email}</div>
+                      <div style="font-size:11px;color:var(--text-3);">${u.actif?'Actif':'Inactif'}</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="role-pill role-${u.role}">${roleL[u.role]||u.role}</span></td>
+                <td style="font-size:13px;">${u.lot||'—'}</td>
+                <td style="font-size:12px;color:var(--text-2);">${u.email}</td>
+                <td style="font-size:12px;color:var(--text-3);">${fmtD(u.created_at)}</td>
+                <td>
+                  ${u.id !== user.id && isAdmin() ? `
+                  <select class="select" style="font-size:12px;padding:4px 8px;width:auto;" onchange="changeRole('${u.id}',this.value)">
+                    ${['copropriétaire','membre_cs','syndic','administrateur'].map(r=>
+                      `<option value="${r}" ${r===u.role?'selected':''}>${roleL[r]}</option>`
+                    ).join('')}
+                  </select>` : ''}
+                </td>
+              </tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function changeRole(userId, newRole) {
+  const { error } = await sb.from('profiles').update({ role: newRole }).eq('id', userId);
+  if (error) { toast('Erreur modification rôle', 'err'); return; }
+  await addLog('Rôle modifié', 'user', userId, { newRole });
+  toast('Rôle mis à jour', 'ok');
+}
+
+async function submitInvite() {
+  const email = $('inv-email')?.value.trim();
+  if (!email) { toast('Email requis', 'err'); return; }
+  const nom = $('inv-nom')?.value.trim();
+  const prenom = $('inv-prenom')?.value.trim();
+  const role = $('inv-role')?.value;
+  const lot = $('inv-lot')?.value.trim();
+
+  $('inv-btn').disabled = true;
+  $('inv-btn').textContent = 'Envoi...';
+
+  // Invite via Supabase Auth (sends magic link)
+  const { error } = await sb.auth.admin?.inviteUserByEmail
+    ? await sb.auth.admin.inviteUserByEmail(email, { data: { nom, prenom, role, lot } })
+    : { error: null }; // fallback: just create the profile pre-registered
+
+  // Store pending profile
+  await sb.from('profiles').upsert({
+    id: crypto.randomUUID(), email, nom: nom || email.split('@')[0],
+    prenom, role, lot, actif: false
+  }, { onConflict: 'email' });
+
+  await addLog('Invitation envoyée', 'user', null, { email, role });
+  $('inv-btn').disabled = false;
+  $('inv-btn').textContent = 'Envoyer l\'invitation';
+  closeModal('m-invite');
+  toast(`Invitation envoyée à ${email}`, 'ok');
+}
+
+// ── NOTIFICATIONS ──
+async function renderNotifications() {
+  const { data } = await sb.from('notifications')
+    .select('*').eq('destinataire_id', user.id).order('created_at', { ascending: false }).limit(50);
+
+  $('page').innerHTML = `
+  <div style="padding:24px;">
+    <div class="ph"><h1>Notifications</h1></div>
+    ${(data||[]).length === 0 ? '<div class="empty"><div class="empty-ico">🔔</div><div class="empty-txt">Aucune notification</div></div>' :
+      `<div class="card"><div class="card-body">
+        ${(data||[]).map(n => `
+          <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);${!n.lu?'font-weight:500;':''}" onclick="markRead('${n.id}')">
+            <div style="width:36px;height:36px;border-radius:50%;background:${n.type?.includes('critique')?'var(--red-light)':n.type?.includes('comment')?'var(--blue-light)':'var(--bg)'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              ${n.type?.includes('critique')?'🔴':n.type?.includes('comment')?'💬':'📋'}
+            </div>
+            <div style="flex:1;">
+              <div style="font-size:13px;">${n.sujet}</div>
+              <div style="font-size:11px;color:var(--text-3);margin-top:2px;">${fmt(n.created_at)}</div>
+            </div>
+            ${!n.lu ? '<div style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;margin-top:5px;"></div>' : ''}
+          </div>`).join('')}
+      </div></div>`}
+  </div>`;
+}
+
+async function markRead(id) {
+  await sb.from('notifications').update({ lu: true }).eq('id', id);
+  $('notif-dot').classList.remove('visible');
+}
+
+// ── PROFILE ──
+function renderProfile() {
+  $('page').innerHTML = `
+  <div style="padding:24px;max-width:480px;">
+    <div class="ph"><h1>Mon profil</h1></div>
+    <div class="card">
+      <div class="card-body">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);">
+          <div class="user-av" style="width:52px;height:52px;font-size:20px;">${(profile?.nom||profile?.email||'?').charAt(0).toUpperCase()}</div>
+          <div>
+            <div style="font-family:var(--font-head);font-size:18px;font-weight:700;">${[profile?.prenom,profile?.nom].filter(Boolean).join(' ')||user.email}</div>
+            <span class="role-pill role-${profile?.role}">${{administrateur:'Administrateur',syndic:'Syndic',membre_cs:'Conseil Syndical','copropriétaire':'Copropriétaire'}[profile?.role]||profile?.role}</span>
+          </div>
+        </div>
+        <div class="fg"><label class="label">Prénom</label><input type="text" id="p-prenom" class="input" value="${profile?.prenom||''}"></div>
+        <div class="fg"><label class="label">Nom</label><input type="text" id="p-nom" class="input" value="${profile?.nom||''}"></div>
+        <div class="fg"><label class="label">Téléphone</label><input type="text" id="p-tel" class="input" value="${profile?.telephone||''}" placeholder="+33 6 ..."></div>
+        <div class="fg"><label class="label">Email</label><input type="email" class="input" value="${user.email}" disabled style="opacity:.6;"></div>
+        ${profile?.lot ? `<div class="fg"><label class="label">Lot</label><input type="text" class="input" value="${profile.lot}" disabled style="opacity:.6;"></div>` : ''}
+        <button class="btn btn-primary" onclick="saveProfile()">Enregistrer</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+async function saveProfile() {
+  const { error } = await sb.from('profiles').update({
+    prenom: $('p-prenom')?.value.trim() || null,
+    nom: $('p-nom')?.value.trim() || profile?.nom,
+    telephone: $('p-tel')?.value.trim() || null,
+  }).eq('id', user.id);
+  if (error) { toast('Erreur sauvegarde', 'err'); return; }
+  await loadProfile();
+  initUI();
+  toast('Profil mis à jour', 'ok');
+}
+
+// ── RAPPORT ──
+function renderRapport() {
+  const t = cache.tickets;
+  const ouverts = t.filter(x => x.statut !== 'résolu' && x.statut !== 'clos');
+  const critiques = ouverts.filter(x => x.urgence === 'critique');
+  const resolus = t.filter(x => x.statut === 'résolu' || x.statut === 'clos');
+  const today = new Date().toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
+
+  $('page').innerHTML = `
+  <div style="padding:24px;" id="rapport-page">
+    <div class="ph"><h1>Rapport syndic</h1><p>Document de synthèse à transmettre</p></div>
+    <div style="display:flex;gap:10px;margin-bottom:20px;" class="no-print">
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Imprimer / PDF</button>
+      <button class="btn btn-secondary" onclick="exportCSV()">📊 Export CSV</button>
+      <span style="margin-left:auto;font-size:12px;color:var(--text-3);">Généré le ${today}</span>
+    </div>
+    <div class="rapport-summary">
+      <div style="font-family:var(--font-head);font-size:20px;font-weight:800;margin-bottom:4px;">RAPPORT DE SITUATION</div>
+      <div style="font-size:13px;color:var(--text-2);">Établi le ${today} par ${[profile?.prenom,profile?.nom].filter(Boolean).join(' ')||user.email}</div>
+    </div>
+    <div class="stats-row" style="margin-bottom:22px;">
+      <div class="stat red" style="pointer-events:none;"><div class="stat-num">${critiques.length}</div><div class="stat-label">Critiques</div></div>
+      <div class="stat orange" style="pointer-events:none;"><div class="stat-num">${ouverts.length}</div><div class="stat-label">Ouverts</div></div>
+      <div class="stat green" style="pointer-events:none;"><div class="stat-num">${resolus.length}</div><div class="stat-label">Résolus</div></div>
+      <div class="stat blue" style="pointer-events:none;"><div class="stat-num">${t.length}</div><div class="stat-label">Total</div></div>
+    </div>
+    ${critiques.length > 0 ? `
+    <div class="card" style="margin-bottom:18px;border-color:var(--red-border);">
+      <div class="card-header" style="background:var(--red-light);"><span class="card-title" style="color:var(--red);">🔴 Signalements critiques</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Titre</th><th>Bâtiment</th><th>Statut</th><th>Date</th></tr></thead>
+          <tbody>${critiques.map(c=>`<tr><td style="font-weight:600;">${c.titre}</td><td>${c.batiment||'—'}</td><td>${badgeStatut(c.statut)}</td><td>${fmtD(c.created_at)}</td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>` : ''}
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-header"><span class="card-title">📋 Tous les signalements ouverts</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Titre</th><th>Urgence</th><th>Statut</th><th>Bâtiment</th><th>Date</th></tr></thead>
+          <tbody>${ouverts.map(t=>`<tr><td style="font-size:11px;color:var(--text-3);">${t.reference||''}</td><td>${t.titre}</td><td>${badgeUrgence(t.urgence)}</td><td>${badgeStatut(t.statut)}</td><td>${t.batiment||'—'}</td><td style="white-space:nowrap;">${fmtD(t.created_at)}</td></tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>
+    ${isManager() && cache.contrats.length > 0 ? `
+    <div class="card">
+      <div class="card-header"><span class="card-title">📄 Contrats fournisseurs</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Fournisseur</th><th>Type</th><th>Échéance</th><th>Délai</th></tr></thead>
+          <tbody>${cache.contrats.map(c=>{const d=daysUntil(c.date_echeance);return`<tr><td>${c.fournisseur}</td><td>${c.type_contrat}</td><td>${fmtD(c.date_echeance)}</td><td style="color:${d<0?'var(--red)':d<=90?'var(--amber)':'var(--green)'};font-weight:600;">${d<0?'Expiré':d+'j'}</td></tr>`}).join('')}</tbody>
+        </table>
+      </div>
+    </div>` : ''}
+  </div>`;
+}
+
+function exportCSV() {
+  const h = ['ID','Titre','Bâtiment','Zone','Urgence','Statut','Catégorie','Auteur','Date'];
+  const rows = cache.tickets.map(t => [t.reference||t.id.substring(0,8), `"${t.titre}"`, t.batiment||'', t.zone||'', t.urgence, t.statut, t.categorie||'', [t.auteur_prenom,t.auteur_nom].filter(Boolean).join(' ')||'', fmtD(t.created_at)]);
+  const csv = [h, ...rows].map(r => r.join(';')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv], { type:'text/csv;charset=utf-8' }));
+  a.download = `coprosync_${new Date().toISOString().split('T')[0]}.csv`;
+  a.click();
+  toast('Export CSV téléchargé', 'ok');
+}
+
+// ── PWA / SERVICE WORKER ──
+function registerSW() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  }
+  // Install prompt
+  let deferredPrompt;
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Show install banner after 30s if not installed
+    setTimeout(() => {
+      if (deferredPrompt) {
+        toast('📱 Installez l\'app pour un accès rapide depuis votre téléphone', 'warn');
+      }
+    }, 30000);
+  });
+}
+
+// Enter key on login
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && $('login-screen')?.style.display !== 'none') doAuth();
+});
+</script>
+</body>
+</html>
