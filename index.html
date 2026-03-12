@@ -1096,44 +1096,35 @@ function toggleAuthMode(e) {
 }
 
 async function doAuth() {
-  const email = $('auth-email').value.trim();
-  const pass = $('auth-pass').value.trim();
+  const email = $('auth-email')?.value.trim();
+  const pass  = $('auth-pass')?.value.trim();
   if (!email || !pass) { showAuthError('Email et mot de passe requis'); return; }
+
   $('auth-btn').disabled = true;
   $('auth-btn-text').textContent = '...';
   $('auth-error').style.display = 'none';
 
-  const resetBtn = () => {
-    $('auth-btn').disabled = false;
-    $('auth-btn-text').textContent = _authMode === 'login' ? 'Se connecter' : 'Créer mon compte';
-  };
-
   if (_authMode === 'login') {
-    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
-
+    const { error } = await sb.auth.signInWithPassword({ email, password: pass });
     if (error) {
-      const msg = {
+      const msgs = {
         'Invalid login credentials': 'Email ou mot de passe incorrect.',
-        'Email not confirmed': 'Email non confirmé — vérifiez votre boîte mail (et les spams).',
-        'Too many requests': 'Trop de tentatives, attendez quelques minutes.',
-      }[error.message] || error.message;
-      showAuthError(msg);
-      resetBtn();
-      return;
+        'Email not confirmed':        'Email non confirmé — vérifiez vos spams.',
+        'Too many requests':          'Trop de tentatives, attendez quelques minutes.',
+      };
+      showAuthError(msgs[error.message] || error.message);
+      $('auth-btn').disabled = false;
+      $('auth-btn-text').textContent = 'Se connecter';
     }
-
-    if (data?.session && data?.user) {
-      user = data.user;
-      await loadProfile();
-      await bootApp();
-    }
+    // Succès → onAuthStateChange prend le relais automatiquement
 
   } else {
     const { error } = await sb.auth.signUp({ email, password: pass });
-    if (error) { showAuthError(error.message); resetBtn(); return; }
-    $('auth-error').style.color = 'var(--green, #16a34a)';
-    showAuthError('✅ Compte créé — confirmez votre email avant de vous connecter.');
-    resetBtn();
+    $('auth-btn').disabled = false;
+    $('auth-btn-text').textContent = 'Créer mon compte';
+    if (error) { showAuthError(error.message); return; }
+    $('auth-error').style.color = '#16a34a';
+    showAuthError('✅ Compte créé ! Vérifiez votre email puis connectez-vous.');
   }
 }
 
@@ -1161,17 +1152,10 @@ async function doLogout() {
 // ── INIT ──
 sb.auth.onAuthStateChange(async (event, session) => {
   if (session?.user) {
+    if (event === 'SIGNED_OUT') return;
     user = session.user;
     await loadProfile();
-    if (!profile) {
-      // Profil pas encore créé (race condition après signup)
-      setTimeout(async () => {
-        await loadProfile();
-        if (profile) bootApp();
-      }, 1500);
-      return;
-    }
-    bootApp();
+    await bootApp();
   } else {
     $('login-screen').style.display = 'flex';
     $('app').style.display = 'none';
@@ -1179,7 +1163,10 @@ sb.auth.onAuthStateChange(async (event, session) => {
   }
 });
 
+let _booting = false;
 async function bootApp() {
+  if (_booting) return;
+  _booting = true;
   try {
     $('login-screen').style.display = 'none';
     $('app').style.display = 'flex';
@@ -1189,7 +1176,13 @@ async function bootApp() {
     registerSW();
   } catch(e) {
     console.error('bootApp error:', e);
-    toast('Erreur au chargement : ' + e.message, 'err');
+    showAuthError('Erreur au chargement : ' + e.message);
+    $('login-screen').style.display = 'flex';
+    $('app').style.display = 'none';
+  } finally {
+    _booting = false;
+    $('auth-btn').disabled = false;
+    $('auth-btn-text').textContent = 'Se connecter';
   }
 }
 
