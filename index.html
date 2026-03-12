@@ -951,7 +951,7 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const COPRO = {
   nom: 'Résidence le Floréal',
   adresse: '13-19 Rue du Moucherotte, 38360 Sassenage',
-  lat: 45.2058, lng: 5.6780,  // coordonnées Sassenage
+  lat: 45.20230, lng: 5.67620,  // centre résidence le Floréal
   tours: ['Tour 13','Tour 15','Tour 17','Tour 19'],
   etages: 15,
   // Zones contextuelles par catégorie de signalement
@@ -1007,17 +1007,17 @@ const COPRO = {
   ],
 };
 
-// Coordonnées approx de chaque tour (à affiner)
+// Coordonnées précises — Résidence le Floréal, Sassenage
 const TOUR_COORDS = {
-  'Tour 13': [45.2060, 5.6775],
-  'Tour 15': [45.2060, 5.6778],
-  'Tour 17': [45.2060, 5.6781],
-  'Tour 19': [45.2060, 5.6784],
-  'Parking visiteurs': [45.2055, 5.6778],
-  'Parking privé': [45.2055, 5.6781],
-  'Garages': [45.2053, 5.6780],
-  'Aire de jeux': [45.2057, 5.6776],
-  'Portails / portillons': [45.2062, 5.6778],
+  'Tour 13': [45.20185, 5.67640],  // Tour sud (bas de la carte)
+  'Tour 15': [45.20215, 5.67620],  // Tour centre-sud
+  'Tour 17': [45.20245, 5.67605],  // Tour centre-nord
+  'Tour 19': [45.20275, 5.67590],  // Tour nord (haut de la carte)
+  'Parking visiteurs': [45.20200, 5.67660],
+  'Parking privé':     [45.20220, 5.67650],
+  'Garages':           [45.20190, 5.67670],
+  'Aire de jeux':      [45.20230, 5.67580],
+  'Portails / portillons': [45.20180, 5.67630],
 };
 
 const { createClient } = supabase;
@@ -1195,13 +1195,15 @@ async function startApp() {
 async function loadProfile() {
   console.log('[loadProfile] start, user.id=', user?.id);
   try {
-    const { data, error } = await sb.from('profiles').select('*').eq('id', user.id).single();
+    // Timeout de sécurité 5s
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000));
+    const query = sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+    const { data, error } = await Promise.race([query, timeout]);
     console.log('[loadProfile] data=', data, 'error=', error);
-    if (error && error.code !== 'PGRST116') console.warn('[loadProfile] err:', error.message);
     profile = data || { id: user.id, email: user.email, nom: user.email.split('@')[0], role: 'copropriétaire' };
     console.log('[loadProfile] role =', profile.role);
   } catch(e) {
-    console.error('[loadProfile] CRASH:', e);
+    console.error('[loadProfile] CRASH/TIMEOUT:', e.message);
     profile = { id: user.id, email: user.email, nom: user.email.split('@')[0], role: 'copropriétaire' };
   }
 }
@@ -1897,7 +1899,7 @@ function initMap() {
   if (!$('map')) return;
   if (mapInstance) { mapInstance.remove(); mapInstance = null; }
 
-  mapInstance = L.map('map').setView([COPRO.lat, COPRO.lng], 18);
+  mapInstance = L.map('map').setView([COPRO.lat, COPRO.lng], 19);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap', maxZoom: 19
   }).addTo(mapInstance);
