@@ -951,7 +951,7 @@ const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsI
 const COPRO = {
   nom: 'Résidence le Floréal',
   adresse: '13-19 Rue du Moucherotte, 38360 Sassenage',
-  lat: 45.20230, lng: 5.67620,  // centre résidence le Floréal
+  lat: 45.20313, lng: 5.66341,  // centre résidence — source coordonneesgps.net
   tours: ['Tour 13','Tour 15','Tour 17','Tour 19'],
   etages: 15,
   // Zones contextuelles par catégorie de signalement
@@ -1007,17 +1007,20 @@ const COPRO = {
   ],
 };
 
-// Coordonnées précises — Résidence le Floréal, Sassenage
+// Coordonnées précises — Résidence le Floréal, Sassenage (WGS84)
+// Centre résidence relevé : N 45.20313 E 5.66341
+// Les 4 tours sont alignées NE→SW le long de la rue du Moucherotte
+// Tour 13 = sud, Tour 19 = nord, espacement ~25m entre tours
 const TOUR_COORDS = {
-  'Tour 13': [45.20185, 5.67640],  // Tour sud (bas de la carte)
-  'Tour 15': [45.20215, 5.67620],  // Tour centre-sud
-  'Tour 17': [45.20245, 5.67605],  // Tour centre-nord
-  'Tour 19': [45.20275, 5.67590],  // Tour nord (haut de la carte)
-  'Parking visiteurs': [45.20200, 5.67660],
-  'Parking privé':     [45.20220, 5.67650],
-  'Garages':           [45.20190, 5.67670],
-  'Aire de jeux':      [45.20230, 5.67580],
-  'Portails / portillons': [45.20180, 5.67630],
+  'Tour 13': [45.20268, 5.66375],  // sud — numéro 13 rue du Moucherotte
+  'Tour 15': [45.20295, 5.66355],  // centre-sud
+  'Tour 17': [45.20320, 5.66335],  // centre-nord (proche du centre relevé)
+  'Tour 19': [45.20348, 5.66315],  // nord — numéro 19 rue du Moucherotte
+  'Parking visiteurs': [45.20290, 5.66400],
+  'Parking privé':     [45.20310, 5.66415],
+  'Garages':           [45.20270, 5.66420],
+  'Aire de jeux':      [45.20300, 5.66290],
+  'Portails / portillons': [45.20260, 5.66360],
 };
 
 const { createClient } = supabase;
