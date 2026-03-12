@@ -1159,6 +1159,11 @@ sb.auth.onAuthStateChange(async (event, session) => {
     user = null; profile = null;
     return;
   }
+  // Reset bouton dans tous les cas
+  $('auth-btn').disabled = false;
+  $('auth-btn-text').textContent = 'Se connecter';
+
+  if (_appStarted) { console.log('[auth] already started, skip'); return; }
   user = session.user;
   await loadProfile();
   await startApp();
@@ -1188,10 +1193,17 @@ async function startApp() {
 }
 
 async function loadProfile() {
-  const { data, error } = await sb.from('profiles').select('*').eq('id', user.id).single();
-  if (error && error.code !== 'PGRST116') console.warn('[loadProfile]', error.message);
-  profile = data || { id: user.id, email: user.email, nom: user.email.split('@')[0], role: 'copropriétaire' };
-  console.log('[loadProfile] role =', profile.role);
+  console.log('[loadProfile] start, user.id=', user?.id);
+  try {
+    const { data, error } = await sb.from('profiles').select('*').eq('id', user.id).single();
+    console.log('[loadProfile] data=', data, 'error=', error);
+    if (error && error.code !== 'PGRST116') console.warn('[loadProfile] err:', error.message);
+    profile = data || { id: user.id, email: user.email, nom: user.email.split('@')[0], role: 'copropriétaire' };
+    console.log('[loadProfile] role =', profile.role);
+  } catch(e) {
+    console.error('[loadProfile] CRASH:', e);
+    profile = { id: user.id, email: user.email, nom: user.email.split('@')[0], role: 'copropriétaire' };
+  }
 }
 
 function initUI() {
