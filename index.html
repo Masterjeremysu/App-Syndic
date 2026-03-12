@@ -1151,22 +1151,26 @@ async function doLogout() {
 
 // ── INIT ──
 sb.auth.onAuthStateChange(async (event, session) => {
-  if (session?.user) {
-    if (event === 'SIGNED_OUT') return;
-    user = session.user;
-    await loadProfile();
-    await bootApp();
-  } else {
+  console.log('[auth]', event, !!session?.user);
+  if (!session?.user || event === 'SIGNED_OUT') {
+    _appStarted = false;
     $('login-screen').style.display = 'flex';
     $('app').style.display = 'none';
     user = null; profile = null;
+    return;
   }
+  user = session.user;
+  await loadProfile();
+  await startApp();
 });
 
-let _booting = false;
-async function bootApp() {
-  if (_booting) return;
-  _booting = true;
+let _appStarted = false;
+async function startApp() {
+  if (_appStarted) return;
+  _appStarted = true;
+  console.log('[startApp] role:', profile?.role);
+  $('auth-btn').disabled = false;
+  $('auth-btn-text').textContent = 'Se connecter';
   try {
     $('login-screen').style.display = 'none';
     $('app').style.display = 'flex';
@@ -1175,23 +1179,19 @@ async function bootApp() {
     nav('dashboard');
     registerSW();
   } catch(e) {
-    console.error('bootApp error:', e);
-    showAuthError('Erreur au chargement : ' + e.message);
+    console.error('[startApp] ERREUR:', e);
+    alert('Erreur démarrage : ' + e.message);
+    _appStarted = false;
     $('login-screen').style.display = 'flex';
     $('app').style.display = 'none';
-  } finally {
-    _booting = false;
-    $('auth-btn').disabled = false;
-    $('auth-btn-text').textContent = 'Se connecter';
   }
 }
 
 async function loadProfile() {
-  // Refresh la session pour que le JWT reflète les dernières données auth
-  try { await sb.auth.refreshSession(); } catch(_) {}
   const { data, error } = await sb.from('profiles').select('*').eq('id', user.id).single();
-  if (error && error.code !== 'PGRST116') console.warn('loadProfile:', error.message);
+  if (error && error.code !== 'PGRST116') console.warn('[loadProfile]', error.message);
   profile = data || { id: user.id, email: user.email, nom: user.email.split('@')[0], role: 'copropriétaire' };
+  console.log('[loadProfile] role =', profile.role);
 }
 
 function initUI() {
