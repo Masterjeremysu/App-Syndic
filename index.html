@@ -332,6 +332,16 @@ tbody tr:hover td { background: var(--bg); }
 .fg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .fg-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
 
+/* ── CAT OPTS ── */
+.cat-opt {
+  padding: 9px 8px; border-radius: var(--r-sm); border: 1.5px solid var(--border);
+  cursor: pointer; text-align: center; font-size: 12px; font-weight: 500;
+  transition: all .15s; background: var(--surface-2); color: var(--text-2);
+  line-height: 1.3;
+}
+.cat-opt:hover { border-color: var(--border-strong); color: var(--text); background: var(--surface); }
+.cat-opt.selected { border-color: var(--accent); background: var(--accent-light); color: var(--accent); font-weight: 600; }
+
 /* ── URGENCY SELECTOR ── */
 .urgency-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
 .urgency-opt {
@@ -594,7 +604,7 @@ tbody tr:hover td { background: var(--bg); }
 <div id="login-screen">
   <div class="login-box">
     <div class="login-brand">CoproSync</div>
-    <div class="login-tag">Gestion de copropriété — Connexion sécurisée</div>
+    <div class="login-tag">Résidence le Floréal — 13-19 rue du Moucherotte, Sassenage</div>
     <div id="auth-form">
       <div class="fg">
         <label class="label">Email</label>
@@ -632,7 +642,7 @@ tbody tr:hover td { background: var(--bg); }
       </div>
       <div>
         <div class="brand-name">CoproSync</div>
-        <div class="brand-sub" id="sb-copro-name">Résidence</div>
+        <div class="brand-sub" id="sb-copro-name">Résidence le Floréal</div>
       </div>
     </div>
 
@@ -719,62 +729,89 @@ tbody tr:hover td { background: var(--bg); }
       <button class="mclose" onclick="closeModal('m-ticket')">×</button>
     </div>
     <div class="mb">
-      <div class="fg">
-        <label class="label">Titre *</label>
-        <input type="text" id="t-titre" class="input" placeholder="Décrivez le problème en quelques mots...">
-      </div>
+
+      <!-- URGENCE -->
       <div class="fg">
         <label class="label">Urgence *</label>
         <div class="urgency-grid">
           <div class="urgency-opt" id="urg-critique" onclick="setUrgency('critique')">🔴 Critique</div>
           <div class="urgency-opt" id="urg-important" onclick="setUrgency('important')">🟠 Important</div>
-          <div class="urgency-opt" id="urg-normal" onclick="setUrgency('normal')">🔵 Normal</div>
+          <div class="urgency-opt sel-normal" id="urg-normal" onclick="setUrgency('normal')">🔵 Normal</div>
         </div>
       </div>
-      <div class="fg-row">
-        <div class="fg" style="margin:0;">
-          <label class="label">Bâtiment *</label>
-          <select id="t-bat" class="select">
-            <option value="">Choisir...</option>
-            <option>Bâtiment A</option>
-            <option>Bâtiment B</option>
-            <option>Bâtiment C</option>
-            <option>Parties communes</option>
-            <option>Parking</option>
-            <option>Cave / sous-sol</option>
-            <option>Extérieur / jardins</option>
-          </select>
-        </div>
-        <div class="fg" style="margin:0;">
-          <label class="label">Étage / Zone</label>
-          <input type="text" id="t-zone" class="input" placeholder="RDC, étage 3, cage A...">
+
+      <!-- CATÉGORIE — déclenche les options de zone dynamiques -->
+      <div class="fg">
+        <label class="label">Catégorie *</label>
+        <div id="cat-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;">
+          <div class="cat-opt" data-cat="ascenseur" onclick="selectCat(this)">🛗 Ascenseur</div>
+          <div class="cat-opt" data-cat="fuite" onclick="selectCat(this)">💧 Fuite / eau</div>
+          <div class="cat-opt" data-cat="electricite" onclick="selectCat(this)">⚡ Électricité</div>
+          <div class="cat-opt" data-cat="securite" onclick="selectCat(this)">🔒 Sécurité / accès</div>
+          <div class="cat-opt" data-cat="proprete" onclick="selectCat(this)">🧹 Propreté</div>
+          <div class="cat-opt" data-cat="espaces_verts" onclick="selectCat(this)">🌿 Espaces verts</div>
+          <div class="cat-opt" data-cat="serrurerie" onclick="selectCat(this)">🔑 Serrurerie</div>
+          <div class="cat-opt" data-cat="parking" onclick="selectCat(this)">🚗 Parking</div>
+          <div class="cat-opt" data-cat="autre" onclick="selectCat(this)">📋 Autre</div>
         </div>
       </div>
-      <div class="fg" style="margin-top:14px;">
-        <label class="label">Catégorie</label>
-        <select id="t-cat" class="select">
-          <option value="autre">Autre</option>
-          <option value="fuite">💧 Fuite / eau</option>
-          <option value="electricite">⚡ Électricité</option>
-          <option value="ascenseur">🛗 Ascenseur</option>
-          <option value="securite">🔒 Sécurité</option>
-          <option value="proprete">🧹 Propreté</option>
-          <option value="serrurerie">🔑 Serrurerie</option>
-          <option value="espaces_verts">🌿 Espaces verts</option>
-        </select>
+
+      <!-- LOCALISATION contextuelle -->
+      <div class="fg" id="loc-bloc">
+        <label class="label">Localisation *</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" id="loc-selects">
+          <div>
+            <label style="font-size:11px;color:var(--text-3);display:block;margin-bottom:4px;">Zone</label>
+            <select id="t-bat" class="select" onchange="updateZoneOptions()">
+              <option value="">Choisir...</option>
+              <optgroup label="Tours">
+                <option value="Tour 13">Tour 13 — n°13 rue du Moucherotte</option>
+                <option value="Tour 15">Tour 15 — n°15 rue du Moucherotte</option>
+                <option value="Tour 17">Tour 17 — n°17 rue du Moucherotte</option>
+                <option value="Tour 19">Tour 19 — n°19 rue du Moucherotte</option>
+              </optgroup>
+              <optgroup label="Parties communes extérieures">
+                <option value="Parking visiteurs">Parking visiteurs (120 places)</option>
+                <option value="Parking privé">Parking privé (120 places)</option>
+                <option value="Garages">Garages</option>
+                <option value="Aire de jeux">Aire de jeux enfants</option>
+                <option value="Portails / portillons">Portails / portillons</option>
+                <option value="Extérieur général">Extérieur / voirie interne</option>
+              </optgroup>
+            </select>
+          </div>
+          <div id="zone-detail-wrap">
+            <label style="font-size:11px;color:var(--text-3);display:block;margin-bottom:4px;">Précision</label>
+            <select id="t-zone-select" class="select">
+              <option value="">Sélectionner zone d'abord</option>
+            </select>
+          </div>
+        </div>
+        <input type="text" id="t-zone-free" class="input" placeholder="Précision libre (optionnel)" style="margin-top:8px;">
       </div>
+
+      <!-- TITRE -->
+      <div class="fg">
+        <label class="label">Titre *</label>
+        <input type="text" id="t-titre" class="input" placeholder="Résumez le problème en quelques mots...">
+      </div>
+
+      <!-- DESCRIPTION -->
       <div class="fg">
         <label class="label">Description</label>
-        <textarea id="t-desc" class="textarea" placeholder="Détaillez le problème : depuis quand, risques, observations..."></textarea>
+        <textarea id="t-desc" class="textarea" placeholder="Depuis quand ? Risques ? Observations utiles pour l'intervention..."></textarea>
       </div>
+
+      <!-- PHOTO -->
       <div class="fg">
         <label class="label">Photo</label>
         <div class="photo-area" id="photo-area" onclick="document.getElementById('photo-in').click()">
           <div class="photo-icon">📷</div>
-          <div class="photo-label">Appuyer pour prendre une photo ou choisir depuis la galerie</div>
+          <div class="photo-label">Prendre une photo ou choisir depuis la galerie</div>
         </div>
         <input type="file" id="photo-in" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(event)">
       </div>
+
     </div>
     <div class="mf">
       <button class="btn btn-secondary" onclick="closeModal('m-ticket')">Annuler</button>
@@ -811,9 +848,21 @@ tbody tr:hover td { background: var(--bg); }
         <div class="fg" style="margin:0;">
           <label class="label">Type *</label>
           <select id="c-type" class="select">
-            <option>Ascenseurs</option><option>Chauffage</option><option>Nettoyage</option>
-            <option>Gardiennage</option><option>Espaces verts</option><option>Assurance</option>
-            <option>Électricité PC</option><option>Eau / plomberie</option><option>Autre</option>
+            <option>Ascenseurs (ACAF)</option>
+            <option>Chauffage / ECS</option>
+            <option>Nettoyage parties communes</option>
+            <option>Gardiennage / surveillance</option>
+            <option>Espaces verts</option>
+            <option>Assurance immeuble</option>
+            <option>Électricité parties communes</option>
+            <option>Eau / plomberie</option>
+            <option>Portails / portillons électriques</option>
+            <option>Interphonie / vidéophonie</option>
+            <option>Contrôle accès</option>
+            <option>Aire de jeux (contrôle réglementaire)</option>
+            <option>Extincteurs / sécurité incendie</option>
+            <option>Gestion déchets</option>
+            <option>Autre</option>
           </select>
         </div>
       </div>
@@ -894,6 +943,79 @@ tbody tr:hover td { background: var(--bg); }
 
 const SUPA_URL = 'https://sifjbqtnrfydxcemhsnz.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZmpicXRucmZ5ZHhjZW1oc256Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzIyMjYsImV4cCI6MjA4ODkwODIyNn0.aRZUunTn1W5hLNHRXDSWjp7hKcBtxQlFKSM05MTQyVE';
+
+// ── RÉSIDENCE LE FLORÉAL — Configuration ──
+const COPRO = {
+  nom: 'Résidence le Floréal',
+  adresse: '13-19 Rue du Moucherotte, 38360 Sassenage',
+  lat: 45.2058, lng: 5.6780,  // coordonnées Sassenage
+  tours: ['Tour 13','Tour 15','Tour 17','Tour 19'],
+  etages: 15,
+  // Zones contextuelles par catégorie de signalement
+  zones: {
+    ascenseur: [
+      'Tour 13 — Ascenseur impair','Tour 13 — Ascenseur pair',
+      'Tour 15 — Ascenseur impair','Tour 15 — Ascenseur pair',
+      'Tour 17 — Ascenseur impair','Tour 17 — Ascenseur pair',
+      'Tour 19 — Ascenseur impair','Tour 19 — Ascenseur pair',
+    ],
+    fuite: [
+      'Tour 13 — Cave / sous-sol','Tour 15 — Cave / sous-sol','Tour 17 — Cave / sous-sol','Tour 19 — Cave / sous-sol',
+      'Tour 13 — Colonne montante','Tour 15 — Colonne montante','Tour 17 — Colonne montante','Tour 19 — Colonne montante',
+      'Local chaufferie','Local technique','Parking visiteurs','Parking privé',
+    ],
+    securite: [
+      'Portail principal (n°13)','Portail central (n°15-17)','Portail (n°19)',
+      'Portillon Tour 13','Portillon Tour 15','Portillon Tour 17','Portillon Tour 19',
+      'Interphone Tour 13','Interphone Tour 15','Interphone Tour 17','Interphone Tour 19',
+      'Vidéosurveillance','Éclairage sécurité',
+    ],
+    proprete: [
+      'Local poubelles Tour 13','Local poubelles Tour 15','Local poubelles Tour 17','Local poubelles Tour 19',
+      'Couloir Tour 13','Couloir Tour 15','Couloir Tour 17','Couloir Tour 19',
+      'Hall Tour 13','Hall Tour 15','Hall Tour 17','Hall Tour 19',
+      'Parking visiteurs','Parking privé','Espaces verts / allées',
+    ],
+    parking: [
+      'Parking visiteurs — Allée A','Parking visiteurs — Allée B','Parking visiteurs — Allée C',
+      'Parking privé — Allée A','Parking privé — Allée B','Parking privé — Allée C',
+      'Garages — Box individuels','Accès parking (portail)','Éclairage parking',
+    ],
+    espaces_verts: [
+      'Aire de jeux enfants','Pelouse côté Tour 13','Pelouse côté Tour 19',
+      'Allées piétonnes','Haies / arbustes','Arbres','Mobilier urbain',
+    ],
+    serrurerie: [
+      'Portail principal (n°13)','Portail central (n°15-17)','Portail (n°19)',
+      'Porte hall Tour 13','Porte hall Tour 15','Porte hall Tour 17','Porte hall Tour 19',
+      'Local technique','Local poubelles Tour 13','Local poubelles Tour 15','Local poubelles Tour 17','Local poubelles Tour 19',
+      'Garage — Box','Cave',
+    ],
+    electricite: [
+      'Tour 13 — Hall / communs','Tour 15 — Hall / communs','Tour 17 — Hall / communs','Tour 19 — Hall / communs',
+      'Éclairage parking visiteurs','Éclairage parking privé','Éclairage extérieur','Tableau électrique commun',
+      'Local technique électrique',
+    ],
+    autre: [],
+  },
+  // Contrats initiaux à insérer en DB si besoin
+  contratsInitiaux: [
+    { fournisseur:'ACAF', type_contrat:'Ascenseurs', description:'Maintenance des 8 ascenseurs — 2 par tour (impair/pair)', contact_nom:'ACAF — Service clients', contact_tel:'04 76 XX XX XX' },
+  ],
+};
+
+// Coordonnées approx de chaque tour (à affiner)
+const TOUR_COORDS = {
+  'Tour 13': [45.2060, 5.6775],
+  'Tour 15': [45.2060, 5.6778],
+  'Tour 17': [45.2060, 5.6781],
+  'Tour 19': [45.2060, 5.6784],
+  'Parking visiteurs': [45.2055, 5.6778],
+  'Parking privé': [45.2055, 5.6781],
+  'Garages': [45.2053, 5.6780],
+  'Aire de jeux': [45.2057, 5.6776],
+  'Portails / portillons': [45.2062, 5.6778],
+};
 
 const { createClient } = supabase;
 const sb = createClient(SUPA_URL, SUPA_KEY);
@@ -1325,13 +1447,14 @@ async function renderDashboard() {
             <span class="card-title">Par bâtiment</span>
           </div>
           <div style="padding:16px 20px;">
-            ${['Bâtiment A','Bâtiment B','Bâtiment C','Parking','Parties communes'].map(bat => {
-              const cnt = ouverts.filter(t => t.batiment === bat).length;
+            ${[...COPRO.tours, 'Parking visiteurs','Parking privé','Garages','Aire de jeux','Portails / portillons','Extérieur général'].map(zone => {
+              const cnt = ouverts.filter(t => t.batiment === zone).length;
               if (cnt === 0) return '';
+              const isTour = zone.startsWith('Tour');
               return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-                <div style="font-size:13px;flex:1;">${bat}</div>
+                <div style="font-size:13px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${isTour ? '🏢 '+zone : '📍 '+zone}</div>
                 <div style="background:var(--bg);border-radius:4px;height:8px;flex:2;overflow:hidden;">
-                  <div style="background:var(--accent);height:100%;width:${Math.min(100,cnt*20)}%;border-radius:4px;"></div>
+                  <div style="background:var(--accent);height:100%;width:${Math.min(100,cnt*25)}%;border-radius:4px;transition:width .4s;"></div>
                 </div>
                 <div style="font-size:13px;font-weight:700;color:var(--accent);min-width:20px;text-align:right;">${cnt}</div>
               </div>`;
@@ -1400,9 +1523,14 @@ function renderTickets() {
         <option value="normal">Normal</option>
       </select>
       <select class="select" id="f-bat" onchange="filterTickets()" style="width:auto;">
-        <option value="">Bâtiment</option>
-        <option>Bâtiment A</option><option>Bâtiment B</option><option>Bâtiment C</option>
-        <option>Parking</option><option>Parties communes</option><option>Extérieur / jardins</option>
+        <option value="">Zone</option>
+        <optgroup label="Tours">
+          <option>Tour 13</option><option>Tour 15</option><option>Tour 17</option><option>Tour 19</option>
+        </optgroup>
+        <optgroup label="Communs">
+          <option>Parking visiteurs</option><option>Parking privé</option><option>Garages</option>
+          <option>Aire de jeux</option><option>Portails / portillons</option><option>Extérieur général</option>
+        </optgroup>
       </select>
       <button class="btn btn-primary" onclick="openNewTicket()">+ Signaler</button>
     </div>
@@ -1561,14 +1689,52 @@ async function deleteTicket(id) {
   renderPage(currentPage);
 }
 
+// ── TICKET FORM — Localisation contextuelle ──
+function selectCat(el) {
+  document.querySelectorAll('.cat-opt').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  updateZoneOptions();
+}
+
+function updateZoneOptions() {
+  const catEl = document.querySelector('.cat-opt.selected');
+  const cat = catEl ? catEl.dataset.cat : 'autre';
+  const bat = document.getElementById('t-bat')?.value || '';
+  const sel = document.getElementById('t-zone-select');
+  if (!sel) return;
+
+  let options = [];
+
+  // Si une tour est sélectionnée et catégorie ascenseur → filtrer par tour
+  if (cat === 'ascenseur' && bat.startsWith('Tour')) {
+    options = [`${bat} — Ascenseur impair`, `${bat} — Ascenseur pair`];
+  } else if (COPRO.zones[cat] && COPRO.zones[cat].length > 0) {
+    // Si tour sélectionnée, filtrer les options qui concernent cette tour ou génériques
+    if (bat.startsWith('Tour')) {
+      options = COPRO.zones[cat].filter(z =>
+        z.includes(bat) || (!z.includes('Tour 13') && !z.includes('Tour 15') && !z.includes('Tour 17') && !z.includes('Tour 19'))
+      );
+    } else {
+      options = COPRO.zones[cat];
+    }
+  } else if (bat.startsWith('Tour')) {
+    // Zone libre par étage pour catégories dans tour
+    options = ['Hall RDC', ...Array.from({length:15},(_,i)=>`Étage ${i+1}`), 'Couloir commun', 'Cave / sous-sol'];
+  }
+
+  sel.innerHTML = '<option value="">Préciser la zone...</option>' +
+    options.map(o => `<option value="${o}">${o}</option>`).join('');
+}
+
 // ── NEW TICKET ──
 function openNewTicket() {
   setUrgency('normal');
-  ['t-titre','t-desc','t-zone'].forEach(id => { if($(id)) $(id).value = ''; });
-  if($('t-bat')) $('t-bat').value = '';
-  if($('t-cat')) $('t-cat').value = 'autre';
-  $('photo-area').innerHTML = '<div class="photo-icon">📷</div><div class="photo-label">Appuyer pour prendre une photo ou choisir depuis la galerie</div>';
-  $('photo-area').classList.remove('loaded');
+  document.querySelectorAll('.cat-opt').forEach(c => c.classList.remove('selected'));
+  ['t-titre','t-desc','t-zone-free'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  if(document.getElementById('t-bat')) document.getElementById('t-bat').value = '';
+  if(document.getElementById('t-zone-select')) document.getElementById('t-zone-select').innerHTML = '<option value="">Sélectionner zone d\'abord</option>';
+  const area = document.getElementById('photo-area');
+  if(area) { area.innerHTML = '<div class="photo-icon">📷</div><div class="photo-label">Prendre une photo ou choisir depuis la galerie</div>'; area.classList.remove('loaded'); }
   photoFile = null;
   openModal('m-ticket');
 }
@@ -1595,12 +1761,23 @@ function handlePhoto(e) {
 }
 
 async function submitTicket() {
-  const titre = $('t-titre')?.value.trim();
-  const batiment = $('t-bat')?.value;
-  if (!titre) { toast('Le titre est obligatoire', 'err'); return; }
-  if (!batiment) { toast('Choisissez un bâtiment', 'err'); return; }
+  const titre = document.getElementById('t-titre')?.value.trim();
+  const batiment = document.getElementById('t-bat')?.value;
+  const catEl = document.querySelector('.cat-opt.selected');
+  const categorie = catEl ? catEl.dataset.cat : null;
 
-  const btn = $('submit-ticket-btn');
+  if (!titre) { toast('Le titre est obligatoire', 'err'); return; }
+  if (!batiment) { toast('Choisissez une zone', 'err'); return; }
+
+  // Construire la zone depuis le select + champ libre
+  const zoneSelect = document.getElementById('t-zone-select')?.value || '';
+  const zoneFree = document.getElementById('t-zone-free')?.value.trim() || '';
+  const zone = [zoneSelect, zoneFree].filter(Boolean).join(' — ') || null;
+
+  // Coordonnées depuis TOUR_COORDS ou coordonnées de la résidence
+  const coords = TOUR_COORDS[batiment] || [COPRO.lat + (Math.random()-.5)*.002, COPRO.lng + (Math.random()-.5)*.002];
+
+  const btn = document.getElementById('submit-ticket-btn');
   btn.disabled = true;
   btn.innerHTML = '<span class="spin"></span> Envoi...';
 
@@ -1618,13 +1795,15 @@ async function submitTicket() {
   const ticket = {
     titre,
     batiment,
-    zone: $('t-zone')?.value || null,
+    zone,
     urgence: urgencySelected,
-    categorie: $('t-cat')?.value || 'autre',
-    description: $('t-desc')?.value || null,
+    categorie: categorie || 'autre',
+    description: document.getElementById('t-desc')?.value || null,
     auteur_id: user.id,
     photo_url,
     statut: 'nouveau',
+    lat: coords[0],
+    lng: coords[1],
   };
 
   const { data, error } = await sb.from('tickets').insert(ticket).select().single();
@@ -1633,13 +1812,12 @@ async function submitTicket() {
 
   if (error) { toast('Erreur: ' + error.message, 'err'); return; }
 
-  await addLog('Ticket créé', 'ticket', data.id, { titre, urgence: urgencySelected });
+  await addLog('Ticket créé', 'ticket', data.id, { titre, urgence: urgencySelected, batiment });
   await sendEmailNotif(urgencySelected === 'critique' ? 'ticket_critique' : 'nouveau_ticket', {
     ...data,
     auteur_nom: [profile?.prenom, profile?.nom].filter(Boolean).join(' ') || user.email
   });
 
-  // Reload and update cache
   await loadTickets();
   updateBadges();
   closeModal('m-ticket');
@@ -1672,10 +1850,16 @@ function initMap() {
   if (!$('map')) return;
   if (mapInstance) { mapInstance.remove(); mapInstance = null; }
 
-  mapInstance = L.map('map').setView([48.8566, 2.352], 15);
+  mapInstance = L.map('map').setView([COPRO.lat, COPRO.lng], 18);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap', maxZoom: 19
   }).addTo(mapInstance);
+
+  // Marqueur de la résidence
+  const resBounds = L.popup().setContent(`<strong>${COPRO.nom}</strong><br><small>${COPRO.adresse}</small>`);
+  L.marker([COPRO.lat, COPRO.lng], {
+    icon: L.divIcon({ className:'', html:'<div style="width:12px;height:12px;border-radius:2px;background:#1a1917;border:2px solid white;"></div>', iconSize:[12,12], iconAnchor:[6,6] })
+  }).addTo(mapInstance).bindPopup(resBounds);
 
   mapMarkers = [];
   cache.tickets.forEach(t => {
@@ -2030,7 +2214,9 @@ function renderRapport() {
     </div>
     <div class="rapport-summary">
       <div style="font-family:var(--font-head);font-size:20px;font-weight:800;margin-bottom:4px;">RAPPORT DE SITUATION</div>
-      <div style="font-size:13px;color:var(--text-2);">Établi le ${today} par ${[profile?.prenom,profile?.nom].filter(Boolean).join(' ')||user.email}</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px;">Résidence le Floréal</div>
+      <div style="font-size:12px;color:var(--text-2);">13-19 Rue du Moucherotte — 38360 Sassenage</div>
+      <div style="font-size:12px;color:var(--text-3);margin-top:4px;">Établi le ${today} par ${[profile?.prenom,profile?.nom].filter(Boolean).join(' ')||user.email}</div>
     </div>
     <div class="stats-row" style="margin-bottom:22px;">
       <div class="stat red" style="pointer-events:none;"><div class="stat-num">${critiques.length}</div><div class="stat-label">Critiques</div></div>
