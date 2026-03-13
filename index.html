@@ -1049,6 +1049,15 @@ function fmtD(iso) {
   if (!iso) return '—';
   return new Date(iso).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' });
 }
+function depuisJours(iso) {
+  if (!iso) return '';
+  const j = Math.floor((Date.now() - new Date(iso).getTime()) / 864e5);
+  if (j === 0) return "aujourd'hui";
+  if (j === 1) return 'hier';
+  if (j < 30) return `${j}j`;
+  if (j < 365) return `${Math.floor(j/30)}mois`;
+  return `${Math.floor(j/365)}an`;
+}
 function daysUntil(d) {
   return Math.ceil((new Date(d) - new Date()) / 864e5);
 }
@@ -1434,7 +1443,7 @@ async function renderDashboard() {
   el.innerHTML = `
   <div style="padding:24px;" id="dash-content">
     <div class="ph">
-      <h1>Bonjour, ${profile?.prenom || profile?.nom || 'bienvenue'} 👋</h1>
+      <h1>Bonjour, ${(profile?.prenom || profile?.nom || user?.email?.split('@')[0] || 'bienvenue').split(' ')[0]} 👋</h1>
       <p>${new Date().toLocaleDateString('fr-FR', {weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
     </div>
 
@@ -1494,7 +1503,10 @@ async function renderDashboard() {
                   <div class="act-txt" style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.titre}</div>
                   <div class="act-sub">${t.batiment || ''}${t.zone?' · '+t.zone:''} · ${badgeStatut(t.statut)}</div>
                 </div>
-                <div class="act-time" style="flex-shrink:0;">${fmtD(t.created_at)}</div>
+                <div class="act-time" style="flex-shrink:0;text-align:right;">
+                  <div>${fmtD(t.created_at)}</div>
+                  <div style="font-size:11px;color:var(--text-3);margin-top:2px;">⏱ ${depuisJours(t.created_at)}</div>
+                </div>
               </div>`).join('')}
         </div>
       </div>
@@ -1620,7 +1632,10 @@ function renderTicketsRows(list) {
       <td>${badgeUrgence(t.urgence)}</td>
       <td>${badgeStatut(t.statut)}</td>
       <td style="font-size:12px;color:var(--text-2);">${t.batiment||'—'}</td>
-      <td style="font-size:12px;color:var(--text-3);white-space:nowrap;">${fmtD(t.created_at)}</td>
+      <td style="font-size:12px;color:var(--text-3);white-space:nowrap;">
+        <div>${fmtD(t.created_at)}</div>
+        <div style="color:${Math.floor((Date.now()-new Date(t.created_at).getTime())/864e5)>14?'var(--orange)':'var(--text-3)'};font-size:11px;margin-top:2px;">⏱ ${depuisJours(t.created_at)}</div>
+      </td>
       <td><button class="btn btn-ghost btn-sm">Voir →</button></td>
     </tr>`).join('');
 }
