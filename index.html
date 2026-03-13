@@ -2658,6 +2658,41 @@ function renderJournal() {
 }
 
 // ── USERS ──
+async function autoJoinTourGroup(tour) {
+  // Trouve la conversation du groupe correspondant à la tour
+  const conv = _msgState.conversations.find(c => c.titre.includes(tour));
+  if (!conv) {
+    // Recharge les conversations si pas encore chargées
+    const { data } = await sb.from('conversations').select('*');
+    const found = (data||[]).find(c => c.titre.includes(tour));
+    if (!found) return;
+    await sb.from('conversation_membres').upsert(
+      { conversation_id: found.id, user_id: user.id },
+      { onConflict: 'conversation_id,user_id' }
+    );
+    return;
+  }
+  await sb.from('conversation_membres').upsert(
+    { conversation_id: conv.id, user_id: user.id },
+    { onConflict: 'conversation_id,user_id' }
+  );
+}
+
+async function changeTour(userId, tour) {
+  const { error } = await sb.from('profiles').update({ tour }).eq('id', userId);
+  if (error) { toast('Erreur tour', 'err'); return; }
+  // Auto-rejoindre le groupe de la tour
+  const { data: convs } = await sb.from('conversations').select('id,titre');
+  const found = (convs||[]).find(c => c.titre.includes(tour));
+  if (found) {
+    await sb.from('conversation_membres').upsert(
+      { conversation_id: found.id, user_id: userId },
+      { onConflict: 'conversation_id,user_id' }
+    );
+  }
+  toast('Tour assignée ✓', 'ok');
+}
+
 async function renderUsers() {
   const { data: users } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
   const roleL = { administrateur:'Administrateur', syndic:'Syndic', membre_cs:'Conseil Syndical', 'copropriétaire':'Copropriétaire' };
@@ -2671,7 +2706,7 @@ async function renderUsers() {
     <div class="card">
       <div class="tbl-wrap">
         <table>
-          <thead><tr><th>Utilisateur</th><th>Rôle</th><th>Lot</th><th>Email</th><th>Inscrit le</th><th></th></tr></thead>
+          <thead><tr><th>Utilisateur</th><th>Rôle</th><th>Tour</th><th>Lot</th><th>Email</th><th>Inscrit le</th></tr></thead>
           <tbody>
             ${(users||[]).map(u => `
               <tr>
@@ -2682,22 +2717,28 @@ async function renderUsers() {
                     </div>
                     <div>
                       <div style="font-weight:600;">${[u.prenom,u.nom].filter(Boolean).join(' ')||u.email}</div>
-                      <div style="font-size:11px;color:var(--text-3);">${u.actif?'Actif':'Inactif'}</div>
+                      <div style="font-size:11px;color:var(--text-3);">${u.actif!==false?'Actif':'Inactif'}</div>
                     </div>
                   </div>
                 </td>
-                <td><span class="role-pill role-${u.role}">${roleL[u.role]||u.role}</span></td>
-                <td style="font-size:13px;">${u.lot||'—'}</td>
-                <td style="font-size:12px;color:var(--text-2);">${u.email}</td>
-                <td style="font-size:12px;color:var(--text-3);">${fmtD(u.created_at)}</td>
                 <td>
                   ${u.id !== user.id && isAdmin() ? `
                   <select class="select" style="font-size:12px;padding:4px 8px;width:auto;" onchange="changeRole('${u.id}',this.value)">
                     ${['copropriétaire','membre_cs','syndic','administrateur'].map(r=>
                       `<option value="${r}" ${r===u.role?'selected':''}>${roleL[r]}</option>`
                     ).join('')}
-                  </select>` : ''}
+                  </select>` : `<span class="role-pill role-${u.role}">${roleL[u.role]||u.role}</span>`}
                 </td>
+                <td>
+                  ${isAdmin() ? `
+                  <select class="select" style="font-size:12px;padding:4px 8px;width:auto;" onchange="changeTour('${u.id}',this.value)">
+                    <option value="">—</option>
+                    ${COPRO.tours.map(t => `<option value="${t}" ${u.tour===t?'selected':''}>${t}</option>`).join('')}
+                  </select>` : (u.tour||'—')}
+                </td>
+                <td style="font-size:13px;">${u.lot||'—'}</td>
+                <td style="font-size:12px;color:var(--text-2);">${u.email}</td>
+                <td style="font-size:12px;color:var(--text-3);">${fmtD(u.created_at)}</td>
               </tr>`).join('')}
           </tbody>
         </table>
@@ -2775,13 +2816,14 @@ async function markRead(id) {
 
 // ── PROFILE ──
 function renderProfile() {
+  const tours = ['', ...COPRO.tours];
   $('page').innerHTML = `
   <div style="padding:24px;max-width:480px;">
     <div class="ph"><h1>Mon profil</h1></div>
     <div class="card">
       <div class="card-body">
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);">
-          <div class="user-av" style="width:52px;height:52px;font-size:20px;">${(profile?.nom||profile?.email||'?').charAt(0).toUpperCase()}</div>
+          <div class="user-av" style="width:52px;height:52px;font-size:20px;">${(profile?.prenom||profile?.nom||profile?.email||'?').charAt(0).toUpperCase()}</div>
           <div>
             <div style="font-family:var(--font-head);font-size:18px;font-weight:700;">${[profile?.prenom,profile?.nom].filter(Boolean).join(' ')||user.email}</div>
             <span class="role-pill role-${profile?.role}">${{administrateur:'Administrateur',syndic:'Syndic',membre_cs:'Conseil Syndical','copropriétaire':'Copropriétaire'}[profile?.role]||profile?.role}</span>
@@ -2791,23 +2833,37 @@ function renderProfile() {
         <div class="fg"><label class="label">Nom</label><input type="text" id="p-nom" class="input" value="${profile?.nom||''}"></div>
         <div class="fg"><label class="label">Téléphone</label><input type="text" id="p-tel" class="input" value="${profile?.telephone||''}" placeholder="+33 6 ..."></div>
         <div class="fg"><label class="label">Email</label><input type="email" class="input" value="${user.email}" disabled style="opacity:.6;"></div>
-        ${profile?.lot ? `<div class="fg"><label class="label">Lot</label><input type="text" class="input" value="${profile.lot}" disabled style="opacity:.6;"></div>` : ''}
-        <button class="btn btn-primary" onclick="saveProfile()">Enregistrer</button>
+        <div class="fg">
+          <label class="label">Ma tour 🏠</label>
+          <select id="p-tour" class="select" style="width:100%;">
+            <option value="">— Sélectionner ma tour —</option>
+            ${COPRO.tours.map(t => `<option value="${t}" ${profile?.tour===t?'selected':''}>${t}</option>`).join('')}
+          </select>
+          <div style="font-size:11px;color:var(--text-3);margin-top:4px;">Vous rejoindrez automatiquement le groupe de messagerie de votre tour</div>
+        </div>
+        ${profile?.lot ? `<div class="fg"><label class="label">Lot</label><input type="text" id="p-lot" class="input" value="${profile.lot||''}" placeholder="Ex: 3B"></div>` :
+          `<div class="fg"><label class="label">Numéro de lot</label><input type="text" id="p-lot" class="input" value="${profile?.lot||''}" placeholder="Ex: 3B"></div>`}
+        <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="saveProfile()">Enregistrer</button>
       </div>
     </div>
   </div>`;
 }
 
 async function saveProfile() {
+  const tour = $('p-tour')?.value || profile?.tour || null;
+  const lot  = $('p-lot')?.value.trim() || profile?.lot || null;
   const { error } = await sb.from('profiles').update({
-    prenom: $('p-prenom')?.value.trim() || null,
-    nom: $('p-nom')?.value.trim() || profile?.nom,
+    prenom:    $('p-prenom')?.value.trim() || null,
+    nom:       $('p-nom')?.value.trim() || profile?.nom,
     telephone: $('p-tel')?.value.trim() || null,
+    tour, lot,
   }).eq('id', user.id);
   if (error) { toast('Erreur sauvegarde', 'err'); return; }
+  // Auto-rejoindre le groupe de la tour choisie
+  if (tour) await autoJoinTourGroup(tour);
   await loadProfile();
   initUI();
-  toast('Profil mis à jour', 'ok');
+  toast('Profil mis à jour ✓', 'ok');
 }
 
 // ── RAPPORT ──
@@ -2985,8 +3041,8 @@ async function loadConversations() {
 async function renderConvList() {
   const el = $('conv-items');
   if (!el) return;
-  // Charge le dernier message de chaque conv
-  const convs = _msgState.conversations;
+  // Filtre selon rôle
+  const convs = filterConvsByRole(_msgState.conversations);
   if (!convs.length) { el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-3);">Aucune conversation</div>'; return; }
 
   // Récupère les derniers messages en batch
@@ -3061,9 +3117,12 @@ async function openConv(convId) {
     </div>
     <div class="chat-messages" id="chat-messages"><div style="text-align:center;padding:20px;color:var(--text-3);font-size:13px;">Chargement...</div></div>
     <div class="chat-input-bar">
-      <textarea class="chat-input" id="chat-input" placeholder="Message..." rows="1"
-        oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';"
-        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
+      <div style="flex:1;position:relative;">
+        <textarea class="chat-input" id="chat-input" placeholder="Message... (@ pour mentionner)" rows="1"
+          oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';onChatInput(event);"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
+        <div id="chat-mention-list" class="mention-list" style="display:none;bottom:100%;top:auto;"></div>
+      </div>
       <button class="chat-send" onclick="sendMessage()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
       </button>
@@ -3136,6 +3195,22 @@ async function sendMessage() {
     texte
   });
   if (error) { toast('Erreur envoi', 'err'); return; }
+  // Notifs @mentions
+  if (_msgState.pendingMentions?.length) {
+    const conv = _msgState.conversations.find(c => c.id === _msgState.activeConvId);
+    const auteurNom = [profile?.prenom, profile?.nom].filter(Boolean).join(' ') || user.email;
+    for (const m of _msgState.pendingMentions) {
+      await sb.from('notifications').insert({
+        destinataire_id: m.userId,
+        sujet: `🏷 ${auteurNom} vous a mentionné dans ${conv?.titre || 'un message'}`,
+        corps: texte,
+        type: 'mention',
+        reference_id: _msgState.activeConvId,
+        lu: false
+      });
+    }
+    _msgState.pendingMentions = [];
+  }
   // Optimistic UI — on ajoute localement sans attendre realtime
   _msgState.messages.push({
     id: 'tmp-' + Date.now(),
@@ -3181,6 +3256,77 @@ function startMsgRealtime() {
       }
     })
     .subscribe();
+}
+
+async function onChatInput(e) {
+  const ta = e.target;
+  const val = ta.value;
+  const cursor = ta.selectionStart;
+  const before = val.substring(0, cursor);
+  const atMatch = before.match(/@(\w*)$/);
+  const ml = $('chat-mention-list');
+  if (!atMatch) { if (ml) ml.style.display = 'none'; return; }
+
+  const query = atMatch[1].toLowerCase();
+  // Charge membres de la conv active
+  const { data: membres } = await sb.from('conversation_membres')
+    .select('user_id, profiles(id,nom,prenom,role)')
+    .eq('conversation_id', _msgState.activeConvId);
+
+  const matches = (membres||[])
+    .map(m => m.profiles)
+    .filter(p => p && p.id !== user.id && (
+      (p.prenom||'').toLowerCase().startsWith(query) ||
+      (p.nom||'').toLowerCase().startsWith(query)
+    )).slice(0, 5);
+
+  // Si pas de membres enregistrés → cherche dans profiles (groupes ouverts)
+  let list = matches;
+  if (!list.length && query.length >= 1) {
+    const { data: profs } = await sb.from('profiles').select('id,nom,prenom,role')
+      .or(`prenom.ilike.${query}%,nom.ilike.${query}%`).neq('id', user.id).limit(5);
+    list = profs || [];
+  }
+
+  if (!ml || !list.length) { if (ml) ml.style.display = 'none'; return; }
+  const roleL = { administrateur:'Admin', syndic:'Syndic', membre_cs:'CS', 'copropriétaire':'Copro' };
+  ml.innerHTML = list.map(p => `
+    <div class="mention-item" onclick="insertChatMention('${p.id}','${(p.prenom||p.nom||'').replace(/'/g,"\\'")}','${(p.nom||'').replace(/'/g,"\\'")}')">
+      <div class="mention-av">${(p.prenom||p.nom||'?').charAt(0).toUpperCase()}</div>
+      <div>
+        <div style="font-weight:600;">${[p.prenom,p.nom].filter(Boolean).join(' ')}</div>
+        <div style="font-size:11px;color:var(--text-3);">${roleL[p.role]||p.role}</div>
+      </div>
+    </div>`).join('');
+  ml.style.display = 'block';
+}
+
+function insertChatMention(userId, prenom, nom) {
+  const ta = $('chat-input');
+  const ml = $('chat-mention-list');
+  if (!ta) return;
+  const val = ta.value;
+  const cursor = ta.selectionStart;
+  const before = val.substring(0, cursor);
+  const after = val.substring(cursor);
+  const name = [prenom, nom].filter(Boolean).join(' ') || prenom;
+  const newBefore = before.replace(/@\w*$/, `@${name} `);
+  ta.value = newBefore + after;
+  ta.focus();
+  if (ml) ml.style.display = 'none';
+  // Stocke mention pour notif à l'envoi
+  if (!_msgState.pendingMentions) _msgState.pendingMentions = [];
+  _msgState.pendingMentions.push({ userId, name });
+}
+
+// Filtre les conversations selon le rôle
+function filterConvsByRole(convs) {
+  return convs.filter(c => {
+    if (c.titre.includes('Conseil Syndical')) {
+      return ['administrateur','syndic','membre_cs'].includes(profile?.role);
+    }
+    return true;
+  });
 }
 
 async function newPrivateConv() {
