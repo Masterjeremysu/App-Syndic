@@ -1576,9 +1576,9 @@ function renderTickets() {
       </select>
       <select class="select" id="f-urgence" onchange="filterTickets()" style="width:auto;">
         <option value="">Urgence</option>
-        <option value="critique">Critique</option>
-        <option value="important">Important</option>
-        <option value="normal">Normal</option>
+        <option value="critique">🔴 Critique</option>
+        <option value="important">🟠 Important</option>
+        <option value="normal">🔵 Normal</option>
       </select>
       <select class="select" id="f-bat" onchange="filterTickets()" style="width:auto;">
         <option value="">Zone</option>
@@ -1590,6 +1590,8 @@ function renderTickets() {
           <option>Aire de jeux</option><option>Portails / portillons</option><option>Extérieur général</option>
         </optgroup>
       </select>
+      <span id="f-count" style="font-size:12px;color:var(--text-3);white-space:nowrap;"></span>
+      <button class="btn btn-ghost btn-sm" id="f-reset" onclick="resetFilters()" style="display:none;">✕ Effacer</button>
       <button class="btn btn-primary" onclick="openNewTicket()">+ Signaler</button>
     </div>
     <div class="card">
@@ -1628,6 +1630,7 @@ function filterTickets() {
   const st = $('f-statut')?.value || '';
   const u = $('f-urgence')?.value || '';
   const b = $('f-bat')?.value || '';
+  const active = s || st || u || b;
   const f = cache.tickets.filter(t =>
     (!s || t.titre.toLowerCase().includes(s) || (t.description||'').toLowerCase().includes(s) || (t.batiment||'').toLowerCase().includes(s))
     && (!st || t.statut === st)
@@ -1635,6 +1638,20 @@ function filterTickets() {
     && (!b || t.batiment === b)
   );
   d($('tickets-tbody'), renderTicketsRows(f));
+  // Compteur résultats
+  const cEl = $('f-count');
+  if (cEl) cEl.textContent = active ? `${f.length} résultat${f.length>1?'s':''}` : '';
+  // Bouton reset
+  const rEl = $('f-reset');
+  if (rEl) rEl.style.display = active ? 'inline-flex' : 'none';
+}
+
+function resetFilters() {
+  const s = $('f-search'); if (s) s.value = '';
+  const st = $('f-statut'); if (st) st.value = '';
+  const u = $('f-urgence'); if (u) u.value = '';
+  const b = $('f-bat'); if (b) b.value = '';
+  filterTickets();
 }
 
 // ── TICKET DETAIL ──
