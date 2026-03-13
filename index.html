@@ -750,6 +750,116 @@ tbody tr:hover td { background: var(--bg); }
 .role-syndic { background: var(--blue-light); color: var(--accent); border: 1px solid var(--blue-border); }
 .role-membre_cs { background: var(--orange-light); color: var(--orange); border: 1px solid var(--orange-border); }
 .role-copropriétaire { background: var(--green-light); color: var(--green); border: 1px solid var(--green-border); }
+
+/* ── MESSAGERIE ── */
+.msg-layout { display: flex; height: calc(100vh - 52px); overflow: hidden; }
+.conv-list {
+  width: 280px; flex-shrink: 0; border-right: 1px solid var(--border);
+  overflow-y: auto; background: var(--surface);
+}
+.conv-list-header {
+  padding: 16px; border-bottom: 1px solid var(--border);
+  font-family: var(--font-head); font-weight: 700; font-size: 15px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.conv-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border);
+  transition: background .1s;
+}
+.conv-item:hover { background: var(--bg); }
+.conv-item.active { background: var(--blue-light); border-left: 3px solid var(--accent); }
+.conv-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0; font-weight: 700;
+}
+.conv-avatar.prive { background: var(--violet); }
+.conv-info { flex: 1; min-width: 0; }
+.conv-name { font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv-last { font-size: 11.5px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.conv-unread {
+  background: var(--accent); color: #fff;
+  font-size: 10px; font-weight: 700; min-width: 18px; height: 18px;
+  border-radius: 9px; display: flex; align-items: center; justify-content: center;
+  padding: 0 4px; flex-shrink: 0;
+}
+
+/* Zone de chat */
+.chat-zone { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.chat-header {
+  padding: 14px 20px; border-bottom: 1px solid var(--border);
+  background: var(--surface); display: flex; align-items: center; gap: 12px;
+  flex-shrink: 0;
+}
+.chat-header-name { font-family: var(--font-head); font-weight: 700; font-size: 15px; }
+.chat-header-sub { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+.chat-messages {
+  flex: 1; overflow-y: auto; padding: 16px;
+  display: flex; flex-direction: column; gap: 6px;
+  background: var(--bg);
+}
+.msg-bubble-wrap { display: flex; flex-direction: column; }
+.msg-bubble-wrap.mine { align-items: flex-end; }
+.msg-bubble-wrap.theirs { align-items: flex-start; }
+.msg-sender { font-size: 11px; color: var(--text-3); margin-bottom: 3px; padding: 0 4px; }
+.msg-bubble {
+  max-width: 70%; padding: 9px 13px; border-radius: 16px;
+  font-size: 13.5px; line-height: 1.45; word-break: break-word;
+}
+.msg-bubble.mine {
+  background: var(--accent); color: #fff;
+  border-bottom-right-radius: 4px;
+}
+.msg-bubble.theirs {
+  background: var(--surface); border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+}
+.msg-time { font-size: 10px; color: var(--text-3); margin-top: 3px; padding: 0 4px; }
+.chat-input-bar {
+  padding: 12px 16px; border-top: 1px solid var(--border);
+  background: var(--surface); display: flex; gap: 8px; align-items: flex-end;
+  flex-shrink: 0;
+}
+.chat-input {
+  flex: 1; border: 1px solid var(--border); border-radius: 20px;
+  padding: 10px 16px; font-size: 14px; resize: none; max-height: 120px;
+  background: var(--bg); color: var(--text); font-family: var(--font);
+  outline: none; line-height: 1.4;
+}
+.chat-input:focus { border-color: var(--accent); }
+.chat-send {
+  width: 40px; height: 40px; border-radius: 50%; border: none;
+  background: var(--accent); color: #fff; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity .15s; flex-shrink: 0;
+}
+.chat-send:hover { opacity: .85; }
+.chat-empty {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  color: var(--text-3); gap: 8px;
+}
+.msg-date-sep {
+  text-align: center; font-size: 11px; color: var(--text-3);
+  margin: 8px 0; position: relative;
+}
+.msg-date-sep::before, .msg-date-sep::after {
+  content: ''; position: absolute; top: 50%;
+  width: 30%; height: 1px; background: var(--border);
+}
+.msg-date-sep::before { left: 0; }
+.msg-date-sep::after { right: 0; }
+
+/* Mobile messaging */
+@media (max-width: 480px) {
+  .msg-layout { height: calc(100vh - 52px - 60px); }
+  .conv-list { width: 100%; border-right: none; }
+  .conv-list.hidden { display: none; }
+  .chat-zone.hidden { display: none; }
+  .chat-header .back-btn { display: flex !important; }
+}
 </style>
 </head>
 <body>
@@ -815,6 +925,11 @@ tbody tr:hover td { background: var(--bg); }
     <a class="nav-item" data-page="map" onclick="nav('map')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3,6 9,3 15,6 21,3 21,18 15,21 9,18 3,21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
       Carte
+    </a>
+    <a class="nav-item" data-page="messages" onclick="nav('messages')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+      Messages
+      <span class="nav-count" id="nc-messages" style="display:none">0</span>
     </a>
 
     <div class="nav-section nav-admin-only" id="nav-section-gestion">Gestion</div>
@@ -899,9 +1014,10 @@ tbody tr:hover td { background: var(--bg); }
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="3,6 9,3 15,6 21,3 21,18 15,21 9,18 3,21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
     Carte
   </button>
-  <button class="bn-item" id="bn-profile" onclick="nav('profile')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-    Profil
+  <button class="bn-item" id="bn-messages" onclick="nav('messages')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    Messages
+    <span class="bn-badge" id="bn-badge-messages" style="display:none"></span>
   </button>
 </nav>
 
@@ -1692,13 +1808,14 @@ function nav(page, noClose) {
   if (active) active.classList.add('active');
   // Bottom nav active
   document.querySelectorAll('.bn-item').forEach(el => el.classList.remove('active'));
-  const bnMap = { dashboard:'bn-dashboard', tickets:'bn-tickets', map:'bn-map', profile:'bn-profile' };
+  const bnMap = { dashboard:'bn-dashboard', tickets:'bn-tickets', map:'bn-map', messages:'bn-messages' };
   if (bnMap[page]) $( bnMap[page])?.classList.add('active');
 
   const titles = {
     dashboard:'Vue d\'ensemble', tickets:'Signalements', map:'Carte',
     contrats:'Contrats', cles:'Clés', journal:'Journal', users:'Utilisateurs',
-    rapport:'Rapport syndic', notifications:'Notifications', profile:'Mon profil'
+    rapport:'Rapport syndic', notifications:'Notifications', profile:'Mon profil',
+    messages:'Messages'
   };
   $('topbar-title').textContent = titles[page] || page;
   renderPage(page);
@@ -1737,6 +1854,7 @@ function renderPage(p) {
   else if (p === 'rapport') renderRapport();
   else if (p === 'notifications') renderNotifications();
   else if (p === 'profile') renderProfile();
+  else if (p === 'messages') renderMessages();
 }
 
 // ── DASHBOARD ──
@@ -2826,6 +2944,265 @@ async function pushNotif(title, body, type, ticketId) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && $('login-screen')?.style.display !== 'none') doAuth();
 });
+
+// ── MESSAGERIE ──
+let _msgState = {
+  conversations: [],
+  activeConvId: null,
+  messages: [],
+  channel: null,
+  mobileView: 'list' // 'list' | 'chat'
+};
+
+async function renderMessages() {
+  $('page').innerHTML = `<div class="msg-layout" id="msg-layout">
+    <div class="conv-list" id="conv-list">
+      <div class="conv-list-header">
+        <span>💬 Messages</span>
+        ${isManager() ? `<button class="btn btn-ghost btn-sm" onclick="newPrivateConv()" title="Nouveau message privé">✏️</button>` : ''}
+      </div>
+      <div id="conv-items"><div style="padding:20px;text-align:center;color:var(--text-3);font-size:13px;">Chargement...</div></div>
+    </div>
+    <div class="chat-zone" id="chat-zone">
+      <div class="chat-empty">
+        <div style="font-size:40px;">💬</div>
+        <div style="font-weight:600;">Sélectionnez une conversation</div>
+        <div style="font-size:13px;color:var(--text-3);">Choisissez un groupe ou démarrez une discussion</div>
+      </div>
+    </div>
+  </div>`;
+  await loadConversations();
+  startMsgRealtime();
+}
+
+async function loadConversations() {
+  const { data, error } = await sb.from('conversations').select('*').order('created_at');
+  if (error) { console.warn('[msg] loadConversations:', error.message); return; }
+  _msgState.conversations = data || [];
+  renderConvList();
+}
+
+async function renderConvList() {
+  const el = $('conv-items');
+  if (!el) return;
+  // Charge le dernier message de chaque conv
+  const convs = _msgState.conversations;
+  if (!convs.length) { el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-3);">Aucune conversation</div>'; return; }
+
+  // Récupère les derniers messages en batch
+  const { data: lastMsgs } = await sb.from('messages')
+    .select('conversation_id, texte, created_at, auteur_id, profiles(prenom,nom)')
+    .order('created_at', { ascending: false });
+
+  const lastByConv = {};
+  (lastMsgs || []).forEach(m => { if (!lastByConv[m.conversation_id]) lastByConv[m.conversation_id] = m; });
+
+  // Non lus
+  const { data: membres } = await sb.from('conversation_membres')
+    .select('conversation_id, lu_jusqu_a').eq('user_id', user.id);
+  const luMap = {};
+  (membres || []).forEach(m => { luMap[m.conversation_id] = m.lu_jusqu_a; });
+
+  el.innerHTML = convs.map(c => {
+    const last = lastByConv[c.id];
+    const lastTxt = last ? ((last.auteur_id === user.id ? 'Vous : ' : '') + last.texte) : 'Aucun message';
+    const lastTime = last ? depuisJours(last.created_at) : '';
+    const isActive = _msgState.activeConvId === c.id;
+    // Compte non lus
+    const luJusqua = luMap[c.id] ? new Date(luMap[c.id]) : new Date(0);
+    const unread = (lastMsgs || []).filter(m => m.conversation_id === c.id && new Date(m.created_at) > luJusqua && m.auteur_id !== user.id).length;
+    const emoji = c.titre.split(' ')[0];
+    return `<div class="conv-item ${isActive ? 'active' : ''}" onclick="openConv('${c.id}')">
+      <div class="conv-avatar ${c.type === 'prive' ? 'prive' : ''}">${emoji}</div>
+      <div class="conv-info">
+        <div class="conv-name">${c.titre.substring(c.titre.indexOf(' ') + 1)}</div>
+        <div class="conv-last">${lastTxt}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
+        <div style="font-size:10px;color:var(--text-3);">${lastTime}</div>
+        ${unread > 0 ? `<div class="conv-unread">${unread}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Badge messages dans nav
+  const totalUnread = Object.values(luMap).length > 0
+    ? convs.reduce((sum, c) => {
+        const luJusqua = luMap[c.id] ? new Date(luMap[c.id]) : new Date(0);
+        return sum + (lastMsgs || []).filter(m => m.conversation_id === c.id && new Date(m.created_at) > luJusqua && m.auteur_id !== user.id).length;
+      }, 0) : 0;
+  const ncm = $('nc-messages'); if (ncm) { ncm.textContent = totalUnread; ncm.style.display = totalUnread > 0 ? '' : 'none'; }
+  const bnm = $('bn-badge-messages'); if (bnm) { bnm.textContent = totalUnread > 9 ? '9+' : totalUnread; bnm.style.display = totalUnread > 0 ? 'flex' : 'none'; }
+}
+
+async function openConv(convId) {
+  _msgState.activeConvId = convId;
+  // Mobile : passe en vue chat
+  const convList = $('conv-list'); const chatZone = $('chat-zone');
+  if (window.innerWidth <= 480) {
+    if (convList) convList.classList.add('hidden');
+    if (chatZone) chatZone.classList.remove('hidden');
+  }
+  renderConvList(); // refresh actif
+  const conv = _msgState.conversations.find(c => c.id === convId);
+  if (!conv) return;
+
+  // Affiche le header + zone messages
+  const chatEl = $('chat-zone');
+  if (!chatEl) return;
+  chatEl.innerHTML = `
+    <div class="chat-header">
+      <button class="btn btn-ghost btn-sm back-btn" style="display:none;" onclick="backToConvList()">←</button>
+      <div class="conv-avatar" style="width:36px;height:36px;font-size:16px;">${conv.titre.split(' ')[0]}</div>
+      <div>
+        <div class="chat-header-name">${conv.titre.substring(conv.titre.indexOf(' ') + 1)}</div>
+        <div class="chat-header-sub" id="chat-members-count">...</div>
+      </div>
+    </div>
+    <div class="chat-messages" id="chat-messages"><div style="text-align:center;padding:20px;color:var(--text-3);font-size:13px;">Chargement...</div></div>
+    <div class="chat-input-bar">
+      <textarea class="chat-input" id="chat-input" placeholder="Message..." rows="1"
+        oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
+      <button class="chat-send" onclick="sendMessage()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
+      </button>
+    </div>`;
+
+  // Affiche back button sur mobile
+  if (window.innerWidth <= 480) {
+    const backBtn = chatEl.querySelector('.back-btn');
+    if (backBtn) backBtn.style.display = 'flex';
+  }
+
+  await loadMessages(convId);
+  markConvRead(convId);
+}
+
+function backToConvList() {
+  _msgState.activeConvId = null;
+  const convList = $('conv-list'); const chatZone = $('chat-zone');
+  if (convList) convList.classList.remove('hidden');
+  if (chatZone) chatZone.classList.add('hidden');
+}
+
+async function loadMessages(convId) {
+  const { data, error } = await sb.from('messages')
+    .select('*, profiles(nom, prenom)')
+    .eq('conversation_id', convId)
+    .order('created_at', { ascending: true })
+    .limit(100);
+  if (error) { console.warn('[msg] loadMessages:', error.message); return; }
+  _msgState.messages = data || [];
+  renderMessages_bubbles();
+}
+
+function renderMessages_bubbles() {
+  const el = $('chat-messages');
+  if (!el) return;
+  const msgs = _msgState.messages;
+  if (!msgs.length) { el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-3);">Aucun message — soyez le premier ! 👋</div>'; return; }
+
+  let lastDate = null;
+  el.innerHTML = msgs.map(m => {
+    const isMine = m.auteur_id === user.id;
+    const auteur = m.profiles ? [m.profiles.prenom, m.profiles.nom].filter(Boolean).join(' ') : '?';
+    const d = new Date(m.created_at);
+    const dateStr = d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+    const timeStr = d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+    let dateSep = '';
+    if (dateStr !== lastDate) { lastDate = dateStr; dateSep = `<div class="msg-date-sep">${dateStr}</div>`; }
+    return `${dateSep}
+    <div class="msg-bubble-wrap ${isMine ? 'mine' : 'theirs'}">
+      ${!isMine ? `<div class="msg-sender">${auteur}</div>` : ''}
+      <div class="msg-bubble ${isMine ? 'mine' : 'theirs'}">${escHtml(m.texte)}</div>
+      <div class="msg-time">${timeStr}</div>
+    </div>`;
+  }).join('');
+  // Scroll en bas
+  el.scrollTop = el.scrollHeight;
+}
+
+function escHtml(t) { return (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+
+async function sendMessage() {
+  const input = $('chat-input');
+  const texte = input?.value.trim();
+  if (!texte || !_msgState.activeConvId) return;
+  input.value = ''; input.style.height = 'auto';
+  const { error } = await sb.from('messages').insert({
+    conversation_id: _msgState.activeConvId,
+    auteur_id: user.id,
+    texte
+  });
+  if (error) { toast('Erreur envoi', 'err'); return; }
+  // Optimistic UI — on ajoute localement sans attendre realtime
+  _msgState.messages.push({
+    id: 'tmp-' + Date.now(),
+    conversation_id: _msgState.activeConvId,
+    auteur_id: user.id,
+    texte,
+    created_at: new Date().toISOString(),
+    profiles: { prenom: profile?.prenom, nom: profile?.nom }
+  });
+  renderMessages_bubbles();
+  markConvRead(_msgState.activeConvId);
+}
+
+async function markConvRead(convId) {
+  await sb.from('conversation_membres').upsert({
+    conversation_id: convId,
+    user_id: user.id,
+    lu_jusqu_a: new Date().toISOString()
+  }, { onConflict: 'conversation_id,user_id' });
+  renderConvList();
+}
+
+function startMsgRealtime() {
+  if (_msgState.channel) return;
+  _msgState.channel = sb.channel('messages-global')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
+      const m = payload.new;
+      // Si c'est la conv active → ajoute la bulle
+      if (m.conversation_id === _msgState.activeConvId && m.auteur_id !== user.id) {
+        // Charge le profil de l'auteur
+        sb.from('profiles').select('nom,prenom').eq('id', m.auteur_id).single().then(({ data }) => {
+          // Enlève le message optimiste si même texte
+          _msgState.messages = _msgState.messages.filter(x => !x.id.startsWith('tmp-'));
+          _msgState.messages.push({ ...m, profiles: data });
+          renderMessages_bubbles();
+          markConvRead(m.conversation_id);
+        });
+      } else if (m.auteur_id !== user.id) {
+        // Notif pour autre conv
+        renderConvList();
+        toast('💬 Nouveau message', 'ok');
+        pushNotif('Nouveau message', m.texte?.substring(0, 80) || '', 'commentaire', null);
+      }
+    })
+    .subscribe();
+}
+
+async function newPrivateConv() {
+  // Charge la liste des utilisateurs
+  const { data: users } = await sb.from('profiles').select('id,nom,prenom,email').eq('actif', true).neq('id', user.id);
+  if (!users?.length) { toast('Aucun autre utilisateur', 'warn'); return; }
+  const list = users.map(u => `${[u.prenom,u.nom].filter(Boolean).join(' ')||u.email} <${u.email}>`).join('\n');
+  const choice = prompt(`Démarrer une conversation privée avec :\n(entrez l'email)\n\n${list}`);
+  if (!choice) return;
+  const target = users.find(u => u.email.toLowerCase().includes(choice.toLowerCase()) || [u.prenom,u.nom].join(' ').toLowerCase().includes(choice.toLowerCase()));
+  if (!target) { toast('Utilisateur non trouvé', 'err'); return; }
+  const titre = `🔒 ${[target.prenom,target.nom].filter(Boolean).join(' ')||target.email}`;
+  const { data: conv } = await sb.from('conversations').insert({ titre, type: 'prive', created_by: user.id }).select().single();
+  if (conv) {
+    await sb.from('conversation_membres').insert([
+      { conversation_id: conv.id, user_id: user.id },
+      { conversation_id: conv.id, user_id: target.id }
+    ]);
+    await loadConversations();
+    openConv(conv.id);
+  }
+}
 
 // ── NETTOYAGE SESSION AU DÉMARRAGE ──
 // Purge TOUJOURS la session au chargement — évite les reconnexions auto avec mauvais rôle.
