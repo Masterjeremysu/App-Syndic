@@ -2344,20 +2344,12 @@ document.addEventListener('keydown', e => {
 });
 
 // ── NETTOYAGE SESSION AU DÉMARRAGE ──
-// Force un logout pour éviter que d'anciennes sessions localStorage
-// reconnectent automatiquement avec un mauvais rôle
+// On purge TOUJOURS la session au chargement de la page.
+// L'utilisateur se connecte manuellement avec ses identifiants.
+// Cela évite les reconnexions automatiques avec un mauvais rôle en cache.
 (async () => {
-  const { data } = await sb.auth.getSession();
-  if (data?.session) {
-    // Session existante → on la garde SEULEMENT si elle est fraîche (< 1h)
-    const loginTime = data.session.user?.last_sign_in_at;
-    const age = loginTime ? (Date.now() - new Date(loginTime).getTime()) : Infinity;
-    if (age > 60 * 60 * 1000) {
-      // Session trop vieille → on purge et on demande de se reconnecter
-      console.log('[init] session expirée, logout propre');
-      await sb.auth.signOut();
-    }
-  }
+  console.log('[init] purge session localStorage');
+  await sb.auth.signOut();
 })();
 </script>
 </body>
