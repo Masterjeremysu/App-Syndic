@@ -1153,8 +1153,14 @@ async function doLogout() {
 }
 
 // ── INIT ──
+let _initDone = false; // bloque le listener jusqu'au signOut initial
+
 sb.auth.onAuthStateChange(async (event, session) => {
-  console.log('[auth]', event, !!session?.user);
+  console.log('[auth]', event, !!session?.user, '| initDone:', _initDone);
+
+  // Ignorer tous les events avant que le signOut initial soit terminé
+  if (!_initDone) return;
+
   if (!session?.user || event === 'SIGNED_OUT') {
     _appStarted = false;
     $('login-screen').style.display = 'flex';
@@ -2344,12 +2350,14 @@ document.addEventListener('keydown', e => {
 });
 
 // ── NETTOYAGE SESSION AU DÉMARRAGE ──
-// On purge TOUJOURS la session au chargement de la page.
-// L'utilisateur se connecte manuellement avec ses identifiants.
-// Cela évite les reconnexions automatiques avec un mauvais rôle en cache.
+// Purge TOUJOURS la session au chargement — évite les reconnexions auto avec mauvais rôle.
+// On active le listener SEULEMENT après que le signOut est terminé.
 (async () => {
-  console.log('[init] purge session localStorage');
+  console.log('[init] signOut initial...');
   await sb.auth.signOut();
+  _initDone = true;
+  console.log('[init] prêt — en attente de connexion manuelle');
+  $('login-screen').style.display = 'flex';
 })();
 </script>
 </body>
