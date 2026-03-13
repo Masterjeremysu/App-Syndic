@@ -611,11 +611,11 @@ tbody tr:hover td { background: var(--bg); }
     <div id="auth-form">
       <div class="fg">
         <label class="label">Email</label>
-        <input type="email" id="auth-email" class="input" placeholder="votre@email.com" autocomplete="email">
+        <input type="email" id="auth-email" class="input" placeholder="votre@email.com" autocomplete="off" data-lpignore="true" data-form-type="other">
       </div>
       <div class="fg">
         <label class="label">Mot de passe</label>
-        <input type="password" id="auth-pass" class="input" placeholder="••••••••" autocomplete="current-password">
+        <input type="password" id="auth-pass" class="input" placeholder="••••••••" autocomplete="new-password" data-lpignore="true" data-form-type="other">
       </div>
       <div id="auth-error" style="color:var(--red);font-size:12px;margin-bottom:12px;display:none;"></div>
       <button class="btn btn-primary" style="width:100%;justify-content:center;" id="auth-btn" onclick="doAuth()">
