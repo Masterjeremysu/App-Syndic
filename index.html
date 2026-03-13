@@ -1413,6 +1413,13 @@ function startRealtime() {
       // Toast discret
       const isMention = payload.new.type === 'mention';
       toast((isMention ? '🏷 ' : '🔔 ') + (payload.new.sujet || 'Nouvelle notification'), isMention ? 'warn' : 'ok');
+      // Push si app en arrière-plan
+      pushNotif(
+        isMention ? 'Mention' : 'CoproSync',
+        payload.new.sujet || 'Nouvelle notification',
+        payload.new.type,
+        payload.new.reference_id
+      );
     })
     .subscribe(status => console.log('[realtime] status:', status));
 }
@@ -1964,6 +1971,10 @@ async function submitComment(ticketId) {
         reference_id: ticketId,
         lu: false
       });
+      // Push si c'est soi-même qui reçoit la mention (même appareil)
+      if (mentionned.id === user.id) {
+        await pushNotif('Vous avez été mentionné', `${auteurNom} : ${texte.substring(0, 80)}`, 'mention', ticketId);
+      }
     }
   }
 
@@ -2161,6 +2172,13 @@ async function submitTicket() {
     ...data,
     auteur_nom: [profile?.prenom, profile?.nom].filter(Boolean).join(' ') || user.email
   });
+  // Notif push locale
+  await pushNotif(
+    urgencySelected === 'critique' ? '🚨 Signalement critique !' : 'Nouveau signalement',
+    `${titre}${batiment ? ' — ' + batiment : ''}`,
+    urgencySelected === 'critique' ? 'critique' : 'nouveau_ticket',
+    data.id
+  );
 
   await loadTickets();
   updateBadges();
@@ -2614,21 +2632,61 @@ function exportCSV() {
 
 // ── PWA / SERVICE WORKER ──
 function registerSW() {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js').catch(() => {});
-  }
+  if (!('serviceWorker' in navigator)) return;
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    console.log('[SW] enregistré');
+    // Demande permission notifications après 3s
+    setTimeout(() => askNotifPermission(reg), 3000);
+  }).catch(() => {});
+
+  // Ecoute les messages du SW (clic notif → ouvre ticket)
+  navigator.serviceWorker.addEventListener('message', e => {
+    if (e.data?.type === 'OPEN_TICKET' && e.data.ticketId) {
+      openDetail(e.data.ticketId);
+    }
+  });
+
   // Install prompt
   let deferredPrompt;
   window.addEventListener('beforeinstallprompt', e => {
     e.preventDefault();
     deferredPrompt = e;
-    // Show install banner after 30s if not installed
     setTimeout(() => {
-      if (deferredPrompt) {
-        toast('📱 Installez l\'app pour un accès rapide depuis votre téléphone', 'warn');
-      }
+      if (deferredPrompt) toast('📱 Installez l\'app pour un accès rapide depuis votre téléphone', 'warn');
     }, 30000);
   });
+}
+
+async function askNotifPermission(reg) {
+  if (!('Notification' in window)) return;
+  if (Notification.permission === 'granted') {
+    console.log('[Push] permission déjà accordée');
+    return;
+  }
+  if (Notification.permission === 'denied') return;
+  // Demande discrète
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') {
+    console.log('[Push] permission accordée ✅');
+    toast('🔔 Notifications activées — vous serez alerté même hors de l\'app !', 'ok');
+  }
+}
+
+// Envoie une notif push locale via le SW
+async function pushNotif(title, body, type, ticketId) {
+  if (!('serviceWorker' in navigator) || Notification.permission !== 'granted') return;
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    await reg.showNotification(`${({critique:'🔴',mention:'🏷',commentaire:'💬',statut_change:'📋',nouveau_ticket:'🚨'}[type]||'🔔')} ${title}`, {
+      body,
+      icon: '/icon-192.png',
+      badge: '/favicon-32.png',
+      tag: ticketId || 'coprosync',
+      data: { ticketId },
+      vibrate: [200, 100, 200],
+      requireInteraction: type === 'critique' || type === 'mention',
+    });
+  } catch(e) { console.warn('[Push] erreur:', e); }
 }
 
 // Enter key on login
