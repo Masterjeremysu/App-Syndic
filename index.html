@@ -758,9 +758,14 @@ tbody tr:hover td { background: var(--bg); }
 .msg-layout {
   display: flex;
   position: fixed;
-  top: 52px; left: 0; right: 0; bottom: 0;
+  top: 52px; left: var(--sidebar-w); right: 0; bottom: 0;
   overflow: hidden;
   background: var(--bg);
+}
+
+/* Sur mobile la sidebar est cachée donc left:0 */
+@media (max-width: 900px) {
+  .msg-layout { left: 0; }
 }
 
 /* ── Liste conversations ── */
