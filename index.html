@@ -751,114 +751,165 @@ tbody tr:hover td { background: var(--bg); }
 .role-membre_cs { background: var(--orange-light); color: var(--orange); border: 1px solid var(--orange-border); }
 .role-copropriétaire { background: var(--green-light); color: var(--green); border: 1px solid var(--green-border); }
 
-/* ── MESSAGERIE ── */
-.msg-layout { display: flex; height: calc(100vh - 52px); overflow: hidden; }
-.conv-list {
-  width: 280px; flex-shrink: 0; border-right: 1px solid var(--border);
-  overflow-y: auto; background: var(--surface);
-}
-.conv-list-header {
-  padding: 16px; border-bottom: 1px solid var(--border);
-  font-family: var(--font-head); font-weight: 700; font-size: 15px;
-  display: flex; align-items: center; justify-content: space-between;
-}
-.conv-item {
-  display: flex; align-items: center; gap: 10px;
-  padding: 12px 16px; cursor: pointer; border-bottom: 1px solid var(--border);
-  transition: background .1s;
-}
-.conv-item:hover { background: var(--bg); }
-.conv-item.active { background: var(--blue-light); border-left: 3px solid var(--accent); }
-.conv-avatar {
-  width: 42px; height: 42px; border-radius: 50%;
-  background: var(--accent); color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; flex-shrink: 0; font-weight: 700;
-}
-.conv-avatar.prive { background: var(--violet); }
-.conv-info { flex: 1; min-width: 0; }
-.conv-name { font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.conv-last { font-size: 11.5px; color: var(--text-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-.conv-unread {
-  background: var(--accent); color: #fff;
-  font-size: 10px; font-weight: 700; min-width: 18px; height: 18px;
-  border-radius: 9px; display: flex; align-items: center; justify-content: center;
-  padding: 0 4px; flex-shrink: 0;
-}
+/* ══════════════════════════════════════
+   MESSAGERIE — Mobile-first, fluide
+   ══════════════════════════════════════ */
 
-/* Zone de chat */
-.chat-zone { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-.chat-header {
-  padding: 14px 20px; border-bottom: 1px solid var(--border);
-  background: var(--surface); display: flex; align-items: center; gap: 12px;
-  flex-shrink: 0;
-}
-.chat-header-name { font-family: var(--font-head); font-weight: 700; font-size: 15px; }
-.chat-header-sub { font-size: 12px; color: var(--text-3); margin-top: 1px; }
-.chat-messages {
-  flex: 1; overflow-y: auto; padding: 16px;
-  display: flex; flex-direction: column; gap: 6px;
+.msg-layout {
+  display: flex;
+  position: fixed;
+  top: 52px; left: 0; right: 0; bottom: 0;
+  overflow: hidden;
   background: var(--bg);
 }
-.msg-bubble-wrap { display: flex; flex-direction: column; }
-.msg-bubble-wrap.mine { align-items: flex-end; }
-.msg-bubble-wrap.theirs { align-items: flex-start; }
-.msg-sender { font-size: 11px; color: var(--text-3); margin-bottom: 3px; padding: 0 4px; }
-.msg-bubble {
-  max-width: 70%; padding: 9px 13px; border-radius: 16px;
-  font-size: 13.5px; line-height: 1.45; word-break: break-word;
+
+/* ── Liste conversations ── */
+.conv-list {
+  width: 300px; flex-shrink: 0;
+  display: flex; flex-direction: column;
+  border-right: 1px solid var(--border);
+  background: var(--surface);
+  overflow: hidden;
 }
-.msg-bubble.mine {
-  background: var(--accent); color: #fff;
-  border-bottom-right-radius: 4px;
-}
-.msg-bubble.theirs {
-  background: var(--surface); border: 1px solid var(--border);
-  border-bottom-left-radius: 4px;
-}
-.msg-time { font-size: 10px; color: var(--text-3); margin-top: 3px; padding: 0 4px; }
-.chat-input-bar {
-  padding: 12px 16px; border-top: 1px solid var(--border);
-  background: var(--surface); display: flex; gap: 8px; align-items: flex-end;
+.conv-list-header {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+  font-family: var(--font-head); font-weight: 700; font-size: 15px;
+  display: flex; align-items: center; justify-content: space-between;
   flex-shrink: 0;
 }
+.conv-items-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.conv-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 14px 18px; cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background .12s; user-select: none;
+}
+.conv-item:hover { background: var(--bg); }
+.conv-item:active { background: var(--surface-2); }
+.conv-item.active {
+  background: var(--blue-light);
+  border-left: 3px solid var(--accent);
+  padding-left: 15px;
+}
+.conv-avatar {
+  width: 46px; height: 46px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #818cf8);
+  color: #fff; display: flex; align-items: center; justify-content: center;
+  font-size: 20px; flex-shrink: 0;
+}
+.conv-avatar.prive { background: linear-gradient(135deg, var(--violet), #a78bfa); }
+.conv-info { flex: 1; min-width: 0; }
+.conv-name { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.conv-last { font-size: 12px; color: var(--text-3); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.conv-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
+.conv-time { font-size: 10.5px; color: var(--text-3); }
+.conv-unread {
+  background: var(--accent); color: #fff;
+  font-size: 10px; font-weight: 700;
+  min-width: 20px; height: 20px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; padding: 0 5px;
+}
+
+/* ── Zone chat ── */
+.chat-zone { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+.chat-header {
+  padding: 12px 18px; border-bottom: 1px solid var(--border);
+  background: var(--surface); display: flex; align-items: center; gap: 12px;
+  flex-shrink: 0; min-height: 60px;
+}
+.chat-back {
+  display: none; width: 34px; height: 34px; border-radius: 50%;
+  border: none; background: var(--surface-2); cursor: pointer;
+  align-items: center; justify-content: center; flex-shrink: 0;
+  font-size: 18px; color: var(--text); line-height: 1;
+}
+.chat-header-av {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #818cf8);
+  display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+}
+.chat-header-info { flex: 1; min-width: 0; }
+.chat-header-name { font-family: var(--font-head); font-weight: 700; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chat-header-sub { font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+
+.chat-messages {
+  flex: 1; overflow-y: auto; overflow-x: hidden;
+  padding: 16px 18px 8px;
+  display: flex; flex-direction: column; gap: 2px;
+  background: var(--bg);
+  -webkit-overflow-scrolling: touch;
+}
+.msg-group { display: flex; flex-direction: column; margin-bottom: 10px; }
+.msg-group.mine { align-items: flex-end; }
+.msg-group.theirs { align-items: flex-start; }
+.msg-sender-name { font-size: 11px; font-weight: 600; color: var(--accent); margin-bottom: 4px; padding: 0 6px; }
+.msg-bubble {
+  max-width: min(72%, 380px); padding: 10px 14px; border-radius: 18px;
+  font-size: 14px; line-height: 1.5; word-break: break-word; white-space: pre-wrap; margin-bottom: 2px;
+}
+.msg-bubble.mine { background: var(--accent); color: #fff; border-bottom-right-radius: 5px; }
+.msg-bubble.theirs { background: var(--surface); border: 1px solid var(--border); border-bottom-left-radius: 5px; }
+.msg-mention-tag { font-weight: 700; opacity: .9; }
+.msg-time-row { font-size: 10.5px; color: var(--text-3); padding: 0 6px; margin-top: 1px; }
+.msg-date-sep {
+  display: flex; align-items: center; gap: 10px;
+  margin: 14px 0 10px; font-size: 11px; color: var(--text-3);
+}
+.msg-date-sep::before, .msg-date-sep::after { content:''; flex:1; height:1px; background:var(--border); }
+
+.chat-input-bar {
+  padding: 10px 14px; border-top: 1px solid var(--border);
+  background: var(--surface); display: flex; gap: 10px; align-items: flex-end; flex-shrink: 0;
+}
+.chat-input-wrap { flex: 1; position: relative; }
 .chat-input {
-  flex: 1; border: 1px solid var(--border); border-radius: 20px;
-  padding: 10px 16px; font-size: 14px; resize: none; max-height: 120px;
+  width: 100%; box-sizing: border-box;
+  border: 1.5px solid var(--border); border-radius: 22px;
+  padding: 11px 16px; font-size: 15px; resize: none;
+  max-height: 120px; min-height: 44px;
   background: var(--bg); color: var(--text); font-family: var(--font);
-  outline: none; line-height: 1.4;
+  outline: none; line-height: 1.4; display: block; overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .chat-input:focus { border-color: var(--accent); }
+.chat-mention-pop {
+  position: absolute; bottom: calc(100% + 6px); left: 0; right: 0;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-md); box-shadow: 0 4px 20px rgba(0,0,0,.12);
+  overflow: hidden; z-index: 100;
+}
 .chat-send {
-  width: 40px; height: 40px; border-radius: 50%; border: none;
+  width: 44px; height: 44px; border-radius: 50%; border: none;
   background: var(--accent); color: #fff; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  transition: opacity .15s; flex-shrink: 0;
+  transition: transform .1s; flex-shrink: 0;
 }
-.chat-send:hover { opacity: .85; }
+.chat-send:active { transform: scale(.88); }
 .chat-empty {
   flex: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  color: var(--text-3); gap: 8px;
+  gap: 10px; color: var(--text-3); padding: 40px; text-align: center;
 }
-.msg-date-sep {
-  text-align: center; font-size: 11px; color: var(--text-3);
-  margin: 8px 0; position: relative;
-}
-.msg-date-sep::before, .msg-date-sep::after {
-  content: ''; position: absolute; top: 50%;
-  width: 30%; height: 1px; background: var(--border);
-}
-.msg-date-sep::before { left: 0; }
-.msg-date-sep::after { right: 0; }
 
-/* Mobile messaging */
-@media (max-width: 480px) {
-  .msg-layout { height: calc(100vh - 52px - 60px); }
-  .conv-list { width: 100%; border-right: none; }
-  .conv-list.hidden { display: none; }
-  .chat-zone.hidden { display: none; }
-  .chat-header .back-btn { display: flex !important; }
+/* ── Mobile plein écran ── */
+@media (max-width: 768px) {
+  .msg-layout { bottom: 60px; }
+  .conv-list {
+    width: 100%; position: absolute; inset: 0; z-index: 2;
+    transition: transform .25s ease;
+  }
+  .conv-list.hidden { transform: translateX(-100%); pointer-events: none; }
+  .chat-zone {
+    position: absolute; inset: 0; z-index: 1;
+    transform: translateX(100%); transition: transform .25s ease;
+  }
+  .chat-zone.visible { transform: translateX(0); z-index: 3; }
+  .chat-back { display: flex !important; }
+  .msg-bubble { max-width: min(82%, 340px); font-size: 15px; }
+  .chat-input { font-size: 16px; }
+  .chat-input-bar { padding: 8px 12px; }
+  .chat-messages { padding: 12px 12px 6px; }
 }
 </style>
 </head>
@@ -3017,13 +3068,15 @@ async function renderMessages() {
         <span>💬 Messages</span>
         ${isManager() ? `<button class="btn btn-ghost btn-sm" onclick="newPrivateConv()" title="Nouveau message privé">✏️</button>` : ''}
       </div>
-      <div id="conv-items"><div style="padding:20px;text-align:center;color:var(--text-3);font-size:13px;">Chargement...</div></div>
+      <div class="conv-items-scroll" id="conv-items">
+        <div style="padding:24px;text-align:center;color:var(--text-3);font-size:13px;">Chargement...</div>
+      </div>
     </div>
     <div class="chat-zone" id="chat-zone">
       <div class="chat-empty">
-        <div style="font-size:40px;">💬</div>
-        <div style="font-weight:600;">Sélectionnez une conversation</div>
-        <div style="font-size:13px;color:var(--text-3);">Choisissez un groupe ou démarrez une discussion</div>
+        <div class="chat-empty-ico">💬</div>
+        <div style="font-weight:600;font-size:15px;">Sélectionnez une conversation</div>
+        <div style="font-size:13px;">Choisissez un groupe ou démarrez une discussion privée</div>
       </div>
     </div>
   </div>`;
@@ -3061,22 +3114,22 @@ async function renderConvList() {
 
   el.innerHTML = convs.map(c => {
     const last = lastByConv[c.id];
-    const lastTxt = last ? ((last.auteur_id === user.id ? 'Vous : ' : '') + last.texte) : 'Aucun message';
+    const lastTxt = last ? ((last.auteur_id === user.id ? 'Vous : ' : (last.profiles ? [last.profiles.prenom,last.profiles.nom].filter(Boolean).join(' ')+'  : ' : '')) + last.texte) : 'Aucun message';
     const lastTime = last ? depuisJours(last.created_at) : '';
     const isActive = _msgState.activeConvId === c.id;
-    // Compte non lus
     const luJusqua = luMap[c.id] ? new Date(luMap[c.id]) : new Date(0);
     const unread = (lastMsgs || []).filter(m => m.conversation_id === c.id && new Date(m.created_at) > luJusqua && m.auteur_id !== user.id).length;
     const emoji = c.titre.split(' ')[0];
+    const titre = c.titre.substring(c.titre.indexOf(' ') + 1);
     return `<div class="conv-item ${isActive ? 'active' : ''}" onclick="openConv('${c.id}')">
       <div class="conv-avatar ${c.type === 'prive' ? 'prive' : ''}">${emoji}</div>
       <div class="conv-info">
-        <div class="conv-name">${c.titre.substring(c.titre.indexOf(' ') + 1)}</div>
-        <div class="conv-last">${lastTxt}</div>
+        <div class="conv-name">${titre}</div>
+        <div class="conv-last">${escHtml(lastTxt)}</div>
       </div>
-      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">
-        <div style="font-size:10px;color:var(--text-3);">${lastTime}</div>
-        ${unread > 0 ? `<div class="conv-unread">${unread}</div>` : ''}
+      <div class="conv-meta">
+        <div class="conv-time">${lastTime}</div>
+        ${unread > 0 ? `<div class="conv-unread">${unread > 9 ? '9+' : unread}</div>` : ''}
       </div>
     </div>`;
   }).join('');
@@ -3093,56 +3146,54 @@ async function renderConvList() {
 
 async function openConv(convId) {
   _msgState.activeConvId = convId;
-  // Mobile : passe en vue chat
-  const convList = $('conv-list'); const chatZone = $('chat-zone');
-  if (window.innerWidth <= 480) {
+  const convList = $('conv-list');
+  const chatZone = $('chat-zone');
+  // Mobile : slide vers le chat
+  if (window.innerWidth <= 768) {
     if (convList) convList.classList.add('hidden');
-    if (chatZone) chatZone.classList.remove('hidden');
+    if (chatZone) chatZone.classList.add('visible');
   }
-  renderConvList(); // refresh actif
+  renderConvList();
   const conv = _msgState.conversations.find(c => c.id === convId);
   if (!conv) return;
-
-  // Affiche le header + zone messages
+  const emoji = conv.titre.split(' ')[0];
+  const titre = conv.titre.substring(conv.titre.indexOf(' ') + 1);
   const chatEl = $('chat-zone');
   if (!chatEl) return;
   chatEl.innerHTML = `
     <div class="chat-header">
-      <button class="btn btn-ghost btn-sm back-btn" style="display:none;" onclick="backToConvList()">←</button>
-      <div class="conv-avatar" style="width:36px;height:36px;font-size:16px;">${conv.titre.split(' ')[0]}</div>
-      <div>
-        <div class="chat-header-name">${conv.titre.substring(conv.titre.indexOf(' ') + 1)}</div>
-        <div class="chat-header-sub" id="chat-members-count">...</div>
+      <button class="chat-back" onclick="backToConvList()">←</button>
+      <div class="chat-header-av">${emoji}</div>
+      <div class="chat-header-info">
+        <div class="chat-header-name">${titre}</div>
+        <div class="chat-header-sub" id="chat-members-count">…</div>
       </div>
     </div>
-    <div class="chat-messages" id="chat-messages"><div style="text-align:center;padding:20px;color:var(--text-3);font-size:13px;">Chargement...</div></div>
+    <div class="chat-messages" id="chat-messages">
+      <div style="text-align:center;padding:24px;color:var(--text-3);font-size:13px;">Chargement…</div>
+    </div>
     <div class="chat-input-bar">
-      <div style="flex:1;position:relative;">
-        <textarea class="chat-input" id="chat-input" placeholder="Message... (@ pour mentionner)" rows="1"
-          oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px';onChatInput(event);"
-          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendMessage();}"></textarea>
-        <div id="chat-mention-list" class="mention-list" style="display:none;bottom:100%;top:auto;"></div>
+      <div class="chat-input-wrap">
+        <textarea class="chat-input" id="chat-input" placeholder="Message… (@ pour mentionner)" rows="1"
+          oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';onChatInput(event);"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey&&window.innerWidth>768){event.preventDefault();sendMessage();}"></textarea>
+        <div id="chat-mention-list" class="chat-mention-pop" style="display:none;"></div>
       </div>
       <button class="chat-send" onclick="sendMessage()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
       </button>
     </div>`;
-
-  // Affiche back button sur mobile
-  if (window.innerWidth <= 480) {
-    const backBtn = chatEl.querySelector('.back-btn');
-    if (backBtn) backBtn.style.display = 'flex';
-  }
-
   await loadMessages(convId);
   markConvRead(convId);
 }
 
 function backToConvList() {
   _msgState.activeConvId = null;
-  const convList = $('conv-list'); const chatZone = $('chat-zone');
+  const convList = $('conv-list');
+  const chatZone = $('chat-zone');
   if (convList) convList.classList.remove('hidden');
-  if (chatZone) chatZone.classList.add('hidden');
+  if (chatZone) chatZone.classList.remove('visible');
+  renderConvList();
 }
 
 async function loadMessages(convId) {
@@ -3160,26 +3211,34 @@ function renderMessages_bubbles() {
   const el = $('chat-messages');
   if (!el) return;
   const msgs = _msgState.messages;
-  if (!msgs.length) { el.innerHTML = '<div style="text-align:center;padding:30px;color:var(--text-3);">Aucun message — soyez le premier ! 👋</div>'; return; }
-
+  if (!msgs.length) {
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3);">Aucun message<br>Soyez le premier ! 👋</div>';
+    return;
+  }
   let lastDate = null;
-  el.innerHTML = msgs.map(m => {
+  let lastAuteur = null;
+  const html = [];
+  msgs.forEach(m => {
     const isMine = m.auteur_id === user.id;
     const auteur = m.profiles ? [m.profiles.prenom, m.profiles.nom].filter(Boolean).join(' ') : '?';
     const d = new Date(m.created_at);
     const dateStr = d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
     const timeStr = d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
-    let dateSep = '';
-    if (dateStr !== lastDate) { lastDate = dateStr; dateSep = `<div class="msg-date-sep">${dateStr}</div>`; }
-    return `${dateSep}
-    <div class="msg-bubble-wrap ${isMine ? 'mine' : 'theirs'}">
-      ${!isMine ? `<div class="msg-sender">${auteur}</div>` : ''}
-      <div class="msg-bubble ${isMine ? 'mine' : 'theirs'}">${escHtml(m.texte)}</div>
-      <div class="msg-time">${timeStr}</div>
-    </div>`;
-  }).join('');
-  // Scroll en bas
-  el.scrollTop = el.scrollHeight;
+    const showSender = !isMine && auteur !== lastAuteur;
+    if (dateStr !== lastDate) {
+      lastDate = dateStr; lastAuteur = null;
+      html.push(`<div class="msg-date-sep">${dateStr}</div>`);
+    }
+    const texteHtml = escHtml(m.texte).replace(/@(\S+)/g, '<span class="msg-mention-tag">@$1</span>');
+    html.push(`<div class="msg-group ${isMine ? 'mine' : 'theirs'}">
+      ${showSender ? `<div class="msg-sender-name">${auteur}</div>` : ''}
+      <div class="msg-bubble ${isMine ? 'mine' : 'theirs'}">${texteHtml}</div>
+      <div class="msg-time-row">${timeStr}</div>
+    </div>`);
+    lastAuteur = auteur;
+  });
+  el.innerHTML = html.join('');
+  requestAnimationFrame(() => { el.scrollTop = el.scrollHeight; });
 }
 
 function escHtml(t) { return (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
