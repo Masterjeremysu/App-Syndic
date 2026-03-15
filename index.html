@@ -75,10 +75,43 @@
   --r: 10px;
   --r-sm: 7px;
   --r-lg: 16px;
+  --r-md: 10px;
   --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
   --shadow-md: 0 4px 16px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
   --shadow-lg: 0 20px 40px rgba(0,0,0,.12);
   --sidebar-w: 248px;
+}
+
+/* ── MODE SOMBRE ── */
+[data-theme="dark"] {
+  --bg: #0f0f0f;
+  --surface: #1a1a1a;
+  --surface-2: #222222;
+  --border: #2e2e2e;
+  --border-strong: #404040;
+
+  --text: #f0ede8;
+  --text-2: #a8a49e;
+  --text-3: #6b6760;
+
+  --accent: #3b82f6;
+  --accent-light: #1e3a5f;
+  --accent-hover: #2563eb;
+
+  --red-light: #2d1515;
+  --red-border: #7f1d1d;
+
+  --orange-light: #2d1a0a;
+  --orange-border: #7c2d12;
+
+  --green-light: #0d2d1a;
+  --green-border: #14532d;
+
+  --amber-light: #2d2200;
+  --amber-border: #78350f;
+
+  --blue-light: #1e2d4a;
+  --blue-border: #1e40af;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -1124,6 +1157,9 @@ tbody tr:hover td { background: var(--bg); }
       </button>
       <span class="topbar-title" id="topbar-title">Vue d'ensemble</span>
       <div style="display:flex;align-items:center;gap:8px;">
+        <button class="notif-btn" id="theme-btn" onclick="toggleTheme()" title="Mode sombre">
+          <span id="theme-ico">🌙</span>
+        </button>
         <div style="position:relative;" id="notif-wrap">
           <button class="notif-btn" id="notif-btn" onclick="toggleNotifPanel()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
@@ -1639,6 +1675,7 @@ async function startApp() {
   console.log('[startApp] role:', profile?.role);
   $('auth-btn').disabled = false;
   $('auth-btn-text').textContent = 'Se connecter';
+  initTheme();
   try {
     $('login-screen').style.display = 'none';
     $('app').style.display = 'flex';
@@ -2132,6 +2169,26 @@ async function renderDashboard() {
           </div>
         </div>` : ''}
 
+        <div class="card" id="dash-events-widget">
+          <div class="card-header">
+            <span class="card-title">📅 Prochains événements</span>
+            <button class="btn btn-ghost btn-sm" onclick="nav('agenda')">Agenda →</button>
+          </div>
+          <div style="padding:8px 16px 12px;" id="dash-events-list">
+            <div style="font-size:13px;color:var(--text-3);text-align:center;padding:12px;">Chargement…</div>
+          </div>
+        </div>
+
+        <div class="card" id="dash-annonces-widget">
+          <div class="card-header">
+            <span class="card-title">📢 Annonces</span>
+            <button class="btn btn-ghost btn-sm" onclick="nav('annonces')">Toutes →</button>
+          </div>
+          <div style="padding:8px 16px 12px;" id="dash-annonces-list">
+            <div style="font-size:13px;color:var(--text-3);text-align:center;padding:12px;">Chargement…</div>
+          </div>
+        </div>
+
         <div class="card">
           <div class="card-body" style="text-align:center;">
             <div style="font-size:24px;margin-bottom:8px;">📱</div>
@@ -2142,9 +2199,67 @@ async function renderDashboard() {
       </div>
     </div>
   </div>`;
+  // Charge les widgets en arrière-plan
+  loadDashboardWidgets();
 }
 
-// ── TICKETS ──
+async function loadDashboardWidgets() {
+  // Widget événements
+  const now = new Date().toISOString();
+  const { data: evts } = await sb.from('evenements')
+    .select('*').gte('date_debut', now)
+    .order('date_debut').limit(4);
+  const evtEl = $('dash-events-list');
+  if (evtEl) {
+    if (!evts?.length) {
+      evtEl.innerHTML = '<div style="font-size:13px;color:var(--text-3);text-align:center;padding:8px;">Aucun événement à venir</div>';
+    } else {
+      evtEl.innerHTML = evts.map(e => {
+        const t = EVENT_TYPES[e.type] || EVENT_TYPES.autre;
+        const d = new Date(e.date_debut);
+        const dateStr = d.toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+        const timeStr = d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+        const isImmi = (d - new Date()) < 86400000; // moins de 24h
+        return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="nav('agenda')">
+          <div style="width:4px;height:36px;border-radius:2px;background:${t.color};flex-shrink:0;"></div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:600;${isImmi?'color:var(--orange);':''}">${escHtml(e.titre)}</div>
+            <div style="font-size:11px;color:var(--text-3);">📅 ${dateStr} à ${timeStr}${e.lieu?' · '+escHtml(e.lieu):''}</div>
+          </div>
+          ${isImmi ? '<span style="font-size:10px;background:var(--orange-light);color:var(--orange);padding:2px 6px;border-radius:8px;font-weight:700;">Bientôt</span>' : ''}
+        </div>`;
+      }).join('');
+    }
+    // Rappel push pour événements dans moins de 24h
+    (evts || []).filter(e => {
+      const d = new Date(e.date_debut);
+      const diff = d - new Date();
+      return diff > 0 && diff < 86400000;
+    }).forEach(e => {
+      pushNotif('📅 Rappel', `${e.titre} — demain à ${new Date(e.date_debut).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'})}`, 'statut_change', null);
+    });
+  }
+  // Widget annonces
+  const { data: anns } = await sb.from('annonces')
+    .select('*').order('epingle', { ascending: false })
+    .order('created_at', { ascending: false }).limit(3);
+  const annEl = $('dash-annonces-list');
+  if (annEl) {
+    if (!anns?.length) {
+      annEl.innerHTML = '<div style="font-size:13px;color:var(--text-3);text-align:center;padding:8px;">Aucune annonce</div>';
+    } else {
+      const icons = { urgent:'🚨', important:'⚠️', info:'📢' };
+      annEl.innerHTML = anns.map(a => `
+        <div style="padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="nav('annonces')">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+            <span>${a.epingle ? '📌' : icons[a.type]||'📢'}</span>
+            <div style="font-size:13px;font-weight:600;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(a.titre)}</div>
+          </div>
+          ${a.contenu ? `<div style="font-size:12px;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(a.contenu.substring(0,80))}${a.contenu.length>80?'…':''}</div>` : ''}
+        </div>`).join('');
+    }
+  }
+}
 function renderTickets() {
   const canFilter = true;
   const myTickets = !isManager();
@@ -3251,22 +3366,45 @@ function openNewAnnonce(existing) {
 async function saveAnnonce(id) {
   const titre = $('anc-titre')?.value.trim();
   if (!titre) { toast('Titre requis', 'err'); return; }
+  const type = $('anc-type')?.value || 'info';
   const payload = {
     titre,
-    type: $('anc-type')?.value || 'info',
+    type,
     contenu: $('anc-contenu')?.value.trim() || null,
     epingle: $('anc-epingle')?.checked || false,
     auteur_id: user.id,
   };
-  let error;
+  let error, data;
   if (id) {
     ({ error } = await sb.from('annonces').update(payload).eq('id', id));
   } else {
-    ({ error } = await sb.from('annonces').insert(payload));
+    ({ error, data } = await sb.from('annonces').insert(payload).select().single());
   }
   if (error) { toast('Erreur sauvegarde', 'err'); return; }
   document.getElementById('modal-annonce')?.remove();
   toast(id ? 'Annonce modifiée ✓' : 'Annonce publiée ✓', 'ok');
+  // 🔔 Notif push si urgent ou important
+  if (!id && data) {
+    const { data: managers } = await sb.from('profiles').select('id,email')
+      .in('role', ['administrateur','syndic','membre_cs']);
+    const notifData = { type === 'urgent' || type === 'important' ? managers : [] };
+    // Notif pour tous si urgent
+    if (type === 'urgent') {
+      const { data: allUsers } = await sb.from('profiles').select('id,email').eq('actif', true);
+      const notifs = (allUsers||[]).filter(u => u.id !== user.id).map(u => ({
+        destinataire_id: u.id, sujet: `🚨 Annonce urgente : ${titre}`,
+        corps: payload.contenu || '', type: 'urgent', reference_id: data.id, lu: false
+      }));
+      if (notifs.length) await sb.from('notifications').insert(notifs);
+      await pushNotif('🚨 Annonce urgente', titre, 'critique', null);
+    } else if (type === 'important') {
+      const notifs = (managers||[]).filter(u => u.id !== user.id).map(u => ({
+        destinataire_id: u.id, sujet: `⚠️ Annonce importante : ${titre}`,
+        corps: payload.contenu || '', type: 'important', reference_id: data.id, lu: false
+      }));
+      if (notifs.length) await sb.from('notifications').insert(notifs);
+    }
+  }
   await loadAnnonces();
 }
 
@@ -3301,31 +3439,95 @@ let _agendaEvents = [];
 
 async function renderAgenda() {
   $('page').innerHTML = `<div style="padding:24px;">
-    <div class="ph" style="display:flex;align-items:center;justify-content:space-between;">
+    <div class="ph" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
       <div><h1>Agenda</h1><p>Réunions, passages artisans, contrôles…</p></div>
-      ${isManager() ? `<button class="btn btn-primary" onclick="openNewEvent()">+ Ajouter</button>` : ''}
+      <div style="display:flex;gap:8px;align-items:center;">
+        <div style="display:flex;border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;">
+          <button class="btn btn-ghost btn-sm" id="view-cal-btn" onclick="setAgendaView('cal')" style="border-radius:0;border:none;background:var(--accent);color:#fff;">📅 Calendrier</button>
+          <button class="btn btn-ghost btn-sm" id="view-list-btn" onclick="setAgendaView('list')" style="border-radius:0;border:none;">☰ Liste</button>
+        </div>
+        ${isManager() ? `<button class="btn btn-primary" onclick="openNewEvent()">+ Ajouter</button>` : ''}
+      </div>
     </div>
-    <div class="agenda-layout">
-      <div class="agenda-calendar">
-        <div class="card" style="padding:20px;">
-          <div class="cal-header">
-            <button class="btn btn-ghost btn-sm" onclick="agendaMonth(-1)">‹</button>
-            <div class="cal-title" id="cal-title"></div>
-            <button class="btn btn-ghost btn-sm" onclick="agendaMonth(1)">›</button>
+    <div id="agenda-cal-view">
+      <div class="agenda-layout">
+        <div class="agenda-calendar">
+          <div class="card" style="padding:20px;">
+            <div class="cal-header">
+              <button class="btn btn-ghost btn-sm" onclick="agendaMonth(-1)">‹</button>
+              <div class="cal-title" id="cal-title"></div>
+              <button class="btn btn-ghost btn-sm" onclick="agendaMonth(1)">›</button>
+            </div>
+            <div class="cal-grid" id="cal-grid"></div>
           </div>
-          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+        <div class="agenda-sidebar-panel">
+          <div class="card" style="padding:16px;">
+            <div style="font-family:var(--font-head);font-weight:700;font-size:14px;margin-bottom:12px;" id="agenda-side-title">Prochains événements</div>
+            <div id="agenda-side-list"><div style="text-align:center;padding:20px;color:var(--text-3);font-size:13px;">Chargement…</div></div>
+          </div>
         </div>
       </div>
-      <div class="agenda-sidebar-panel">
-        <div class="card" style="padding:16px;">
-          <div style="font-family:var(--font-head);font-weight:700;font-size:14px;margin-bottom:12px;" id="agenda-side-title">Prochains événements</div>
-          <div id="agenda-side-list"><div style="text-align:center;padding:20px;color:var(--text-3);font-size:13px;">Chargement…</div></div>
-        </div>
-      </div>
+    </div>
+    <div id="agenda-list-view" style="display:none;">
+      <div id="agenda-full-list"></div>
     </div>
   </div>`;
   await loadEvents();
   renderCal();
+}
+
+let _agendaView = 'cal';
+function setAgendaView(v) {
+  _agendaView = v;
+  $('agenda-cal-view').style.display = v === 'cal' ? '' : 'none';
+  $('agenda-list-view').style.display = v === 'list' ? '' : 'none';
+  $('view-cal-btn').style.background = v === 'cal' ? 'var(--accent)' : '';
+  $('view-cal-btn').style.color = v === 'cal' ? '#fff' : '';
+  $('view-list-btn').style.background = v === 'list' ? 'var(--accent)' : '';
+  $('view-list-btn').style.color = v === 'list' ? '#fff' : '';
+  if (v === 'list') renderAgendaList();
+}
+
+function renderAgendaList() {
+  const el = $('agenda-full-list');
+  if (!el) return;
+  const now = new Date();
+  const upcoming = _agendaEvents.filter(e => new Date(e.date_debut) >= now);
+  const past = _agendaEvents.filter(e => new Date(e.date_debut) < now).reverse();
+  if (!upcoming.length && !past.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-ico">📅</div><div class="empty-txt">Aucun événement</div></div>';
+    return;
+  }
+  let html = '';
+  if (upcoming.length) {
+    html += `<div style="font-family:var(--font-head);font-weight:700;font-size:13px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">À venir</div>`;
+    html += upcoming.map(e => renderEventItem(e)).join('');
+  }
+  if (past.length) {
+    html += `<div style="font-family:var(--font-head);font-weight:700;font-size:13px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;">Passés</div>`;
+    html += `<div style="opacity:.6;">${past.slice(0,10).map(e => renderEventItem(e)).join('')}</div>`;
+  }
+  el.innerHTML = html;
+}
+
+// ── MODE SOMBRE ──
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const newTheme = isDark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('coprosync-theme', newTheme);
+  const ico = $('theme-ico');
+  if (ico) ico.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('coprosync-theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = saved || (prefersDark ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', theme);
+  const ico = $('theme-ico');
+  if (ico) ico.textContent = theme === 'dark' ? '☀️' : '🌙';
 }
 
 async function loadEvents() {
@@ -3491,15 +3693,29 @@ async function saveEvent(id) {
     description: $('evt-desc')?.value.trim() || null,
     auteur_id: user.id,
   };
-  let error;
+  let error, data;
   if (id) {
     ({ error } = await sb.from('evenements').update(payload).eq('id', id));
   } else {
-    ({ error } = await sb.from('evenements').insert(payload));
+    ({ error, data } = await sb.from('evenements').insert(payload).select().single());
   }
   if (error) { toast('Erreur sauvegarde', 'err'); return; }
   document.getElementById('modal-event')?.remove();
   toast(id ? 'Événement modifié ✓' : 'Événement ajouté ✓', 'ok');
+  // 🔔 Notif pour les événements AG ou contrôle
+  if (!id && data && ['ag','controle'].includes(payload.type)) {
+    const { data: allUsers } = await sb.from('profiles').select('id').eq('actif', true);
+    const t = EVENT_TYPES[payload.type];
+    const dateStr = new Date(payload.date_debut).toLocaleDateString('fr-FR', { day:'numeric', month:'long' });
+    const notifs = (allUsers||[]).filter(u => u.id !== user.id).map(u => ({
+      destinataire_id: u.id,
+      sujet: `📅 ${t.label} : ${titre} — ${dateStr}${payload.lieu ? ' à '+payload.lieu : ''}`,
+      corps: payload.description || '',
+      type: 'statut_change', reference_id: data.id, lu: false
+    }));
+    if (notifs.length) await sb.from('notifications').insert(notifs);
+    await pushNotif('📅 ' + t.label, `${titre} — ${dateStr}`, 'statut_change', null);
+  }
   await loadEvents();
 }
 
