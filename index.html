@@ -784,6 +784,106 @@ tbody tr:hover td { background: var(--bg); }
 .role-membre_cs { background: var(--orange-light); color: var(--orange); border: 1px solid var(--orange-border); }
 .role-copropriétaire { background: var(--green-light); color: var(--green); border: 1px solid var(--green-border); }
 
+/* ── RECHERCHE GLOBALE ── */
+.search-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.5);
+  z-index: 2000; display: flex; align-items: flex-start;
+  justify-content: center; padding-top: 80px;
+  backdrop-filter: blur(4px);
+}
+.search-box {
+  width: 100%; max-width: 620px; margin: 0 16px;
+  background: var(--surface); border-radius: var(--r-lg);
+  box-shadow: var(--shadow-lg); overflow: hidden;
+}
+.search-input-wrap {
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 18px; border-bottom: 1px solid var(--border);
+}
+.search-input-wrap svg { color: var(--text-3); flex-shrink: 0; }
+.search-input {
+  flex: 1; border: none; outline: none; font-size: 16px;
+  background: transparent; color: var(--text); font-family: var(--font);
+}
+.search-results { max-height: 420px; overflow-y: auto; }
+.search-result-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 18px; cursor: pointer; border-bottom: 1px solid var(--border);
+  transition: background .1s;
+}
+.search-result-item:hover { background: var(--surface-2); }
+.search-result-ico {
+  width: 36px; height: 36px; border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; flex-shrink: 0; background: var(--surface-2);
+}
+.search-result-title { font-weight: 600; font-size: 13.5px; }
+.search-result-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.search-section-title {
+  padding: 8px 18px 4px; font-size: 10.5px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .07em; color: var(--text-3);
+  background: var(--surface-2);
+}
+.search-empty { padding: 32px; text-align: center; color: var(--text-3); font-size: 13px; }
+
+/* ── CONTACTS ── */
+.contact-card {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--r-lg);
+  margin-bottom: 10px; transition: box-shadow .15s;
+}
+.contact-card:hover { box-shadow: var(--shadow-md); }
+.contact-ico {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.contact-info { flex: 1; min-width: 0; }
+.contact-name { font-weight: 700; font-size: 14px; }
+.contact-role { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.contact-actions { display: flex; gap: 6px; flex-shrink: 0; }
+.contact-btn {
+  width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--border);
+  background: var(--surface-2); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; transition: background .1s; text-decoration: none;
+}
+.contact-btn:hover { background: var(--bg); }
+.contact-urgency {
+  background: var(--red-light); border: 1px solid var(--red-border);
+  border-radius: var(--r-lg); padding: 12px 16px; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px; font-size: 13px;
+}
+
+/* ── ONBOARDING ── */
+.onboarding-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.6);
+  z-index: 3000; display: flex; align-items: center; justify-content: center;
+  padding: 20px; backdrop-filter: blur(6px);
+}
+.onboarding-box {
+  background: var(--surface); border-radius: var(--r-lg);
+  width: 100%; max-width: 480px;
+  box-shadow: var(--shadow-lg); overflow: hidden;
+}
+.onboarding-step { padding: 32px; text-align: center; }
+.onboarding-ico { font-size: 56px; margin-bottom: 16px; }
+.onboarding-title { font-family: var(--font-head); font-size: 22px; font-weight: 800; margin-bottom: 8px; }
+.onboarding-desc { font-size: 14px; color: var(--text-2); line-height: 1.6; margin-bottom: 24px; }
+.onboarding-progress {
+  display: flex; gap: 6px; justify-content: center; margin-bottom: 24px;
+}
+.onboarding-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--border);
+  transition: background .2s;
+}
+.onboarding-dot.active { background: var(--accent); width: 24px; border-radius: 4px; }
+.onboarding-footer {
+  padding: 16px 32px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+
 /* ── ANNONCES ── */
 .annonce-card {
   background: var(--surface); border: 1px solid var(--border);
@@ -1112,6 +1212,10 @@ tbody tr:hover td { background: var(--bg); }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
       Agenda
     </a>
+    <a class="nav-item" data-page="contacts" onclick="nav('contacts')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18a2 2 0 012-2.18h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+      Contacts & Urgences
+    </a>
 
     <div class="nav-section nav-admin-only" id="nav-section-gestion">Gestion</div>
     <a class="nav-item nav-manager-only" data-page="contrats" onclick="nav('contrats')">
@@ -1157,6 +1261,9 @@ tbody tr:hover td { background: var(--bg); }
       </button>
       <span class="topbar-title" id="topbar-title">Vue d'ensemble</span>
       <div style="display:flex;align-items:center;gap:8px;">
+        <button class="notif-btn" onclick="openSearch()" title="Rechercher (Ctrl+K)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </button>
         <button class="notif-btn" id="theme-btn" onclick="toggleTheme()" title="Mode sombre">
           <span id="theme-ico">🌙</span>
         </button>
@@ -1684,6 +1791,7 @@ async function startApp() {
     nav('dashboard');
     registerSW();
     startRealtime();
+    setTimeout(checkOnboarding, 1500);
   } catch(e) {
     console.error('[startApp] ERREUR:', e);
     alert('Erreur démarrage : ' + e.message);
@@ -1734,6 +1842,8 @@ async function loadAll() {
     const tasks = [loadTickets()];
     if (isManager()) tasks.push(loadContrats());
     tasks.push(loadCles());
+    tasks.push(loadAnnonceCache());
+    tasks.push(loadEvenementsCache());
     await Promise.all(tasks);
     if (isManager()) await loadJournal();
     updateBadges();
@@ -1764,6 +1874,16 @@ async function loadCles() {
 async function loadJournal() {
   const { data } = await sb.from('journal').select('*,profiles(nom,prenom)').order('created_at', { ascending: false }).limit(200);
   if (data) cache.journal = data;
+}
+
+async function loadAnnonceCache() {
+  const { data } = await sb.from('annonces').select('*').order('created_at', { ascending: false }).limit(50);
+  if (data) cache.annonces = data;
+}
+
+async function loadEvenementsCache() {
+  const { data } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
+  if (data) cache.evenements = data;
 }
 
 async function loadStats() {
@@ -2000,7 +2120,8 @@ function nav(page, noClose) {
     dashboard:'Vue d\'ensemble', tickets:'Signalements', map:'Carte',
     contrats:'Contrats', cles:'Clés', journal:'Journal', users:'Utilisateurs',
     rapport:'Rapport syndic', notifications:'Notifications', profile:'Mon profil',
-    messages:'Messages', annonces:'Annonces', agenda:'Agenda'
+    messages:'Messages', annonces:'Annonces', agenda:'Agenda',
+    contacts:'Contacts & Urgences'
   };
   $('topbar-title').textContent = titles[page] || page;
   renderPage(page);
@@ -2042,6 +2163,7 @@ function renderPage(p) {
   else if (p === 'messages') renderMessages();
   else if (p === 'annonces') renderAnnonces();
   else if (p === 'agenda') renderAgenda();
+  else if (p === 'contacts') renderContacts();
 }
 
 // ── DASHBOARD ──
@@ -2369,36 +2491,71 @@ async function openDetail(id) {
   const t = cache.tickets.find(x => x.id === id);
   if (!t) return;
 
-  // Load comments
-  const { data: comments } = await sb.from('commentaires')
-    .select('*, profiles(nom, prenom, role)')
-    .eq('ticket_id', id)
-    .order('created_at');
+  // Charge commentaires + historique en parallèle
+  const [{ data: comments }, { data: history }] = await Promise.all([
+    sb.from('commentaires').select('*, profiles(nom, prenom, role)').eq('ticket_id', id).order('created_at'),
+    sb.from('journal').select('*').eq('entite', 'ticket').eq('entite_id', id).order('created_at', { ascending: true })
+  ]);
 
   const canManage = isManager();
   const isAuthor = t.auteur_id === user.id;
+  const statutLabels = { nouveau:'Nouveau', en_cours:'En cours', transmis_syndic:'Transmis syndic', attente_intervention:'En attente', résolu:'Résolu', clos:'Clos' };
+
+  // Historique des statuts depuis le journal
+  const statutHistory = (history||[]).filter(h => h.details?.statut || h.action === 'Ticket créé' || h.action === 'Statut modifié');
 
   $('m-detail-title').textContent = t.titre;
   d($('m-detail-body'), `
-    ${t.photo_url ? `<img src="${t.photo_url}" class="detail-photo" alt="Photo">` : ''}
+    ${t.photo_url ? `
+    <div style="margin-bottom:16px;">
+      <img src="${t.photo_url}" class="detail-photo" alt="Photo du signalement" style="cursor:zoom-in;" onclick="window.open('${t.photo_url}','_blank')">
+    </div>` : canManage || isAuthor ? `
+    <div style="margin-bottom:16px;">
+      <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;border:2px dashed var(--border);border-radius:var(--r);cursor:pointer;font-size:13px;color:var(--text-3);transition:border-color .15s;" onmouseenter="this.style.borderColor='var(--accent)'" onmouseleave="this.style.borderColor='var(--border)'">
+        <span style="font-size:20px;">📷</span>
+        <span>Ajouter une photo</span>
+        <input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadTicketPhoto('${t.id}', this)">
+      </label>
+    </div>` : ''}
+
     <div class="meta-strip">
       ${badgeUrgence(t.urgence)}
       ${badgeStatut(t.statut)}
       <span class="meta-item">📍 <strong>${t.batiment||'?'}</strong>${t.zone?' — '+t.zone:''}</span>
       <span class="meta-item">👤 <strong>${[t.auteur_prenom,t.auteur_nom].filter(Boolean).join(' ')||'N/A'}</strong>${t.auteur_lot?' · Lot '+t.auteur_lot:''}</span>
       <span class="meta-item">📅 <strong>${fmt(t.created_at)}</strong></span>
+      <span class="meta-item">⏱ <strong>${depuisJours(t.created_at)}</strong></span>
     </div>
-    ${t.description ? `<p style="font-size:13.5px;line-height:1.6;margin-bottom:16px;color:var(--text);">${t.description}</p>` : ''}
+    ${t.description ? `<p style="font-size:13.5px;line-height:1.6;margin-bottom:16px;color:var(--text);">${escHtml(t.description)}</p>` : ''}
 
     ${canManage ? `
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px;padding:14px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);">
       <label style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.05em;">Statut :</label>
       <select class="select" style="width:auto;" onchange="changeStatut('${t.id}',this.value)">
         ${['nouveau','en_cours','transmis_syndic','attente_intervention','résolu','clos'].map(s =>
-          `<option value="${s}" ${s===t.statut?'selected':''}>${{nouveau:'Nouveau',en_cours:'En cours',transmis_syndic:'Transmis syndic',attente_intervention:'En attente',résolu:'Résolu',clos:'Clos'}[s]}</option>`
+          `<option value="${s}" ${s===t.statut?'selected':''}>${statutLabels[s]}</option>`
         ).join('')}
       </select>
-      ${t.note_interne ? `<div style="font-size:12px;background:var(--amber-light);border:1px solid var(--amber-border);border-radius:var(--r-sm);padding:6px 10px;flex:1;"><strong>Note interne :</strong> ${t.note_interne}</div>` : ''}
+      ${t.note_interne ? `<div style="font-size:12px;background:var(--amber-light);border:1px solid var(--amber-border);border-radius:var(--r-sm);padding:6px 10px;flex:1;"><strong>Note interne :</strong> ${escHtml(t.note_interne)}</div>` : ''}
+    </div>` : ''}
+
+    ${statutHistory.length > 1 ? `
+    <div style="margin-bottom:18px;">
+      <div style="font-family:var(--font-head);font-weight:700;font-size:13px;color:var(--text-3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:10px;">📋 Historique</div>
+      <div style="position:relative;padding-left:20px;">
+        <div style="position:absolute;left:6px;top:6px;bottom:6px;width:2px;background:var(--border);border-radius:1px;"></div>
+        ${statutHistory.map((h, i) => {
+          const isLast = i === statutHistory.length - 1;
+          const statut = h.details?.statut || (h.action === 'Ticket créé' ? 'nouveau' : null);
+          return `<div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;position:relative;">
+            <div style="width:14px;height:14px;border-radius:50%;background:${isLast?'var(--accent)':'var(--border)'};border:2px solid var(--surface);flex-shrink:0;margin-top:2px;position:absolute;left:-20px;"></div>
+            <div>
+              <div style="font-size:12.5px;font-weight:600;">${statut ? badgeStatut(statut) : escHtml(h.action)}</div>
+              <div style="font-size:11px;color:var(--text-3);margin-top:2px;">${escHtml(h.user_nom||'Système')} · ${depuisJours(h.created_at)}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
     </div>` : ''}
 
     <div style="margin-top:4px;">
@@ -2414,7 +2571,7 @@ async function openDetail(id) {
                 <span class="cm-author">${[c.profiles?.prenom,c.profiles?.nom].filter(Boolean).join(' ')||'?'}${c.prive?' 🔒':''}</span>
                 <span class="cm-date">${fmt(c.created_at)}</span>
               </div>
-              <div class="cm-text">${c.texte}</div>
+              <div class="cm-text">${escHtml(c.texte)}</div>
             </div>`).join('')}
       </div>
       <div style="position:relative;">
@@ -2435,10 +2592,97 @@ async function openDetail(id) {
 
   d($('m-detail-footer'), `
     <button class="btn btn-secondary" onclick="closeModal('m-detail')">Fermer</button>
+    <button class="btn btn-ghost btn-sm" onclick="exportTicketPDF('${t.id}')">🖨️ PDF</button>
     ${(canManage || isAuthor) && t.statut !== 'clos' ? `
-    <button class="btn btn-ghost btn-sm" onclick="deleteTicket('${t.id}')">Supprimer</button>` : ''}
+    <button class="btn btn-ghost btn-sm" style="color:var(--red);" onclick="deleteTicket('${t.id}')">Supprimer</button>` : ''}
   `);
   openModal('m-detail');
+}
+
+async function uploadTicketPhoto(ticketId, input) {
+  const file = input.files[0];
+  if (!file) return;
+  toast('Upload en cours…', 'ok');
+  const path = `tickets/${ticketId}/${Date.now()}.${file.name.split('.').pop()}`;
+  const { data: upData, error } = await sb.storage.from('tickets').upload(path, file, { upsert: true });
+  if (error) { toast('Erreur upload : ' + error.message, 'err'); return; }
+  const { data: urlData } = sb.storage.from('tickets').getPublicUrl(path);
+  const photo_url = urlData?.publicUrl;
+  await sb.from('tickets').update({ photo_url }).eq('id', ticketId);
+  // Mise à jour du cache
+  const t = cache.tickets.find(x => x.id === ticketId);
+  if (t) t.photo_url = photo_url;
+  toast('Photo ajoutée ✓', 'ok');
+  openDetail(ticketId);
+}
+
+async function exportTicketPDF(ticketId) {
+  const t = cache.tickets.find(x => x.id === ticketId);
+  if (!t) return;
+
+  const { data: comments } = await sb.from('commentaires')
+    .select('*, profiles(nom,prenom)').eq('ticket_id', ticketId).order('created_at');
+
+  const urgLabels = { critique:'🔴 Critique', important:'🟠 Important', normal:'🔵 Normal' };
+  const statLabels = { nouveau:'Nouveau', en_cours:'En cours', transmis_syndic:'Transmis syndic', attente_intervention:'En attente', résolu:'Résolu', clos:'Clos' };
+  const today = new Date().toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
+
+  const html = `<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 40px auto; color: #1a1917; font-size: 13px; }
+    h1 { font-size: 20px; margin-bottom: 4px; }
+    .meta { display: flex; gap: 16px; flex-wrap: wrap; margin: 12px 0; color: #666; font-size: 12px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; }
+    .badge-critique { background: #fef2f2; color: #dc2626; }
+    .badge-important { background: #fff7ed; color: #ea580c; }
+    .badge-normal { background: #eff6ff; color: #2563eb; }
+    .badge-statut { background: #f0fdf4; color: #16a34a; }
+    .section { margin-top: 20px; padding-top: 16px; border-top: 1px solid #e8e5df; }
+    .section-title { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #9b9890; margin-bottom: 10px; }
+    .comment { background: #f9f8f6; border-radius: 8px; padding: 10px 14px; margin-bottom: 8px; }
+    .comment-meta { font-size: 11px; color: #9b9890; margin-bottom: 4px; }
+    .footer { margin-top: 32px; font-size: 11px; color: #9b9890; text-align: center; }
+    img { max-width: 100%; border-radius: 8px; margin: 12px 0; }
+  </style></head><body>
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
+    <div>
+      <div style="font-size:11px;color:#9b9890;text-transform:uppercase;letter-spacing:.06em;">CoproSync — Résidence le Floréal</div>
+      <h1>${escHtml(t.titre)}</h1>
+      <div class="meta">
+        <span>📅 Créé le ${fmt(t.created_at)}</span>
+        <span>📍 ${escHtml(t.batiment||'?')}${t.zone?' — '+escHtml(t.zone):''}</span>
+        <span>👤 ${escHtml([t.auteur_prenom,t.auteur_nom].filter(Boolean).join(' ')||'N/A')}</span>
+      </div>
+      <span class="badge badge-${t.urgence}">${urgLabels[t.urgence]||t.urgence}</span>
+      <span class="badge badge-statut" style="margin-left:6px;">${statLabels[t.statut]||t.statut}</span>
+    </div>
+    <div style="font-size:11px;color:#9b9890;text-align:right;">Réf: ${t.id.substring(0,8).toUpperCase()}<br>Exporté le ${today}</div>
+  </div>
+
+  ${t.photo_url ? `<img src="${t.photo_url}" alt="Photo du signalement">` : ''}
+  ${t.description ? `<div class="section"><div class="section-title">Description</div><p style="line-height:1.6;">${escHtml(t.description)}</p></div>` : ''}
+
+  ${comments?.length ? `
+  <div class="section">
+    <div class="section-title">Commentaires (${comments.length})</div>
+    ${comments.map(c => `
+    <div class="comment">
+      <div class="comment-meta">${escHtml([c.profiles?.prenom,c.profiles?.nom].filter(Boolean).join(' ')||'?')} · ${fmt(c.created_at)}${c.prive?' · 🔒 Note interne':''}</div>
+      <div>${escHtml(c.texte)}</div>
+    </div>`).join('')}
+  </div>` : ''}
+
+  <div class="footer">Document généré par CoproSync · ${today} · app-syndic.vercel.app</div>
+  </body></html>`;
+
+  const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `signalement-${t.titre.replace(/[^a-z0-9]/gi,'-').toLowerCase().substring(0,30)}.html`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Export téléchargé — ouvrez le fichier et imprimez en PDF', 'ok');
 }
 
 async function changeStatut(id, statut) {
@@ -3723,6 +3967,298 @@ async function deleteEvent(id) {
   document.getElementById('modal-event')?.remove();
   toast('Événement supprimé', 'ok');
   await loadEvents();
+}
+
+// ── RECHERCHE GLOBALE ──
+function openSearch() {
+  if ($('search-overlay')) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'search-overlay';
+  overlay.id = 'search-overlay';
+  overlay.innerHTML = `
+    <div class="search-box" onclick="event.stopPropagation()">
+      <div class="search-input-wrap">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input class="search-input" id="search-input" placeholder="Rechercher un signalement, une annonce, un message…" autofocus>
+        <button class="btn btn-ghost btn-sm" onclick="closeSearch()">Esc</button>
+      </div>
+      <div class="search-results" id="search-results">
+        <div class="search-empty">Commencez à taper pour rechercher…</div>
+      </div>
+    </div>`;
+  overlay.addEventListener('click', closeSearch);
+  document.body.appendChild(overlay);
+  setTimeout(() => $('search-input')?.focus(), 50);
+  $('search-input').addEventListener('input', e => runSearch(e.target.value));
+}
+
+function closeSearch() {
+  $('search-overlay')?.remove();
+}
+
+function runSearch(q) {
+  const el = $('search-results');
+  if (!el) return;
+  const query = q.trim().toLowerCase();
+  if (!query) { el.innerHTML = '<div class="search-empty">Commencez à taper…</div>'; return; }
+
+  const results = [];
+
+  // Tickets
+  const tickets = (cache.tickets || []).filter(t =>
+    t.titre?.toLowerCase().includes(query) ||
+    t.description?.toLowerCase().includes(query) ||
+    t.batiment?.toLowerCase().includes(query)
+  ).slice(0, 4);
+  if (tickets.length) {
+    results.push(`<div class="search-section-title">🔧 Signalements</div>`);
+    results.push(...tickets.map(t => `
+      <div class="search-result-item" onclick="closeSearch();openDetail('${t.id}')">
+        <div class="search-result-ico">${t.urgence==='critique'?'🔴':t.urgence==='important'?'🟠':'🔵'}</div>
+        <div>
+          <div class="search-result-title">${escHtml(t.titre)}</div>
+          <div class="search-result-sub">${t.batiment||''} · ${t.statut}</div>
+        </div>
+      </div>`));
+  }
+
+  // Annonces (depuis Supabase — on cherche dans le cache si dispo)
+  if (cache.annonces) {
+    const anns = cache.annonces.filter(a =>
+      a.titre?.toLowerCase().includes(query) || a.contenu?.toLowerCase().includes(query)
+    ).slice(0, 3);
+    if (anns.length) {
+      results.push(`<div class="search-section-title">📢 Annonces</div>`);
+      results.push(...anns.map(a => `
+        <div class="search-result-item" onclick="closeSearch();nav('annonces')">
+          <div class="search-result-ico">${a.type==='urgent'?'🚨':a.type==='important'?'⚠️':'📢'}</div>
+          <div>
+            <div class="search-result-title">${escHtml(a.titre)}</div>
+            <div class="search-result-sub">${a.contenu?.substring(0,60)||''}</div>
+          </div>
+        </div>`));
+    }
+  }
+
+  // Événements
+  if (cache.evenements) {
+    const evts = cache.evenements.filter(e =>
+      e.titre?.toLowerCase().includes(query) || e.lieu?.toLowerCase().includes(query)
+    ).slice(0, 3);
+    if (evts.length) {
+      results.push(`<div class="search-section-title">📅 Agenda</div>`);
+      results.push(...evts.map(e => {
+        const d = new Date(e.date_debut).toLocaleDateString('fr-FR', {day:'numeric',month:'short'});
+        return `<div class="search-result-item" onclick="closeSearch();nav('agenda')">
+          <div class="search-result-ico">📅</div>
+          <div>
+            <div class="search-result-title">${escHtml(e.titre)}</div>
+            <div class="search-result-sub">${d}${e.lieu?' · '+escHtml(e.lieu):''}</div>
+          </div>
+        </div>`;
+      }));
+    }
+  }
+
+  // Contacts
+  const contactsList = getContactsList();
+  const contacts = contactsList.filter(c =>
+    c.name.toLowerCase().includes(query) || c.role.toLowerCase().includes(query)
+  ).slice(0, 2);
+  if (contacts.length) {
+    results.push(`<div class="search-section-title">📞 Contacts</div>`);
+    results.push(...contacts.map(c => `
+      <div class="search-result-item" onclick="closeSearch();nav('contacts')">
+        <div class="search-result-ico">${c.ico}</div>
+        <div>
+          <div class="search-result-title">${c.name}</div>
+          <div class="search-result-sub">${c.role} · ${c.tel}</div>
+        </div>
+      </div>`));
+  }
+
+  el.innerHTML = results.length
+    ? results.join('')
+    : `<div class="search-empty">Aucun résultat pour "<strong>${escHtml(q)}</strong>"</div>`;
+}
+
+// Ctrl+K pour ouvrir la recherche
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openSearch(); }
+  if (e.key === 'Escape') closeSearch();
+});
+
+// ── CONTACTS & URGENCES ──
+function getContactsList() {
+  return [
+    { ico:'🚒', name:'Pompiers', role:'Urgence incendie', tel:'18', urgent:true },
+    { ico:'🚑', name:'SAMU', role:'Urgence médicale', tel:'15', urgent:true },
+    { ico:'👮', name:'Police / Gendarmerie', role:'Urgence sécurité', tel:'17', urgent:true },
+    { ico:'🔧', name:'Urgences gaz', role:'GRDF', tel:'0800 47 33 33', urgent:true },
+    { ico:'⚡', name:'Urgences électricité', role:'Enedis', tel:'09 72 67 50 50', urgent:true },
+    { ico:'🛗', name:'ACAF — Ascenseurs', role:'Dépannage 24h/24', tel:'04 76 XX XX XX', urgent:false },
+    { ico:'🏢', name:'Syndic', role:'Gestion de la copropriété', tel:'', email:'', urgent:false },
+    { ico:'🔑', name:'Gardien', role:'Résidence le Floréal', tel:'', urgent:false },
+  ];
+}
+
+function renderContacts() {
+  const contacts = getContactsList();
+  const urgent = contacts.filter(c => c.urgent);
+  const autres = contacts.filter(c => !c.urgent);
+
+  $('page').innerHTML = `<div style="padding:24px;max-width:680px;">
+    <div class="ph"><h1>Contacts & Urgences</h1><p>Numéros importants de la résidence</p></div>
+
+    <div class="contact-urgency">
+      <span style="font-size:24px;">🆘</span>
+      <div>
+        <div style="font-weight:700;color:var(--red);">En cas d'urgence vitale</div>
+        <div style="color:var(--red);opacity:.8;">Appelez immédiatement le 112 (numéro d'urgence européen)</div>
+      </div>
+      <a href="tel:112" class="btn btn-danger btn-sm" style="margin-left:auto;text-decoration:none;">📞 112</a>
+    </div>
+
+    <div style="font-family:var(--font-head);font-weight:700;font-size:13px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">🚨 Numéros d'urgence</div>
+    ${urgent.map(c => renderContactCard(c)).join('')}
+
+    <div style="font-family:var(--font-head);font-weight:700;font-size:13px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin:20px 0 10px;">🏠 Contacts de la résidence</div>
+    ${autres.map(c => renderContactCard(c)).join('')}
+
+    ${isAdmin() ? `
+    <div style="margin-top:20px;padding:16px;background:var(--surface-2);border-radius:var(--r-lg);border:1px solid var(--border);">
+      <div style="font-size:13px;color:var(--text-2);margin-bottom:8px;">✏️ <strong>Admin :</strong> pour modifier ces contacts, éditez directement le code (variable <code>getContactsList</code>).</div>
+    </div>` : ''}
+  </div>`;
+}
+
+function renderContactCard(c) {
+  const hasPhone = c.tel && c.tel.length > 0;
+  return `<div class="contact-card">
+    <div class="contact-ico" style="background:${c.urgent?'var(--red-light)':'var(--surface-2)'};">${c.ico}</div>
+    <div class="contact-info">
+      <div class="contact-name">${c.name}</div>
+      <div class="contact-role">${c.role}${hasPhone ? ' · ' + c.tel : ''}</div>
+    </div>
+    <div class="contact-actions">
+      ${hasPhone ? `<a href="tel:${c.tel.replace(/\s/g,'')}" class="contact-btn" title="Appeler">📞</a>` : ''}
+      ${c.email ? `<a href="mailto:${c.email}" class="contact-btn" title="Email">✉️</a>` : ''}
+    </div>
+  </div>`;
+}
+
+// ── ONBOARDING — Nouveaux résidents ──
+function checkOnboarding() {
+  if (localStorage.getItem('coprosync-onboarded')) return;
+  if (!user || !profile) return;
+  // Seulement pour les nouveaux (pas de tour ni de lot)
+  if (profile.tour) { localStorage.setItem('coprosync-onboarded', '1'); return; }
+  showOnboarding();
+}
+
+let _onboardStep = 0;
+const ONBOARD_STEPS = [
+  {
+    ico: '👋',
+    title: 'Bienvenue à la Résidence le Floréal !',
+    desc: 'Cette application vous permet de signaler des problèmes, suivre leur résolution, et rester informé de la vie de votre résidence.\n\nQuelques étapes pour personnaliser votre espace.'
+  },
+  {
+    ico: '🏠',
+    title: 'Quelle est votre tour ?',
+    desc: 'Indiquez votre tour pour rejoindre automatiquement votre groupe de messagerie et recevoir les informations qui vous concernent.',
+    action: 'tour'
+  },
+  {
+    ico: '🔔',
+    title: 'Activez les notifications',
+    desc: 'Soyez alerté instantanément en cas de signalement urgent, d\'annonce importante ou de message.\n\nVous pouvez les désactiver à tout moment dans les réglages du téléphone.',
+    action: 'notif'
+  },
+  {
+    ico: '🎉',
+    title: 'Tout est prêt !',
+    desc: 'Vous pouvez maintenant utiliser CoproSync.\n\n• Signalez un problème avec le bouton "+ Signaler"\n• Consultez les annonces et l\'agenda\n• Chattez avec vos voisins dans Messages'
+  }
+];
+
+function showOnboarding() {
+  if ($('onboarding-overlay')) return;
+  _onboardStep = 0;
+  renderOnboardingStep();
+}
+
+function renderOnboardingStep() {
+  const existing = $('onboarding-overlay');
+  if (existing) existing.remove();
+
+  const step = ONBOARD_STEPS[_onboardStep];
+  const isLast = _onboardStep === ONBOARD_STEPS.length - 1;
+  const isFirst = _onboardStep === 0;
+  const dots = ONBOARD_STEPS.map((_, i) =>
+    `<div class="onboarding-dot${i === _onboardStep ? ' active' : ''}"></div>`
+  ).join('');
+
+  let actionHtml = '';
+  if (step.action === 'tour') {
+    actionHtml = `<select id="ob-tour" class="select" style="width:100%;margin-bottom:8px;">
+      <option value="">— Sélectionner ma tour —</option>
+      ${COPRO.tours.map(t => `<option value="${t}" ${profile?.tour===t?'selected':''}>${t}</option>`).join('')}
+    </select>
+    <input type="text" id="ob-lot" class="input" placeholder="Numéro de lot (ex: 3B)" value="${profile?.lot||''}" style="width:100%;">`;
+  } else if (step.action === 'notif') {
+    actionHtml = `<button class="btn btn-primary" style="width:100%;" onclick="askNotifPermission();_onboardStep++;renderOnboardingStep();">
+      🔔 Activer les notifications
+    </button>`;
+  }
+
+  const overlay = document.createElement('div');
+  overlay.className = 'onboarding-overlay';
+  overlay.id = 'onboarding-overlay';
+  overlay.innerHTML = `<div class="onboarding-box">
+    <div class="onboarding-step">
+      <div class="onboarding-ico">${step.ico}</div>
+      <div class="onboarding-progress">${dots}</div>
+      <div class="onboarding-title">${step.title}</div>
+      <div class="onboarding-desc">${step.desc.replace(/\n/g,'<br>')}</div>
+      ${actionHtml}
+    </div>
+    <div class="onboarding-footer">
+      <button class="btn btn-ghost btn-sm" onclick="skipOnboarding()">Passer</button>
+      <div style="display:flex;gap:8px;">
+        ${!isFirst ? `<button class="btn btn-secondary btn-sm" onclick="_onboardStep--;renderOnboardingStep();">← Retour</button>` : ''}
+        <button class="btn btn-primary" onclick="nextOnboardStep()">
+          ${isLast ? '🎉 Commencer !' : 'Suivant →'}
+        </button>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function nextOnboardStep() {
+  const step = ONBOARD_STEPS[_onboardStep];
+  // Sauvegarde tour si étape tour
+  if (step.action === 'tour') {
+    const tour = $('ob-tour')?.value;
+    const lot = $('ob-lot')?.value.trim();
+    if (tour || lot) {
+      await sb.from('profiles').update({ tour: tour||null, lot: lot||null }).eq('id', user.id);
+      if (tour) await autoJoinTourGroup(tour);
+      profile.tour = tour; profile.lot = lot;
+    }
+  }
+  if (_onboardStep < ONBOARD_STEPS.length - 1) {
+    _onboardStep++;
+    renderOnboardingStep();
+  } else {
+    skipOnboarding();
+  }
+}
+
+function skipOnboarding() {
+  localStorage.setItem('coprosync-onboarded', '1');
+  $('onboarding-overlay')?.remove();
 }
 
 // ── MESSAGERIE ──
