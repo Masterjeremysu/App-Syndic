@@ -4107,14 +4107,7 @@ function renderContacts() {
   $('page').innerHTML = `<div style="padding:24px;max-width:680px;">
     <div class="ph"><h1>Contacts & Urgences</h1><p>Numéros importants de la résidence</p></div>
 
-    <div class="contact-urgency">
-      <span style="font-size:24px;">🆘</span>
-      <div>
-        <div style="font-weight:700;color:var(--red);">En cas d'urgence vitale</div>
-        <div style="color:var(--red);opacity:.8;">Appelez immédiatement le 112 (numéro d'urgence européen)</div>
-      </div>
-      <a href="tel:112" class="btn btn-danger btn-sm" style="margin-left:auto;text-decoration:none;">📞 112</a>
-    </div>
+   
 
     <div style="font-family:var(--font-head);font-weight:700;font-size:13px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">🚨 Numéros d'urgence</div>
     ${urgent.map(c => renderContactCard(c)).join('')}
