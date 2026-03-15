@@ -3385,10 +3385,6 @@ async function saveAnnonce(id) {
   toast(id ? 'Annonce modifiée ✓' : 'Annonce publiée ✓', 'ok');
   // 🔔 Notif push si urgent ou important
   if (!id && data) {
-    const { data: managers } = await sb.from('profiles').select('id,email')
-      .in('role', ['administrateur','syndic','membre_cs']);
-    const notifData = { type === 'urgent' || type === 'important' ? managers : [] };
-    // Notif pour tous si urgent
     if (type === 'urgent') {
       const { data: allUsers } = await sb.from('profiles').select('id,email').eq('actif', true);
       const notifs = (allUsers||[]).filter(u => u.id !== user.id).map(u => ({
@@ -3398,6 +3394,8 @@ async function saveAnnonce(id) {
       if (notifs.length) await sb.from('notifications').insert(notifs);
       await pushNotif('🚨 Annonce urgente', titre, 'critique', null);
     } else if (type === 'important') {
+      const { data: managers } = await sb.from('profiles').select('id,email')
+        .in('role', ['administrateur','syndic','membre_cs']).eq('actif', true);
       const notifs = (managers||[]).filter(u => u.id !== user.id).map(u => ({
         destinataire_id: u.id, sujet: `⚠️ Annonce importante : ${titre}`,
         corps: payload.contenu || '', type: 'important', reference_id: data.id, lu: false
