@@ -1844,6 +1844,7 @@ async function loadAll() {
     tasks.push(loadCles());
     tasks.push(loadAnnonceCache());
     tasks.push(loadEvenementsCache());
+    tasks.push(loadContactsCache());
     await Promise.all(tasks);
     if (isManager()) await loadJournal();
     updateBadges();
@@ -1884,6 +1885,11 @@ async function loadAnnonceCache() {
 async function loadEvenementsCache() {
   const { data } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
   if (data) cache.evenements = data;
+}
+
+async function loadContactsCache() {
+  const { data } = await sb.from('contacts').select('*').eq('actif', true).order('ordre');
+  if (data) _contactsCache = data;
 }
 
 async function loadStats() {
@@ -4061,18 +4067,19 @@ function runSearch(q) {
   }
 
   // Contacts
-  const contactsList = getContactsList();
-  const contacts = contactsList.filter(c =>
-    c.name.toLowerCase().includes(query) || c.role.toLowerCase().includes(query)
-  ).slice(0, 2);
+  const contacts = _contactsCache.filter(c =>
+    c.nom?.toLowerCase().includes(query) ||
+    c.role?.toLowerCase().includes(query) ||
+    c.telephone?.includes(query)
+  ).slice(0, 3);
   if (contacts.length) {
     results.push(`<div class="search-section-title">📞 Contacts</div>`);
     results.push(...contacts.map(c => `
       <div class="search-result-item" onclick="closeSearch();nav('contacts')">
-        <div class="search-result-ico">${c.ico}</div>
+        <div class="search-result-ico">${c.ico||'📞'}</div>
         <div>
-          <div class="search-result-title">${c.name}</div>
-          <div class="search-result-sub">${c.role} · ${c.tel}</div>
+          <div class="search-result-title">${escHtml(c.nom)}</div>
+          <div class="search-result-sub">${escHtml(c.role||'')}${c.telephone?' · '+escHtml(c.telephone):''}</div>
         </div>
       </div>`));
   }
@@ -4089,52 +4096,161 @@ document.addEventListener('keydown', e => {
 });
 
 // ── CONTACTS & URGENCES ──
-function getContactsList() {
-  return [
-    { ico:'🔧', name:'Urgences gaz', role:'GRDF', tel:'0800 47 33 33', urgent:true },
-    { ico:'⚡', name:'Urgences électricité', role:'Enedis', tel:'09 72 67 50 50', urgent:true },
-    { ico:'🛗', name:'ACAF — Ascenseurs', role:'Dépannage 24h/24', tel:'04 76 XX XX XX', urgent:false },
-    { ico:'🏢', name:'Syndic', role:'Gestion de la copropriété', tel:'', email:'', urgent:false },
-    { ico:'🔑', name:'Gardien', role:'Résidence le Floréal', tel:'', urgent:false },
-  ];
-}
+let _contactsCache = [];
 
-function renderContacts() {
-  const contacts = getContactsList();
-  const urgent = contacts.filter(c => c.urgent);
-  const autres = contacts.filter(c => !c.urgent);
-
+async function renderContacts() {
   $('page').innerHTML = `<div style="padding:24px;max-width:680px;">
-    <div class="ph"><h1>Contacts & Urgences</h1><p>Numéros importants de la résidence</p></div>
-
-   
-
-    <div style="font-family:var(--font-head);font-weight:700;font-size:13px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">🚨 Numéros d'urgence</div>
-    ${urgent.map(c => renderContactCard(c)).join('')}
-
-    <div style="font-family:var(--font-head);font-weight:700;font-size:13px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin:20px 0 10px;">🏠 Contacts de la résidence</div>
-    ${autres.map(c => renderContactCard(c)).join('')}
-
-    ${isAdmin() ? `
-    <div style="margin-top:20px;padding:16px;background:var(--surface-2);border-radius:var(--r-lg);border:1px solid var(--border);">
-      <div style="font-size:13px;color:var(--text-2);margin-bottom:8px;">✏️ <strong>Admin :</strong> pour modifier ces contacts, éditez directement le code (variable <code>getContactsList</code>).</div>
-    </div>` : ''}
+    <div class="ph" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div><h1>Contacts & Urgences</h1><p>Numéros importants de la résidence</p></div>
+      ${isManager() ? `<button class="btn btn-primary" onclick="openContactModal()">+ Ajouter</button>` : ''}
+    </div>
+    <div class="contact-urgency">
+      <span style="font-size:24px;">🆘</span>
+      <div>
+        <div style="font-weight:700;color:var(--red);">En cas d'urgence vitale</div>
+        <div style="color:var(--red);opacity:.8;">Appelez immédiatement le 112</div>
+      </div>
+      <a href="tel:112" class="btn btn-danger btn-sm" style="margin-left:auto;text-decoration:none;">📞 112</a>
+    </div>
+    <div id="contacts-list"><div style="text-align:center;padding:40px;color:var(--text-3);">Chargement…</div></div>
   </div>`;
+  await loadAndRenderContacts();
 }
 
-function renderContactCard(c) {
-  const hasPhone = c.tel && c.tel.length > 0;
-  return `<div class="contact-card">
-    <div class="contact-ico" style="background:${c.urgent?'var(--red-light)':'var(--surface-2)'};">${c.ico}</div>
-    <div class="contact-info">
-      <div class="contact-name">${c.name}</div>
-      <div class="contact-role">${c.role}${hasPhone ? ' · ' + c.tel : ''}</div>
+async function loadAndRenderContacts() {
+  const { data, error } = await sb.from('contacts')
+    .select('*').eq('actif', true).order('ordre');
+  if (error) { console.warn('[contacts]', error.message); return; }
+  _contactsCache = data || [];
+  renderContactsList();
+}
+
+function renderContactsList() {
+  const el = $('contacts-list');
+  if (!el) return;
+  const cats = {
+    urgence:     { label:'🚨 Urgences', bg:'var(--red-light)' },
+    prestataire: { label:'🔧 Prestataires', bg:'var(--surface-2)' },
+    residence:   { label:'🏠 Résidence', bg:'var(--surface-2)' },
+  };
+  let html = '';
+  for (const [cat, meta] of Object.entries(cats)) {
+    const list = _contactsCache.filter(c => c.categorie === cat);
+    if (!list.length) continue;
+    html += `<div style="font-family:var(--font-head);font-weight:700;font-size:13px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;">${meta.label}</div>`;
+    html += list.map(c => `
+      <div class="contact-card">
+        <div class="contact-ico" style="background:${meta.bg};">${c.ico||'📞'}</div>
+        <div class="contact-info">
+          <div class="contact-name">${escHtml(c.nom)}</div>
+          <div class="contact-role">${escHtml(c.role||'')}${c.telephone?' · <strong>'+escHtml(c.telephone)+'</strong>':''}</div>
+          ${c.email ? `<div style="font-size:11px;color:var(--text-3);">${escHtml(c.email)}</div>` : ''}
+        </div>
+        <div class="contact-actions">
+          ${c.telephone ? `<a href="tel:${c.telephone.replace(/\s/g,'')}" class="contact-btn" title="Appeler">📞</a>` : ''}
+          ${c.email ? `<a href="mailto:${c.email}" class="contact-btn" title="Email">✉️</a>` : ''}
+          ${isManager() ? `<button class="contact-btn" onclick="openContactModal('${c.id}')" title="Modifier">✏️</button>` : ''}
+        </div>
+      </div>`).join('');
+  }
+  if (!html) html = '<div class="empty"><div class="empty-ico">📞</div><div class="empty-txt">Aucun contact enregistré</div></div>';
+  el.innerHTML = html;
+}
+
+function openContactModal(id) {
+  const c = id ? _contactsCache.find(x => x.id === id) : null;
+  const isEdit = !!c;
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay open';
+  overlay.id = 'modal-contact';
+  overlay.innerHTML = `<div class="modal" style="max-width:480px;">
+    <div class="mh">
+      <span class="mh-title">${isEdit ? 'Modifier le contact' : 'Nouveau contact'}</span>
+      <button class="mclose" onclick="document.getElementById('modal-contact').remove()">×</button>
     </div>
-    <div class="contact-actions">
-      ${hasPhone ? `<a href="tel:${c.tel.replace(/\s/g,'')}" class="contact-btn" title="Appeler">📞</a>` : ''}
-      ${c.email ? `<a href="mailto:${c.email}" class="contact-btn" title="Email">✉️</a>` : ''}
+    <div class="mb">
+      <div class="fg-row">
+        <div class="fg" style="flex:0 0 70px;">
+          <label class="label">Icône</label>
+          <input type="text" id="ct-ico" class="input" value="${c?.ico||'📞'}" style="font-size:20px;text-align:center;">
+        </div>
+        <div class="fg">
+          <label class="label">Nom *</label>
+          <input type="text" id="ct-nom" class="input" placeholder="Ex: ACAF Ascenseurs" value="${escHtml(c?.nom||'')}">
+        </div>
+      </div>
+      <div class="fg">
+        <label class="label">Rôle / Description</label>
+        <input type="text" id="ct-role" class="input" placeholder="Ex: Dépannage 24h/24" value="${escHtml(c?.role||'')}">
+      </div>
+      <div class="fg-row">
+        <div class="fg">
+          <label class="label">Téléphone</label>
+          <input type="tel" id="ct-tel" class="input" placeholder="04 76 XX XX XX" value="${escHtml(c?.telephone||'')}">
+        </div>
+        <div class="fg">
+          <label class="label">Email</label>
+          <input type="email" id="ct-email" class="input" placeholder="contact@..." value="${escHtml(c?.email||'')}">
+        </div>
+      </div>
+      <div class="fg-row">
+        <div class="fg">
+          <label class="label">Catégorie</label>
+          <select id="ct-cat" class="select" style="width:100%;">
+            <option value="urgence" ${c?.categorie==='urgence'?'selected':''}>🚨 Urgence</option>
+            <option value="prestataire" ${c?.categorie==='prestataire'?'selected':''}>🔧 Prestataire</option>
+            <option value="residence" ${(!c||c?.categorie==='residence')?'selected':''}>🏠 Résidence</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="label">Ordre d'affichage</label>
+          <input type="number" id="ct-ordre" class="input" value="${c?.ordre||0}" min="0">
+        </div>
+      </div>
+    </div>
+    <div class="mf">
+      ${isEdit ? `<button class="btn btn-ghost btn-sm" style="color:var(--red);margin-right:auto;" onclick="deleteContact('${c.id}')">🗑 Supprimer</button>` : ''}
+      <button class="btn btn-secondary" onclick="document.getElementById('modal-contact').remove()">Annuler</button>
+      <button class="btn btn-primary" onclick="saveContact('${c?.id||''}')">
+        ${isEdit ? 'Enregistrer' : 'Ajouter'}
+      </button>
     </div>
   </div>`;
+  document.body.appendChild(overlay);
+  setTimeout(() => $('ct-nom')?.focus(), 50);
+}
+
+async function saveContact(id) {
+  const nom = $('ct-nom')?.value.trim();
+  if (!nom) { toast('Nom requis', 'err'); return; }
+  const payload = {
+    nom,
+    ico:       $('ct-ico')?.value.trim() || '📞',
+    role:      $('ct-role')?.value.trim() || null,
+    telephone: $('ct-tel')?.value.trim() || null,
+    email:     $('ct-email')?.value.trim() || null,
+    categorie: $('ct-cat')?.value || 'residence',
+    ordre:     parseInt($('ct-ordre')?.value) || 0,
+    actif:     true,
+  };
+  let error;
+  if (id) {
+    ({ error } = await sb.from('contacts').update(payload).eq('id', id));
+  } else {
+    ({ error } = await sb.from('contacts').insert(payload));
+  }
+  if (error) { toast('Erreur : ' + error.message, 'err'); return; }
+  document.getElementById('modal-contact')?.remove();
+  toast(id ? 'Contact modifié ✓' : 'Contact ajouté ✓', 'ok');
+  await loadAndRenderContacts();
+}
+
+async function deleteContact(id) {
+  if (!confirm('Supprimer ce contact ?')) return;
+  await sb.from('contacts').update({ actif: false }).eq('id', id);
+  document.getElementById('modal-contact')?.remove();
+  toast('Contact supprimé', 'ok');
+  await loadAndRenderContacts();
 }
 
 // ── ONBOARDING — Nouveaux résidents ──
