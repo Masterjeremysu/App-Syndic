@@ -2713,10 +2713,28 @@ async function changeStatut(id, statut) {
   const t = cache.tickets.find(x => x.id === id);
   if (t) t.statut = statut;
   await addLog('Statut modifié', 'ticket', id, { statut });
+
+  // Email à l'auteur du ticket
   await sendEmailNotif('statut_change', { ...t, statut });
+
+  // Email syndic si transmis au syndic
+  if (statut === 'transmis_syndic') {
+    await sendEmailDirect('nouveau_ticket', null, {
+      ...t, statut,
+      titre: `[Transmis au syndic] ${t.titre}`,
+    });
+  }
+
+  // Email syndic si résolu ou clos (pour archiver)
+  if (statut === 'résolu' || statut === 'clos') {
+    await sendEmailDirect('statut_change', null, {
+      ...t, statut,
+      titre: `[${statut === 'résolu' ? '✅ Résolu' : '📁 Clos'}] ${t.titre}`,
+    });
+  }
+
   toast('Statut mis à jour', 'ok');
   updateBadges();
-  // Refresh ticket list if on tickets page
   if (currentPage === 'tickets') filterTickets();
   if (currentPage === 'dashboard') renderDashboard();
 }
