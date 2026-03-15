@@ -751,6 +751,87 @@ tbody tr:hover td { background: var(--bg); }
 .role-membre_cs { background: var(--orange-light); color: var(--orange); border: 1px solid var(--orange-border); }
 .role-copropriétaire { background: var(--green-light); color: var(--green); border: 1px solid var(--green-border); }
 
+/* ── ANNONCES ── */
+.annonce-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 20px 22px; margin-bottom: 14px;
+  transition: box-shadow .15s;
+}
+.annonce-card.urgent { border-left: 4px solid var(--red); }
+.annonce-card.important { border-left: 4px solid var(--orange); }
+.annonce-card.info { border-left: 4px solid var(--accent); }
+.annonce-card.epingle { background: var(--blue-light); }
+.annonce-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 10px; }
+.annonce-ico { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+.annonce-titre { font-family: var(--font-head); font-weight: 700; font-size: 16px; flex: 1; }
+.annonce-meta { font-size: 11.5px; color: var(--text-3); margin-top: 3px; }
+.annonce-contenu { font-size: 14px; line-height: 1.6; color: var(--text-2); white-space: pre-wrap; }
+.annonce-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.annonce-badge.urgent { background: var(--red-light); color: var(--red); }
+.annonce-badge.important { background: var(--orange-light); color: var(--orange); }
+.annonce-badge.info { background: var(--blue-light); color: var(--accent); }
+.annonce-actions { display: flex; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+
+/* ── AGENDA ── */
+.agenda-layout { display: flex; gap: 20px; }
+.agenda-calendar { flex: 1; min-width: 0; }
+.agenda-sidebar-panel { width: 300px; flex-shrink: 0; }
+.cal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 16px;
+}
+.cal-title { font-family: var(--font-head); font-weight: 700; font-size: 18px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 2px; }
+.cal-day-name {
+  text-align: center; font-size: 11px; font-weight: 600;
+  color: var(--text-3); text-transform: uppercase; padding: 6px 0;
+}
+.cal-day {
+  aspect-ratio: 1; display: flex; flex-direction: column; align-items: center;
+  justify-content: flex-start; padding: 4px 2px; border-radius: 8px;
+  cursor: pointer; transition: background .1s; position: relative;
+  font-size: 13px;
+}
+.cal-day:hover { background: var(--surface-2); }
+.cal-day.today { background: var(--accent); color: #fff; font-weight: 700; }
+.cal-day.today .cal-dots span { background: rgba(255,255,255,.7); }
+.cal-day.other-month { color: var(--text-3); opacity: .4; }
+.cal-day.has-event { font-weight: 600; }
+.cal-dots { display: flex; gap: 2px; margin-top: 2px; flex-wrap: wrap; justify-content: center; }
+.cal-dots span {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--accent); display: block;
+}
+.cal-dots span.red { background: var(--red); }
+.cal-dots span.orange { background: var(--orange); }
+.cal-dots span.green { background: var(--green); }
+.cal-dots span.violet { background: var(--violet); }
+
+.event-item {
+  display: flex; gap: 12px; padding: 12px 16px;
+  border-radius: var(--r-md); margin-bottom: 8px;
+  background: var(--surface); border: 1px solid var(--border);
+  cursor: pointer; transition: border-color .12s;
+}
+.event-item:hover { border-color: var(--border-strong); }
+.event-color-bar { width: 4px; border-radius: 2px; flex-shrink: 0; align-self: stretch; }
+.event-info { flex: 1; min-width: 0; }
+.event-titre { font-weight: 600; font-size: 13.5px; }
+.event-time { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.event-lieu { font-size: 12px; color: var(--text-3); }
+.event-type-badge {
+  font-size: 10px; font-weight: 700; padding: 2px 7px;
+  border-radius: 10px; align-self: flex-start; white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .agenda-layout { flex-direction: column; }
+  .agenda-sidebar-panel { width: 100%; }
+}
+
 /* ══════════════════════════════════════
    MESSAGERIE — Mobile-first, fluide
    ══════════════════════════════════════ */
@@ -986,6 +1067,17 @@ tbody tr:hover td { background: var(--bg); }
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
       Messages
       <span class="nav-count" id="nc-messages" style="display:none">0</span>
+    </a>
+
+    <div class="nav-section">Vie de la résidence</div>
+    <a class="nav-item" data-page="annonces" onclick="nav('annonces')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6 6 0 10-12 0v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+      Annonces
+      <span class="nav-count" id="nc-annonces" style="display:none">0</span>
+    </a>
+    <a class="nav-item" data-page="agenda" onclick="nav('agenda')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Agenda
     </a>
 
     <div class="nav-section nav-admin-only" id="nav-section-gestion">Gestion</div>
@@ -1871,7 +1963,7 @@ function nav(page, noClose) {
     dashboard:'Vue d\'ensemble', tickets:'Signalements', map:'Carte',
     contrats:'Contrats', cles:'Clés', journal:'Journal', users:'Utilisateurs',
     rapport:'Rapport syndic', notifications:'Notifications', profile:'Mon profil',
-    messages:'Messages'
+    messages:'Messages', annonces:'Annonces', agenda:'Agenda'
   };
   $('topbar-title').textContent = titles[page] || page;
   renderPage(page);
@@ -1911,6 +2003,8 @@ function renderPage(p) {
   else if (p === 'notifications') renderNotifications();
   else if (p === 'profile') renderProfile();
   else if (p === 'messages') renderMessages();
+  else if (p === 'annonces') renderAnnonces();
+  else if (p === 'agenda') renderAgenda();
 }
 
 // ── DASHBOARD ──
@@ -3056,6 +3150,366 @@ async function pushNotif(title, body, type, ticketId) {
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && $('login-screen')?.style.display !== 'none') doAuth();
 });
+
+// ── ANNONCES ──
+const ANNONCE_TYPES = {
+  urgent:    { label:'🚨 Urgent',    color:'red',    ico:'🚨' },
+  important: { label:'⚠️ Important', color:'orange', ico:'⚠️' },
+  info:      { label:'ℹ️ Info',      color:'info',   ico:'📢' },
+};
+
+async function renderAnnonces() {
+  $('page').innerHTML = `<div style="padding:24px;max-width:760px;">
+    <div class="ph" style="display:flex;align-items:center;justify-content:space-between;">
+      <div><h1>Annonces</h1><p>Informations officielles de la résidence</p></div>
+      ${isManager() ? `<button class="btn btn-primary" onclick="openNewAnnonce()">+ Nouvelle annonce</button>` : ''}
+    </div>
+    <div id="annonces-list"><div style="text-align:center;padding:40px;color:var(--text-3);">Chargement…</div></div>
+  </div>`;
+  await loadAnnonces();
+}
+
+async function loadAnnonces() {
+  const { data, error } = await sb.from('annonces')
+    .select('*, profiles(nom,prenom)')
+    .order('epingle', { ascending: false })
+    .order('created_at', { ascending: false });
+  if (error) { console.warn('[annonces]', error.message); return; }
+  const el = $('annonces-list');
+  if (!el) return;
+  const list = data || [];
+  if (!list.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-ico">📢</div><div class="empty-txt">Aucune annonce pour l\'instant</div></div>';
+    return;
+  }
+  el.innerHTML = list.map(a => {
+    const t = ANNONCE_TYPES[a.type] || ANNONCE_TYPES.info;
+    const auteur = a.profiles ? [a.profiles.prenom, a.profiles.nom].filter(Boolean).join(' ') : '—';
+    const date = new Date(a.created_at).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
+    return `<div class="annonce-card ${a.type}${a.epingle?' epingle':''}">
+      <div class="annonce-header">
+        <div class="annonce-ico">${a.epingle ? '📌' : t.ico}</div>
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <div class="annonce-titre">${escHtml(a.titre)}</div>
+            <span class="annonce-badge ${a.type}">${t.label}</span>
+            ${a.epingle ? '<span class="annonce-badge info">📌 Épinglé</span>' : ''}
+          </div>
+          <div class="annonce-meta">Par ${auteur} · ${date}</div>
+        </div>
+      </div>
+      ${a.contenu ? `<div class="annonce-contenu">${escHtml(a.contenu)}</div>` : ''}
+      ${isManager() ? `
+      <div class="annonce-actions">
+        <button class="btn btn-ghost btn-sm" onclick="toggleEpingle('${a.id}',${!a.epingle})">${a.epingle ? '📌 Désépingler' : '📌 Épingler'}</button>
+        <button class="btn btn-ghost btn-sm" onclick="editAnnonce('${a.id}')">✏️ Modifier</button>
+        <button class="btn btn-ghost btn-sm" style="color:var(--red);" onclick="deleteAnnonce('${a.id}')">🗑 Supprimer</button>
+      </div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function openNewAnnonce(existing) {
+  const isEdit = !!existing;
+  const html = `
+    <div class="fg"><label class="label">Titre *</label>
+      <input type="text" id="anc-titre" class="input" placeholder="Ex: Travaux d'ascenseur Tour 17" value="${existing?.titre||''}">
+    </div>
+    <div class="fg"><label class="label">Type</label>
+      <select id="anc-type" class="select" style="width:100%;">
+        ${Object.entries(ANNONCE_TYPES).map(([k,v]) => `<option value="${k}" ${existing?.type===k?'selected':''}>${v.label}</option>`).join('')}
+      </select>
+    </div>
+    <div class="fg"><label class="label">Contenu</label>
+      <textarea id="anc-contenu" class="textarea" rows="5" placeholder="Détails de l'annonce…">${existing?.contenu||''}</textarea>
+    </div>
+    <div class="fg" style="display:flex;align-items:center;gap:8px;">
+      <input type="checkbox" id="anc-epingle" ${existing?.epingle?'checked':''}>
+      <label for="anc-epingle" style="cursor:pointer;font-size:13px;">📌 Épingler cette annonce en haut</label>
+    </div>`;
+
+  // Réutilise une modal générique inline
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay open';
+  overlay.id = 'modal-annonce';
+  overlay.innerHTML = `<div class="modal" style="max-width:520px;">
+    <div class="mh">
+      <span class="mh-title">${isEdit ? 'Modifier l\'annonce' : 'Nouvelle annonce'}</span>
+      <button class="mclose" onclick="document.getElementById('modal-annonce').remove()">×</button>
+    </div>
+    <div class="mb">${html}</div>
+    <div class="mf">
+      <button class="btn btn-secondary" onclick="document.getElementById('modal-annonce').remove()">Annuler</button>
+      <button class="btn btn-primary" onclick="saveAnnonce('${existing?.id||''}')">
+        ${isEdit ? 'Enregistrer' : 'Publier'}
+      </button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function saveAnnonce(id) {
+  const titre = $('anc-titre')?.value.trim();
+  if (!titre) { toast('Titre requis', 'err'); return; }
+  const payload = {
+    titre,
+    type: $('anc-type')?.value || 'info',
+    contenu: $('anc-contenu')?.value.trim() || null,
+    epingle: $('anc-epingle')?.checked || false,
+    auteur_id: user.id,
+  };
+  let error;
+  if (id) {
+    ({ error } = await sb.from('annonces').update(payload).eq('id', id));
+  } else {
+    ({ error } = await sb.from('annonces').insert(payload));
+  }
+  if (error) { toast('Erreur sauvegarde', 'err'); return; }
+  document.getElementById('modal-annonce')?.remove();
+  toast(id ? 'Annonce modifiée ✓' : 'Annonce publiée ✓', 'ok');
+  await loadAnnonces();
+}
+
+async function editAnnonce(id) {
+  const { data } = await sb.from('annonces').select('*').eq('id', id).single();
+  if (data) openNewAnnonce(data);
+}
+
+async function toggleEpingle(id, val) {
+  await sb.from('annonces').update({ epingle: val }).eq('id', id);
+  await loadAnnonces();
+}
+
+async function deleteAnnonce(id) {
+  if (!confirm('Supprimer cette annonce ?')) return;
+  await sb.from('annonces').delete().eq('id', id);
+  toast('Annonce supprimée', 'ok');
+  await loadAnnonces();
+}
+
+// ── AGENDA ──
+const EVENT_TYPES = {
+  ag:         { label:'AG',         color:'#6366f1', dot:'violet' },
+  reunion_cs: { label:'CS',         color:'#f59e0b', dot:'orange' },
+  artisan:    { label:'Artisan',    color:'#10b981', dot:'green'  },
+  controle:   { label:'Contrôle',  color:'#ef4444', dot:'red'    },
+  autre:      { label:'Autre',      color:'#6b7280', dot:''       },
+};
+
+let _agendaDate = new Date();
+let _agendaEvents = [];
+
+async function renderAgenda() {
+  $('page').innerHTML = `<div style="padding:24px;">
+    <div class="ph" style="display:flex;align-items:center;justify-content:space-between;">
+      <div><h1>Agenda</h1><p>Réunions, passages artisans, contrôles…</p></div>
+      ${isManager() ? `<button class="btn btn-primary" onclick="openNewEvent()">+ Ajouter</button>` : ''}
+    </div>
+    <div class="agenda-layout">
+      <div class="agenda-calendar">
+        <div class="card" style="padding:20px;">
+          <div class="cal-header">
+            <button class="btn btn-ghost btn-sm" onclick="agendaMonth(-1)">‹</button>
+            <div class="cal-title" id="cal-title"></div>
+            <button class="btn btn-ghost btn-sm" onclick="agendaMonth(1)">›</button>
+          </div>
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+      </div>
+      <div class="agenda-sidebar-panel">
+        <div class="card" style="padding:16px;">
+          <div style="font-family:var(--font-head);font-weight:700;font-size:14px;margin-bottom:12px;" id="agenda-side-title">Prochains événements</div>
+          <div id="agenda-side-list"><div style="text-align:center;padding:20px;color:var(--text-3);font-size:13px;">Chargement…</div></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+  await loadEvents();
+  renderCal();
+}
+
+async function loadEvents() {
+  const { data } = await sb.from('evenements')
+    .select('*, profiles(nom,prenom)')
+    .order('date_debut', { ascending: true });
+  _agendaEvents = data || [];
+  renderCal();
+  renderUpcoming();
+}
+
+function agendaMonth(delta) {
+  _agendaDate = new Date(_agendaDate.getFullYear(), _agendaDate.getMonth() + delta, 1);
+  renderCal();
+  renderUpcoming();
+}
+
+function renderCal() {
+  const titleEl = $('cal-title');
+  const gridEl = $('cal-grid');
+  if (!titleEl || !gridEl) return;
+  const y = _agendaDate.getFullYear();
+  const m = _agendaDate.getMonth();
+  titleEl.textContent = new Date(y, m, 1).toLocaleDateString('fr-FR', { month:'long', year:'numeric' });
+
+  const today = new Date();
+  const firstDay = new Date(y, m, 1);
+  const lastDay = new Date(y, m + 1, 0);
+  // Lundi = 0
+  let startDow = (firstDay.getDay() + 6) % 7;
+
+  const days = ['Lu','Ma','Me','Je','Ve','Sa','Di'];
+  let html = days.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+
+  // Jours vides avant
+  for (let i = 0; i < startDow; i++) html += '<div class="cal-day other-month"></div>';
+
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const dateStr = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const evts = _agendaEvents.filter(e => e.date_debut?.startsWith(dateStr));
+    const isToday = today.getFullYear()===y && today.getMonth()===m && today.getDate()===d;
+    const dots = evts.slice(0,3).map(e => {
+      const t = EVENT_TYPES[e.type] || EVENT_TYPES.autre;
+      return `<span class="${t.dot}"></span>`;
+    }).join('');
+    html += `<div class="cal-day${isToday?' today':''}${evts.length?' has-event':''}" onclick="showDayEvents('${dateStr}')">
+      <span>${d}</span>
+      ${evts.length ? `<div class="cal-dots">${dots}</div>` : ''}
+    </div>`;
+  }
+  gridEl.innerHTML = html;
+}
+
+function showDayEvents(dateStr) {
+  const evts = _agendaEvents.filter(e => e.date_debut?.startsWith(dateStr));
+  const titleEl = $('agenda-side-title');
+  const listEl = $('agenda-side-list');
+  if (!titleEl || !listEl) return;
+  const d = new Date(dateStr + 'T00:00:00');
+  titleEl.textContent = d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
+  if (!evts.length) { listEl.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-3);font-size:13px;">Aucun événement ce jour</div>'; return; }
+  listEl.innerHTML = evts.map(e => renderEventItem(e)).join('');
+}
+
+function renderUpcoming() {
+  const listEl = $('agenda-side-list');
+  const titleEl = $('agenda-side-title');
+  if (!listEl) return;
+  if (titleEl) titleEl.textContent = 'Prochains événements';
+  const now = new Date();
+  const upcoming = _agendaEvents.filter(e => new Date(e.date_debut) >= now).slice(0, 8);
+  if (!upcoming.length) { listEl.innerHTML = '<div style="text-align:center;padding:16px;color:var(--text-3);">Aucun événement à venir</div>'; return; }
+  listEl.innerHTML = upcoming.map(e => renderEventItem(e)).join('');
+}
+
+function renderEventItem(e) {
+  const t = EVENT_TYPES[e.type] || EVENT_TYPES.autre;
+  const d = new Date(e.date_debut);
+  const dateStr = d.toLocaleDateString('fr-FR', { day:'numeric', month:'short' });
+  const timeStr = d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+  return `<div class="event-item" onclick="${isManager()?`openEditEvent('${e.id}')`:''}" >
+    <div class="event-color-bar" style="background:${t.color};"></div>
+    <div class="event-info">
+      <div class="event-titre">${escHtml(e.titre)}</div>
+      <div class="event-time">📅 ${dateStr} à ${timeStr}</div>
+      ${e.lieu ? `<div class="event-lieu">📍 ${escHtml(e.lieu)}</div>` : ''}
+    </div>
+    <span class="event-type-badge" style="background:${t.color}22;color:${t.color};">${t.label}</span>
+  </div>`;
+}
+
+function openNewEvent(existing) {
+  const isEdit = !!existing;
+  const defDate = existing?.date_debut ? existing.date_debut.slice(0,16) : new Date().toISOString().slice(0,16);
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay open';
+  overlay.id = 'modal-event';
+  overlay.innerHTML = `<div class="modal" style="max-width:520px;">
+    <div class="mh">
+      <span class="mh-title">${isEdit ? 'Modifier l\'événement' : 'Nouvel événement'}</span>
+      <button class="mclose" onclick="document.getElementById('modal-event').remove()">×</button>
+    </div>
+    <div class="mb">
+      <div class="fg"><label class="label">Titre *</label>
+        <input type="text" id="evt-titre" class="input" placeholder="Ex: Assemblée Générale 2026" value="${existing?.titre||''}">
+      </div>
+      <div class="fg-row">
+        <div class="fg"><label class="label">Type</label>
+          <select id="evt-type" class="select" style="width:100%;">
+            ${Object.entries(EVENT_TYPES).map(([k,v]) => `<option value="${k}" ${existing?.type===k?'selected':''}>${v.label}</option>`).join('')}
+          </select>
+        </div>
+        <div class="fg"><label class="label">Concerne</label>
+          <select id="evt-concerne" class="select" style="width:100%;">
+            <option value="tous" ${existing?.concerne==='tous'?'selected':''}>Tous</option>
+            <option value="cs" ${existing?.concerne==='cs'?'selected':''}>Conseil Syndical</option>
+            ${COPRO.tours.map(t => `<option value="${t}" ${existing?.concerne===t?'selected':''}>${t}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+      <div class="fg-row">
+        <div class="fg"><label class="label">Date & heure *</label>
+          <input type="datetime-local" id="evt-debut" class="input" value="${defDate}">
+        </div>
+        <div class="fg"><label class="label">Fin (optionnel)</label>
+          <input type="datetime-local" id="evt-fin" class="input" value="${existing?.date_fin?.slice(0,16)||''}">
+        </div>
+      </div>
+      <div class="fg"><label class="label">Lieu</label>
+        <input type="text" id="evt-lieu" class="input" placeholder="Ex: Salle de réunion Tour 13" value="${existing?.lieu||''}">
+      </div>
+      <div class="fg"><label class="label">Description</label>
+        <textarea id="evt-desc" class="textarea" rows="3" placeholder="Détails…">${existing?.description||''}</textarea>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-secondary" onclick="document.getElementById('modal-event').remove()">Annuler</button>
+      ${isEdit ? `<button class="btn btn-ghost btn-sm" style="color:var(--red);margin-right:auto;" onclick="deleteEvent('${existing.id}')">🗑 Supprimer</button>` : ''}
+      <button class="btn btn-primary" onclick="saveEvent('${existing?.id||''}')">
+        ${isEdit ? 'Enregistrer' : 'Ajouter'}
+      </button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+async function openEditEvent(id) {
+  const { data } = await sb.from('evenements').select('*').eq('id', id).single();
+  if (data) openNewEvent(data);
+}
+
+async function saveEvent(id) {
+  const titre = $('evt-titre')?.value.trim();
+  const debut = $('evt-debut')?.value;
+  if (!titre || !debut) { toast('Titre et date requis', 'err'); return; }
+  const payload = {
+    titre,
+    type: $('evt-type')?.value || 'autre',
+    concerne: $('evt-concerne')?.value || 'tous',
+    date_debut: new Date(debut).toISOString(),
+    date_fin: $('evt-fin')?.value ? new Date($('evt-fin').value).toISOString() : null,
+    lieu: $('evt-lieu')?.value.trim() || null,
+    description: $('evt-desc')?.value.trim() || null,
+    auteur_id: user.id,
+  };
+  let error;
+  if (id) {
+    ({ error } = await sb.from('evenements').update(payload).eq('id', id));
+  } else {
+    ({ error } = await sb.from('evenements').insert(payload));
+  }
+  if (error) { toast('Erreur sauvegarde', 'err'); return; }
+  document.getElementById('modal-event')?.remove();
+  toast(id ? 'Événement modifié ✓' : 'Événement ajouté ✓', 'ok');
+  await loadEvents();
+}
+
+async function deleteEvent(id) {
+  if (!confirm('Supprimer cet événement ?')) return;
+  await sb.from('evenements').delete().eq('id', id);
+  document.getElementById('modal-event')?.remove();
+  toast('Événement supprimé', 'ok');
+  await loadEvents();
+}
 
 // ── MESSAGERIE ──
 let _msgState = {
