@@ -4104,14 +4104,6 @@ async function renderContacts() {
       <div><h1>Contacts & Urgences</h1><p>Numéros importants de la résidence</p></div>
       ${isManager() ? `<button class="btn btn-primary" onclick="openContactModal()">+ Ajouter</button>` : ''}
     </div>
-    <div class="contact-urgency">
-      <span style="font-size:24px;">🆘</span>
-      <div>
-        <div style="font-weight:700;color:var(--red);">En cas d'urgence vitale</div>
-        <div style="color:var(--red);opacity:.8;">Appelez immédiatement le 112</div>
-      </div>
-      <a href="tel:112" class="btn btn-danger btn-sm" style="margin-left:auto;text-decoration:none;">📞 112</a>
-    </div>
     <div id="contacts-list"><div style="text-align:center;padding:40px;color:var(--text-3);">Chargement…</div></div>
   </div>`;
   await loadAndRenderContacts();
