@@ -1329,7 +1329,7 @@ tbody tr:hover td { background: var(--bg); }
           <div class="urgency-opt" id="urg-important" onclick="setUrgency('important')">🟠 Important</div>
           <div class="urgency-opt sel-normal" id="urg-normal" onclick="setUrgency('normal')">🔵 Normal</div>
         </div>
-        ${!isManager() ? '<div style="font-size:11px;color:var(--text-3);margin-top:4px;">Le niveau Critique est réservé aux gestionnaires de la résidence.</div>' : ''}
+        <div id="urgence-hint" style="font-size:11px;color:var(--text-3);margin-top:4px;display:none;">Le niveau Critique est réservé aux gestionnaires de la résidence.</div>
       </div>
 
       <!-- CATÉGORIE — déclenche les options de zone dynamiques -->
@@ -2902,9 +2902,11 @@ function openNewTicket() {
   const area = document.getElementById('photo-area');
   if(area) { area.innerHTML = '<div class="photo-icon">📷</div><div class="photo-label">Prendre une photo ou choisir depuis la galerie</div>'; area.classList.remove('loaded'); }
   photoFile = null;
-  // Cache "Critique" pour les copropriétaires
+  // Cache/affiche Critique et hint selon rôle
   const critEl = $('urg-critique');
   if (critEl) critEl.style.display = isManager() ? '' : 'none';
+  const hint = $('urgence-hint');
+  if (hint) hint.style.display = isManager() ? 'none' : 'block';
   openModal('m-ticket');
 }
 
