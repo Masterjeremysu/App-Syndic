@@ -5254,6 +5254,7 @@ const VOTE_TYPES = {
 
 let _votesCache = [];
 let _reponsesCache = {};
+let _allReponsesCache = {};
 
 async function renderVotes() {
   $('page').innerHTML = `<div style="padding:24px;max-width:760px;">
@@ -5269,9 +5270,17 @@ async function renderVotes() {
 async function loadVotes() {
   const { data: votes } = await sb.from('votes').select('*').order('created_at', { ascending:false });
   const { data: reponses } = await sb.from('votes_reponses').select('*').eq('user_id', user.id);
+  // Charge TOUTES les réponses pour les résultats
+  const { data: toutesReponses } = await sb.from('votes_reponses').select('*');
   _votesCache = votes || [];
   _reponsesCache = {};
   (reponses||[]).forEach(r => { _reponsesCache[r.vote_id] = r; });
+  // Cache global des réponses par vote_id
+  _allReponsesCache = {};
+  (toutesReponses||[]).forEach(r => {
+    if (!_allReponsesCache[r.vote_id]) _allReponsesCache[r.vote_id] = [];
+    _allReponsesCache[r.vote_id].push(r);
+  });
   renderVotesList();
   // Badge
   const nonRepondus = _votesCache.filter(v => v.statut==='ouvert' && !_reponsesCache[v.id]).length;
@@ -5382,23 +5391,24 @@ async function submitVote(voteId, multiple) {
   await loadVotes();
 }
 
-async function renderVoteResults(v, maReponse) {
-  // Charge toutes les réponses pour ce vote
-  const { data: allRep } = await sb.from('votes_reponses').select('*').eq('vote_id', v.id);
-  const total = (allRep||[]).length;
-  // options peut être un objet JS (JSONB) ou une string selon le client
+function renderVoteResults(v, maReponse) {
+  const allRep = _allReponsesCache[v.id] || [];
+  const total = allRep.length;
   const opts = Array.isArray(v.options) ? v.options
-    : (typeof v.options === 'string' ? JSON.parse(v.options) : Object.values(v.options||{}));
+    : (typeof v.options === 'string' ? JSON.parse(v.options||'[]') : []);
   if (!opts.length) return '<div style="color:var(--text-3);font-size:13px;">Aucune option définie</div>';
+  const myChosen = maReponse ? JSON.parse(maReponse.options_choisies||'[]') : [];
   return opts.map(opt => {
-    const count = (allRep||[]).filter(r => {
-      const chosen = JSON.parse(r.options_choisies||'[]');
+    const count = allRep.filter(r => {
+      const chosen = typeof r.options_choisies === 'string'
+        ? JSON.parse(r.options_choisies||'[]')
+        : (Array.isArray(r.options_choisies) ? r.options_choisies : []);
       return chosen.includes(opt.id);
     }).length;
     const pct = total ? Math.round(count/total*100) : 0;
-    const isMine = maReponse && JSON.parse(maReponse.options_choisies||'[]').includes(opt.id);
+    const isMine = myChosen.includes(opt.id);
     return `<div class="vote-result-option">
-      <div style="width:28px;text-align:center;font-size:13px;">${isMine?'✓':''}</div>
+      <div style="width:28px;text-align:center;font-size:13px;color:var(--green);">${isMine?'✓':''}</div>
       <div style="flex:1;">
         <div style="font-size:13px;font-weight:${isMine?'700':'500'};margin-bottom:4px;">${escHtml(opt.label)}</div>
         <div style="display:flex;align-items:center;gap:8px;">
