@@ -5384,7 +5384,10 @@ async function renderVoteResults(v, maReponse) {
   // Charge toutes les réponses pour ce vote
   const { data: allRep } = await sb.from('votes_reponses').select('*').eq('vote_id', v.id);
   const total = (allRep||[]).length;
-  const opts = v.options || [];
+  // options peut être un objet JS (JSONB) ou une string selon le client
+  const opts = Array.isArray(v.options) ? v.options
+    : (typeof v.options === 'string' ? JSON.parse(v.options) : Object.values(v.options||{}));
+  if (!opts.length) return '<div style="color:var(--text-3);font-size:13px;">Aucune option définie</div>';
   return opts.map(opt => {
     const count = (allRep||[]).filter(r => {
       const chosen = JSON.parse(r.options_choisies||'[]');
@@ -5410,7 +5413,7 @@ async function openVoteDetail(voteId) {
   if (!v) return;
   const { data: allRep } = await sb.from('votes_reponses').select('*, profiles(nom,prenom)').eq('vote_id', voteId);
   const total = (allRep||[]).length;
-  const opts = v.options || [];
+  const opts = Array.isArray(v.options) ? v.options : (typeof v.options === 'string' ? JSON.parse(v.options||'[]') : []);
   const overlay = document.createElement('div');
   overlay.className = 'overlay open';
   overlay.id = 'modal-vote-detail';
@@ -5485,7 +5488,7 @@ function openVoteModal() {
           <div style="display:flex;gap:6px;margin-bottom:6px;"><input type="text" class="input vote-opt-input" placeholder="Option 1…"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">×</button></div>
           <div style="display:flex;gap:6px;margin-bottom:6px;"><input type="text" class="input vote-opt-input" placeholder="Option 2…"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">×</button></div>
         </div>
-        <button class="btn btn-ghost btn-sm" onclick="addVoteOption()">+ Ajouter une option</button>
+        <button class="btn btn-ghost btn-sm" id="vote-add-opt-btn" onclick="addVoteOption()">+ Ajouter une option</button>
       </div>
       <div class="fg-row">
         <div class="fg">
@@ -5527,9 +5530,12 @@ function openVoteModal() {
 function addVoteOption() {
   const list = $('vote-options-list');
   if (!list) return;
+  const isDoodle = $('vote-type-val')?.value === 'doodle';
   const div = document.createElement('div');
   div.style.cssText = 'display:flex;gap:6px;margin-bottom:6px;';
-  div.innerHTML = `<input type="text" class="input vote-opt-input" placeholder="Nouvelle option…"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">×</button>`;
+  div.innerHTML = isDoodle
+    ? `<input type="datetime-local" class="input vote-opt-input doodle-date" style="flex:1;"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">×</button>`
+    : `<input type="text" class="input vote-opt-input" placeholder="Nouvelle option…"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">×</button>`;
   list.appendChild(div);
 }
 
@@ -5538,21 +5544,46 @@ function selectVoteType(k) {
   Object.keys(VOTE_TYPES).forEach(key => {
     const el = $(`vtype-${key}`);
     if (!el) return;
-    if (key === k) {
-      el.style.border = '2px solid var(--accent)';
-      el.style.background = 'var(--blue-light)';
-    } else {
-      el.style.border = '2px solid var(--border)';
-      el.style.background = 'var(--surface)';
-    }
+    if (key === k) { el.style.border='2px solid var(--accent)'; el.style.background='var(--blue-light)'; }
+    else { el.style.border='2px solid var(--border)'; el.style.background='var(--surface)'; }
   });
-  // Si vote officiel → options prédéfinies Pour/Contre/Abstention
+
+  const list = $('vote-options-list');
+  const addBtn = $('vote-add-opt-btn');
+  if (!list) return;
+
   if (k === 'officiel') {
-    const list = $('vote-options-list');
-    if (list) list.innerHTML = `
-      <div style="display:flex;gap:6px;margin-bottom:6px;"><input type="text" class="input vote-opt-input" value="Pour"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">×</button></div>
-      <div style="display:flex;gap:6px;margin-bottom:6px;"><input type="text" class="input vote-opt-input" value="Contre"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">×</button></div>
-      <div style="display:flex;gap:6px;margin-bottom:6px;"><input type="text" class="input vote-opt-input" value="Abstention"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">×</button></div>`;
+    // Vote officiel → Pour/Contre/Abstention fixes
+    list.innerHTML = `
+      <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;"><span style="font-size:18px;">✅</span><input type="text" class="input vote-opt-input" value="Pour" style="background:var(--green-light);"></div>
+      <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;"><span style="font-size:18px;">❌</span><input type="text" class="input vote-opt-input" value="Contre" style="background:var(--red-light);"></div>
+      <div style="display:flex;gap:6px;margin-bottom:6px;align-items:center;"><span style="font-size:18px;">⚪</span><input type="text" class="input vote-opt-input" value="Abstention" style="background:var(--surface-2);"></div>`;
+    if (addBtn) addBtn.style.display = 'none';
+    // Active quorum par défaut
+    const q = $('vote-quorum'); if (q && !q.value) q.value = 50;
+
+  } else if (k === 'doodle') {
+    // Disponibilités → sélecteur de dates
+    list.innerHTML = `
+      <div style="font-size:12px;color:var(--text-3);margin-bottom:8px;">Proposez des créneaux — les résidents choisiront leurs disponibilités</div>
+      <div style="display:flex;gap:6px;margin-bottom:6px;">
+        <input type="datetime-local" class="input vote-opt-input doodle-date" style="flex:1;">
+        <button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">×</button>
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:6px;">
+        <input type="datetime-local" class="input vote-opt-input doodle-date" style="flex:1;">
+        <button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">×</button>
+      </div>`;
+    if (addBtn) { addBtn.style.display=''; addBtn.textContent='+ Ajouter un créneau'; }
+    // Choix multiples forcé pour les doodles
+    const cm = $('vote-multiple'); if (cm) cm.checked = true;
+
+  } else {
+    // Sondage → options libres
+    list.innerHTML = `
+      <div style="display:flex;gap:6px;margin-bottom:6px;"><input type="text" class="input vote-opt-input" placeholder="Option 1…"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">×</button></div>
+      <div style="display:flex;gap:6px;margin-bottom:6px;"><input type="text" class="input vote-opt-input" placeholder="Option 2…"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">×</button></div>`;
+    if (addBtn) { addBtn.style.display=''; addBtn.textContent='+ Ajouter une option'; }
   }
 }
 
@@ -5560,7 +5591,16 @@ async function saveVote(statut) {
   const titre = $('vote-titre')?.value.trim();
   if (!titre) { toast('Titre requis', 'err'); return; }
   const optInputs = document.querySelectorAll('.vote-opt-input');
-  const options = [...optInputs].map((el,i) => ({ id: `opt-${i}`, label: el.value.trim() })).filter(o => o.label);
+  const isDoodle = type === 'doodle';
+  const options = [...optInputs].map((el,i) => {
+    const val = el.value.trim();
+    if (!val) return null;
+    if (isDoodle) {
+      const d = new Date(val);
+      return { id:`opt-${i}`, label: d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}), date: val };
+    }
+    return { id:`opt-${i}`, label: val };
+  }).filter(Boolean);
   if (options.length < 2) { toast('Minimum 2 options', 'err'); return; }
   const type = $('vote-type-val')?.value || 'sondage';
   const cloture = $('vote-cloture')?.value;
@@ -5618,7 +5658,7 @@ async function exportVotePDF(voteId) {
   if (!v) return;
   const { data: allRep } = await sb.from('votes_reponses').select('*, profiles(nom,prenom)').eq('vote_id', voteId);
   const total = (allRep||[]).length;
-  const opts = v.options || [];
+  const opts = Array.isArray(v.options) ? v.options : (typeof v.options === 'string' ? JSON.parse(v.options||'[]') : []);
   const today = new Date().toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
   const quorumPct = Math.round(total/240*100);
   const quorumOk = v.quorum_requis ? quorumPct >= v.quorum_requis : true;
