@@ -1324,11 +1324,12 @@ tbody tr:hover td { background: var(--bg); }
       <!-- URGENCE -->
       <div class="fg">
         <label class="label">Urgence *</label>
-        <div class="urgency-grid">
+        <div class="urgency-grid" id="urgency-grid">
           <div class="urgency-opt" id="urg-critique" onclick="setUrgency('critique')">🔴 Critique</div>
           <div class="urgency-opt" id="urg-important" onclick="setUrgency('important')">🟠 Important</div>
           <div class="urgency-opt sel-normal" id="urg-normal" onclick="setUrgency('normal')">🔵 Normal</div>
         </div>
+        ${!isManager() ? '<div style="font-size:11px;color:var(--text-3);margin-top:4px;">Le niveau Critique est réservé aux gestionnaires de la résidence.</div>' : ''}
       </div>
 
       <!-- CATÉGORIE — déclenche les options de zone dynamiques -->
@@ -2848,6 +2849,16 @@ async function deleteTicket(id) {
 function selectCat(el) {
   document.querySelectorAll('.cat-opt').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
+  // Si catégorie bénigne → rétrograde à Normal si Critique était sélectionné
+  const cat = el.dataset.cat;
+  const maxU = CAT_MAX_URGENCE[cat];
+  if (maxU && urgencySelected === 'critique') setUrgency('important');
+  // Cache/affiche Critique selon catégorie ET rôle
+  const critEl = $('urg-critique');
+  if (critEl) {
+    const canCrit = isManager() && !CAT_MAX_URGENCE[cat];
+    critEl.style.display = canCrit ? '' : 'none';
+  }
   updateZoneOptions();
 }
 
@@ -2891,14 +2902,25 @@ function openNewTicket() {
   const area = document.getElementById('photo-area');
   if(area) { area.innerHTML = '<div class="photo-icon">📷</div><div class="photo-label">Prendre une photo ou choisir depuis la galerie</div>'; area.classList.remove('loaded'); }
   photoFile = null;
+  // Cache "Critique" pour les copropriétaires
+  const critEl = $('urg-critique');
+  if (critEl) critEl.style.display = isManager() ? '' : 'none';
   openModal('m-ticket');
 }
 
+// Catégories où "Critique" n'a pas de sens — limitées à Important max
+const CAT_MAX_URGENCE = {
+  proprete: 'important', espaces_verts: 'important',
+  parking: 'important', autre: 'important', serrurerie: 'important'
+};
+
 function setUrgency(u) {
+  // Copropriétaires ne peuvent jamais mettre Critique
+  if (u === 'critique' && !isManager()) return;
   urgencySelected = u;
   ['critique','important','normal'].forEach(x => {
     const el = $(`urg-${x}`);
-    el.className = `urgency-opt${u===x ? ' sel-'+x : ''}`;
+    if (el) el.className = `urgency-opt${u===x ? ' sel-'+x : ''}`;
   });
 }
 
