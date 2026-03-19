@@ -2475,6 +2475,16 @@ async function renderDashboard() {
       </div>
 
       <div style="display:flex;flex-direction:column;gap:18px;">
+        <!-- Widget stats mensuelles -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📈 Activité (6 mois)</span>
+          </div>
+          <div style="padding:16px 20px;">
+            <canvas id="dash-chart" height="120"></canvas>
+          </div>
+        </div>
+
         <div class="card">
           <div class="card-header">
             <span class="card-title">Par bâtiment</span>
@@ -2653,8 +2663,114 @@ async function loadDashboardWidgets() {
         </div>`).join('');
     }
   }
+  // Graphique activité mensuelle
+  renderDashChart();
 }
-function renderTickets() {
+
+function renderDashChart() {
+  const canvas = $('dash-chart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+
+  // Génère les 6 derniers mois
+  const months = [];
+  const now = new Date();
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    months.push({
+      label: d.toLocaleDateString('fr-FR', { month: 'short' }),
+      year: d.getFullYear(),
+      month: d.getMonth()
+    });
+  }
+
+  // Compte les tickets par mois
+  const created = months.map(m =>
+    cache.tickets.filter(t => {
+      const d = new Date(t.created_at);
+      return d.getFullYear() === m.year && d.getMonth() === m.month;
+    }).length
+  );
+  const resolved = months.map(m =>
+    cache.tickets.filter(t => {
+      if (!['résolu','clos'].includes(t.statut)) return false;
+      const d = new Date(t.updated_at || t.created_at);
+      return d.getFullYear() === m.year && d.getMonth() === m.month;
+    }).length
+  );
+
+  const textColor = isDark ? '#9b9890' : '#6b6860';
+  const gridColor = isDark ? '#2a2825' : '#f0ede8';
+  const accentColor = '#2563eb';
+  const greenColor = '#10b981';
+
+  // Dimensions
+  const W = canvas.offsetWidth || 300;
+  const H = 120;
+  canvas.width = W;
+  canvas.height = H;
+  const pad = { top: 10, right: 10, bottom: 24, left: 28 };
+  const cW = W - pad.left - pad.right;
+  const cH = H - pad.top - pad.bottom;
+  const maxVal = Math.max(...created, ...resolved, 1);
+  const barW = (cW / months.length) * 0.35;
+  const barGap = (cW / months.length) * 0.1;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grille horizontale
+  for (let i = 0; i <= 3; i++) {
+    const y = pad.top + (cH / 3) * i;
+    ctx.strokeStyle = gridColor;
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    if (i < 3) {
+      ctx.fillStyle = textColor;
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(Math.round(maxVal - (maxVal / 3) * i), pad.left - 4, y + 3);
+    }
+  }
+
+  // Barres
+  months.forEach((m, i) => {
+    const x = pad.left + (cW / months.length) * i + (cW / months.length) * 0.1;
+
+    // Barres créés (bleu)
+    const h1 = (created[i] / maxVal) * cH;
+    ctx.fillStyle = accentColor;
+    ctx.beginPath();
+    ctx.roundRect(x, pad.top + cH - h1, barW, h1, [3, 3, 0, 0]);
+    ctx.fill();
+
+    // Barres résolus (vert)
+    const h2 = (resolved[i] / maxVal) * cH;
+    ctx.fillStyle = greenColor;
+    ctx.beginPath();
+    ctx.roundRect(x + barW + barGap, pad.top + cH - h2, barW, h2, [3, 3, 0, 0]);
+    ctx.fill();
+
+    // Label mois
+    ctx.fillStyle = textColor;
+    ctx.font = '10px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(m.label, x + barW + barGap / 2, H - 6);
+  });
+
+  // Légende
+  const legendX = W - pad.right - 120;
+  ctx.fillStyle = accentColor;
+  ctx.fillRect(legendX, 4, 10, 8);
+  ctx.fillStyle = textColor;
+  ctx.font = '10px sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('Créés', legendX + 14, 12);
+  ctx.fillStyle = greenColor;
+  ctx.fillRect(legendX + 56, 4, 10, 8);
+  ctx.fillStyle = textColor;
+  ctx.fillText('Résolus', legendX + 70, 12);
+}
   const canFilter = true;
   const myTickets = !isManager();
 
@@ -2708,6 +2824,58 @@ function renderTickets() {
       </div>
     </div>
   </div>`;
+function renderTickets() {
+  const myTickets = !isManager();
+  $('page').innerHTML = `
+  <div style="padding:24px;">
+    <div class="ph">
+      <h1>Signalements</h1>
+      <p>${cache.tickets.length} au total · ${cache.tickets.filter(t=>t.statut!=='résolu'&&t.statut!=='clos').length} ouverts</p>
+    </div>
+    <div class="fbar">
+      <input type="text" class="input" id="f-search" placeholder="🔍 Rechercher..." oninput="filterTickets()" style="flex:1;min-width:150px;">
+      <select class="select" id="f-statut" onchange="filterTickets()" style="width:auto;">
+        <option value="">Tous statuts</option>
+        <option value="nouveau">Nouveau</option>
+        <option value="en_cours">En cours</option>
+        <option value="transmis_syndic">Transmis syndic</option>
+        <option value="attente_intervention">En attente</option>
+        <option value="résolu">Résolu</option>
+        <option value="clos">Clos</option>
+      </select>
+      <select class="select" id="f-urgence" onchange="filterTickets()" style="width:auto;">
+        <option value="">Urgence</option>
+        <option value="critique">🔴 Critique</option>
+        <option value="important">🟠 Important</option>
+        <option value="normal">🔵 Normal</option>
+      </select>
+      <select class="select" id="f-bat" onchange="filterTickets()" style="width:auto;">
+        <option value="">Zone</option>
+        <optgroup label="Tours">
+          <option>Tour 13</option><option>Tour 15</option><option>Tour 17</option><option>Tour 19</option>
+        </optgroup>
+        <optgroup label="Communs">
+          <option>Parking visiteurs</option><option>Parking privé</option><option>Garages</option>
+          <option>Aire de jeux</option><option>Portails / portillons</option><option>Extérieur général</option>
+        </optgroup>
+      </select>
+      <span id="f-count" style="font-size:12px;color:var(--text-3);white-space:nowrap;"></span>
+      <button class="btn btn-ghost btn-sm" id="f-reset" onclick="resetFilters()" style="display:none;">✕ Effacer</button>
+      <button class="btn btn-primary" onclick="openNewTicket()">+ Signaler</button>
+    </div>
+    <div class="card">
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr><th>Signalement</th><th>Urgence</th><th>Statut</th><th>Zone</th><th>Date</th><th></th></tr>
+          </thead>
+          <tbody id="tickets-tbody">
+            ${renderTicketsRows(cache.tickets)}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>\`;
 }
 
 function renderTicketsRows(list) {
@@ -3702,22 +3870,30 @@ async function submitInvite() {
   $('inv-btn').disabled = true;
   $('inv-btn').textContent = 'Envoi...';
 
-  // Invite via Supabase Auth (sends magic link)
+  // Invite via Supabase Auth
   const { error } = await sb.auth.admin?.inviteUserByEmail
     ? await sb.auth.admin.inviteUserByEmail(email, { data: { nom, prenom, role, lot } })
-    : { error: null }; // fallback: just create the profile pre-registered
+    : { error: null };
 
-  // Store pending profile
+  // Crée le profil en attente
   await sb.from('profiles').upsert({
-    id: crypto.randomUUID(), email, nom: nom || email.split('@')[0],
+    id: crypto.randomUUID(), email,
+    nom: nom || email.split('@')[0],
     prenom, role, lot, actif: false
   }, { onConflict: 'email' });
+
+  // Email de bienvenue via Resend
+  await sendEmailDirect('bienvenue', email, {
+    prenom: prenom || email.split('@')[0],
+    nom, role, lot,
+    app_url: 'https://app-syndic.vercel.app'
+  });
 
   await addLog('Invitation envoyée', 'user', null, { email, role });
   $('inv-btn').disabled = false;
   $('inv-btn').textContent = 'Envoyer l\'invitation';
   closeModal('m-invite');
-  toast(`Invitation envoyée à ${email}`, 'ok');
+  toast(`Invitation envoyée à ${email} ✓`, 'ok');
 }
 
 // ── NOTIFICATIONS ──
@@ -4962,8 +5138,7 @@ async function deleteContact(id) {
 function checkOnboarding() {
   if (localStorage.getItem('coprosync-onboarded')) return;
   if (!user || !profile) return;
-  // Seulement pour les nouveaux (pas de tour ni de lot)
-  if (profile.tour) { localStorage.setItem('coprosync-onboarded', '1'); return; }
+  if (profile.tour && profile.prenom) { localStorage.setItem('coprosync-onboarded', '1'); return; }
   showOnboarding();
 }
 
@@ -4972,24 +5147,32 @@ const ONBOARD_STEPS = [
   {
     ico: '👋',
     title: 'Bienvenue à la Résidence le Floréal !',
-    desc: 'Cette application vous permet de signaler des problèmes, suivre leur résolution, et rester informé de la vie de votre résidence.\n\nQuelques étapes pour personnaliser votre espace.'
+    desc: 'Votre application de gestion de résidence. Signalements, messagerie, documents, votes — tout en un seul endroit.',
+    action: null
+  },
+  {
+    ico: '👤',
+    title: 'Comment vous appelle-t-on ?',
+    desc: 'Renseignez votre prénom et nom pour que vos voisins et le conseil syndical puissent vous identifier.',
+    action: 'identite'
   },
   {
     ico: '🏠',
-    title: 'Quelle est votre tour ?',
-    desc: 'Indiquez votre tour pour rejoindre automatiquement votre groupe de messagerie et recevoir les informations qui vous concernent.',
+    title: 'Où habitez-vous ?',
+    desc: 'Indiquez votre tour et votre numéro de lot. Vous rejoindrez automatiquement le groupe de messagerie de votre tour.',
     action: 'tour'
   },
   {
     ico: '🔔',
-    title: 'Activez les notifications',
-    desc: 'Soyez alerté instantanément en cas de signalement urgent, d\'annonce importante ou de message.\n\nVous pouvez les désactiver à tout moment dans les réglages du téléphone.',
+    title: 'Restez informé',
+    desc: 'Activez les notifications pour être alerté instantanément : signalements urgents, annonces, nouveaux messages.',
     action: 'notif'
   },
   {
     ico: '🎉',
-    title: 'Tout est prêt !',
-    desc: 'Vous pouvez maintenant utiliser CoproSync.\n\n• Signalez un problème avec le bouton "+ Signaler"\n• Consultez les annonces et l\'agenda\n• Chattez avec vos voisins dans Messages'
+    title: 'Vous êtes prêt !',
+    desc: 'Bienvenue parmi les résidents connectés du Floréal. Explorez l\'application et n\'hésitez pas à signaler tout problème.',
+    action: null
   }
 ];
 
@@ -5011,16 +5194,41 @@ function renderOnboardingStep() {
   ).join('');
 
   let actionHtml = '';
-  if (step.action === 'tour') {
-    actionHtml = `<select id="ob-tour" class="select" style="width:100%;margin-bottom:8px;">
-      <option value="">— Sélectionner ma tour —</option>
-      ${COPRO.tours.map(t => `<option value="${t}" ${profile?.tour===t?'selected':''}>${t}</option>`).join('')}
-    </select>
-    <input type="text" id="ob-lot" class="input" placeholder="Numéro de lot (ex: 3B)" value="${profile?.lot||''}" style="width:100%;">`;
+  if (step.action === 'identite') {
+    actionHtml = `
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <input type="text" id="ob-prenom" class="input" placeholder="Prénom *" value="${escHtml(profile?.prenom||'')}">
+        <input type="text" id="ob-nom" class="input" placeholder="Nom *" value="${escHtml(profile?.nom||'')}">
+      </div>
+      <input type="tel" id="ob-tel" class="input" placeholder="Téléphone (optionnel)" value="${escHtml(profile?.telephone||'')}" style="width:100%;">`;
+  } else if (step.action === 'tour') {
+    actionHtml = `
+      <select id="ob-tour" class="select" style="width:100%;margin-bottom:8px;">
+        <option value="">— Sélectionner ma tour —</option>
+        ${COPRO.tours.map(t => `<option value="${t}" ${profile?.tour===t?'selected':''}>${t}</option>`).join('')}
+      </select>
+      <input type="text" id="ob-lot" class="input" placeholder="Numéro de lot (ex: 148)" value="${escHtml(profile?.lot||'')}" style="width:100%;">`;
   } else if (step.action === 'notif') {
-    actionHtml = `<button class="btn btn-primary" style="width:100%;" onclick="askNotifPermission();_onboardStep++;renderOnboardingStep();">
-      🔔 Activer les notifications
-    </button>`;
+    actionHtml = `
+      <button class="btn btn-primary" style="width:100%;margin-bottom:8px;" onclick="askNotifPermission().then(()=>{_onboardStep++;renderOnboardingStep();})">
+        🔔 Activer les notifications
+      </button>
+      <button class="btn btn-ghost btn-sm" style="width:100%;color:var(--text-3);" onclick="_onboardStep++;renderOnboardingStep();">
+        Pas maintenant
+      </button>`;
+  } else if (isLast) {
+    const nom = displayNameFromProfile(profile, user?.email);
+    actionHtml = `
+      <div style="background:var(--blue-light);border-radius:var(--r-lg);padding:16px;margin-bottom:8px;">
+        <div style="font-size:13px;color:var(--accent);font-weight:600;margin-bottom:8px;">Ce que vous pouvez faire :</div>
+        <div style="font-size:13px;color:var(--text-2);line-height:2;">
+          🔧 Signaler un problème dans les parties communes<br>
+          💬 Chatter avec vos voisins dans Messages<br>
+          📢 Consulter les annonces et l'agenda<br>
+          📄 Accéder aux documents de la résidence<br>
+          🗳️ Participer aux votes et sondages
+        </div>
+      </div>`;
   }
 
   const overlay = document.createElement('div');
@@ -5031,16 +5239,16 @@ function renderOnboardingStep() {
       <div class="onboarding-ico">${step.ico}</div>
       <div class="onboarding-progress">${dots}</div>
       <div class="onboarding-title">${step.title}</div>
-      <div class="onboarding-desc">${step.desc.replace(/\n/g,'<br>')}</div>
+      <div class="onboarding-desc" style="margin-bottom:${actionHtml?'16px':'24px'};">${step.desc}</div>
       ${actionHtml}
     </div>
     <div class="onboarding-footer">
-      <button class="btn btn-ghost btn-sm" onclick="skipOnboarding()">Passer</button>
+      ${isFirst ? `<button class="btn btn-ghost btn-sm" onclick="skipOnboarding()">Passer</button>` : '<div></div>'}
       <div style="display:flex;gap:8px;">
-        ${!isFirst ? `<button class="btn btn-secondary btn-sm" onclick="_onboardStep--;renderOnboardingStep();">← Retour</button>` : ''}
-        <button class="btn btn-primary" onclick="nextOnboardStep()">
-          ${isLast ? '🎉 Commencer !' : 'Suivant →'}
-        </button>
+        ${!isFirst && !isLast && step.action !== 'notif' ? `<button class="btn btn-secondary btn-sm" onclick="_onboardStep--;renderOnboardingStep();">← Retour</button>` : ''}
+        ${step.action !== 'notif' ? `<button class="btn btn-primary" onclick="nextOnboardStep()">
+          ${isLast ? '🎉 C\'est parti !' : 'Suivant →'}
+        </button>` : ''}
       </div>
     </div>
   </div>`;
@@ -5049,7 +5257,18 @@ function renderOnboardingStep() {
 
 async function nextOnboardStep() {
   const step = ONBOARD_STEPS[_onboardStep];
-  // Sauvegarde tour si étape tour
+
+  if (step.action === 'identite') {
+    const prenom = $('ob-prenom')?.value.trim();
+    const nom = $('ob-nom')?.value.trim();
+    const telephone = $('ob-tel')?.value.trim();
+    if (!prenom) { toast('Prénom requis', 'warn'); return; }
+    await sb.from('profiles').update({ prenom, nom: nom||null, telephone: telephone||null }).eq('id', user.id);
+    profile.prenom = prenom; profile.nom = nom; profile.telephone = telephone;
+    // Met à jour le nav
+    if ($('nav-nom')) $('nav-nom').textContent = displayNameFromProfile(profile, user?.email);
+  }
+
   if (step.action === 'tour') {
     const tour = $('ob-tour')?.value;
     const lot = $('ob-lot')?.value.trim();
@@ -5059,6 +5278,7 @@ async function nextOnboardStep() {
       profile.tour = tour; profile.lot = lot;
     }
   }
+
   if (_onboardStep < ONBOARD_STEPS.length - 1) {
     _onboardStep++;
     renderOnboardingStep();
