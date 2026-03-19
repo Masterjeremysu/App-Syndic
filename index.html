@@ -3627,26 +3627,96 @@ async function saveProfile() {
 function renderRapport() {
   const t = cache.tickets;
   const today = new Date().toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
+  const ouverts = t.filter(x => x.statut !== 'résolu' && x.statut !== 'clos');
+  const critiques = ouverts.filter(x => x.urgence === 'critique');
+  const resolus = t.filter(x => x.statut === 'résolu' || x.statut === 'clos');
+  const expirants = (cache.contrats||[]).filter(c => { const d = daysUntil(c.date_echeance); return d !== null && d >= -30 && d <= 90; });
+  const tempsResolution = resolus.map(r => Math.max(0, Math.floor((new Date(r.updated_at||r.created_at) - new Date(r.created_at)) / 86400000)));
+  const moyenneJours = tempsResolution.length ? Math.round(tempsResolution.reduce((a,b)=>a+b,0)/tempsResolution.length) : null;
+  const statLabels = { nouveau:'Nouveau', en_cours:'En cours', transmis_syndic:'Transmis syndic', attente_intervention:'En attente', résolu:'Résolu', clos:'Clos' };
+
   $('page').innerHTML = `
   <div style="padding:24px;" id="rapport-page">
     <div class="ph"><h1>Rapport syndic</h1><p>Document de synthèse à transmettre</p></div>
-    <div style="display:flex;gap:10px;margin-bottom:20px;">
+    <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
       <button class="btn btn-primary" onclick="exportRapportPDF()">🖨️ Exporter en PDF</button>
       <button class="btn btn-secondary" onclick="exportCSV()">📊 Export CSV</button>
       <span style="margin-left:auto;font-size:12px;color:var(--text-3);">Généré le ${today}</span>
     </div>
+
     <div class="rapport-summary">
       <div style="font-family:var(--font-head);font-size:20px;font-weight:800;margin-bottom:4px;">RAPPORT DE SITUATION</div>
       <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px;">Résidence le Floréal</div>
       <div style="font-size:12px;color:var(--text-2);">13-19 Rue du Moucherotte — 38360 Sassenage</div>
       <div style="font-size:12px;color:var(--text-3);margin-top:4px;">Établi le ${today} par ${displayNameFromProfile(profile, user?.email)}</div>
     </div>
-    <div class="stats-row" style="margin-bottom:22px;">
-      <div class="stat red" style="pointer-events:none;"><div class="stat-num">${t.filter(x=>x.urgence==='critique'&&x.statut!=='résolu'&&x.statut!=='clos').length}</div><div class="stat-label">Critiques</div></div>
-      <div class="stat orange" style="pointer-events:none;"><div class="stat-num">${t.filter(x=>x.statut!=='résolu'&&x.statut!=='clos').length}</div><div class="stat-label">Ouverts</div></div>
-      <div class="stat green" style="pointer-events:none;"><div class="stat-num">${t.filter(x=>x.statut==='résolu'||x.statut==='clos').length}</div><div class="stat-label">Résolus</div></div>
+
+    <div class="stats-row" style="margin-bottom:18px;">
+      <div class="stat red" style="pointer-events:none;"><div class="stat-num">${critiques.length}</div><div class="stat-label">Critiques</div></div>
+      <div class="stat orange" style="pointer-events:none;"><div class="stat-num">${ouverts.length}</div><div class="stat-label">Ouverts</div></div>
+      <div class="stat green" style="pointer-events:none;"><div class="stat-num">${resolus.length}</div><div class="stat-label">Résolus</div></div>
       <div class="stat blue" style="pointer-events:none;"><div class="stat-num">${t.length}</div><div class="stat-label">Total</div></div>
     </div>
+
+    <!-- Indicateurs -->
+    <div style="display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap;">
+      ${moyenneJours !== null ? `<div class="card" style="flex:1;min-width:120px;padding:14px 16px;"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:4px;">Temps moyen résolution</div><div style="font-size:20px;font-weight:800;font-family:var(--font-head);">${moyenneJours}j</div></div>` : ''}
+      <div class="card" style="flex:1;min-width:120px;padding:14px 16px;"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:4px;">Taux de résolution</div><div style="font-size:20px;font-weight:800;font-family:var(--font-head);">${t.length ? Math.round(resolus.length/t.length*100) : 0}%</div></div>
+      <div class="card" style="flex:1;min-width:120px;padding:14px 16px;"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:4px;">Transmis syndic</div><div style="font-size:20px;font-weight:800;font-family:var(--font-head);">${ouverts.filter(x=>x.statut==='transmis_syndic').length}</div></div>
+      <div class="card" style="flex:1;min-width:120px;padding:14px 16px;"><div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--text-3);margin-bottom:4px;">En attente</div><div style="font-size:20px;font-weight:800;font-family:var(--font-head);">${ouverts.filter(x=>x.statut==='attente_intervention').length}</div></div>
+    </div>
+
+    <!-- Tickets ouverts -->
+    ${ouverts.length ? `
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-header"><span class="card-title">📋 Signalements ouverts (${ouverts.length})</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Titre</th><th>Urgence</th><th>Statut</th><th>Bâtiment</th><th>Date</th></tr></thead>
+          <tbody>${ouverts.map(r=>`<tr onclick="openDetail('${r.id}')" style="cursor:pointer;">
+            <td style="font-weight:600;">${escHtml(r.titre)}</td>
+            <td>${badgeUrgence(r.urgence)}</td>
+            <td>${badgeStatut(r.statut)}</td>
+            <td style="font-size:12px;">${escHtml(r.batiment||'—')}</td>
+            <td style="font-size:12px;white-space:nowrap;">${fmtD(r.created_at)}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>` : '<div class="card" style="margin-bottom:18px;padding:24px;text-align:center;color:var(--text-3);">🎉 Aucun signalement ouvert</div>'}
+
+    <!-- Tickets résolus -->
+    ${resolus.length ? `
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-header"><span class="card-title">✅ Résolus / Clos (${resolus.length})</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Titre</th><th>Bâtiment</th><th>Ouvert le</th><th>Résolu le</th></tr></thead>
+          <tbody>${resolus.map(r=>`<tr>
+            <td style="font-weight:600;">${escHtml(r.titre)}</td>
+            <td style="font-size:12px;">${escHtml(r.batiment||'—')}</td>
+            <td style="font-size:12px;white-space:nowrap;">${fmtD(r.created_at)}</td>
+            <td style="font-size:12px;white-space:nowrap;">${fmtD(r.updated_at)}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </div>
+    </div>` : ''}
+
+    <!-- Contrats à renouveler -->
+    ${expirants.length ? `
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-header"><span class="card-title" style="color:var(--amber);">⚠️ Contrats à renouveler (${expirants.length})</span></div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Fournisseur</th><th>Type</th><th>Échéance</th><th>Délai</th></tr></thead>
+          <tbody>${expirants.map(c=>{const d=daysUntil(c.date_echeance);return`<tr>
+            <td style="font-weight:600;">${escHtml(c.fournisseur)}</td>
+            <td style="font-size:12px;">${escHtml(c.type_contrat)}</td>
+            <td style="font-size:12px;white-space:nowrap;">${fmtD(c.date_echeance)}</td>
+            <td style="font-weight:700;color:${d<0?'var(--red)':d<=30?'var(--orange)':'var(--amber)'};">${d<0?'Expiré':d+'j'}</td>
+          </tr>`;}).join('')}</tbody>
+        </table>
+      </div>
+    </div>` : ''}
   </div>`;
 }
 
