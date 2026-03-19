@@ -2250,7 +2250,6 @@ async function addLog(action, entite, entite_id, details) {
 // ── EMAIL (via Supabase Edge Function ou notification en DB) ──
 // ── EMAIL VIA EDGE FUNCTION RESEND ──
 const EDGE_URL = 'https://sifjbqtnrfydxcemhsnz.supabase.co/functions/v1/send-email';
-const INVITE_URL = 'https://sifjbqtnrfydxcemhsnz.supabase.co/functions/v1/invite-user';
 
 async function sendEmailNotif(type, data) {
   try {
@@ -3863,34 +3862,38 @@ async function changeRole(userId, newRole) {
 async function submitInvite() {
   const email = $('inv-email')?.value.trim();
   if (!email) { toast('Email requis', 'err'); return; }
-  const nom    = $('inv-nom')?.value.trim();
+  const nom = $('inv-nom')?.value.trim();
   const prenom = $('inv-prenom')?.value.trim();
-  const role   = $('inv-role')?.value;
-  const lot    = $('inv-lot')?.value.trim();
+  const role = $('inv-role')?.value;
+  const lot = $('inv-lot')?.value.trim();
 
   $('inv-btn').disabled = true;
-  $('inv-btn').textContent = 'Envoi en cours…';
+  $('inv-btn').textContent = 'Envoi...';
 
-  try {
-    const res = await fetch(INVITE_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPA_KEY}`,
-      },
-      body: JSON.stringify({ email, prenom, nom, role, lot })
-    });
-    const result = await res.json();
-    if (!result.ok) throw new Error(result.error || 'Erreur inconnue');
-    await addLog('Invitation envoyée', 'user', null, { email, role });
-    closeModal('m-invite');
-    toast(`✅ Invitation envoyée à ${email}`, 'ok');
-  } catch(e) {
-    toast('Erreur : ' + e.message, 'err');
-  } finally {
-    $('inv-btn').disabled = false;
-    $('inv-btn').textContent = 'Envoyer l\'invitation';
-  }
+  // Invite via Supabase Auth
+  const { error } = await sb.auth.admin?.inviteUserByEmail
+    ? await sb.auth.admin.inviteUserByEmail(email, { data: { nom, prenom, role, lot } })
+    : { error: null };
+
+  // Crée le profil en attente
+  await sb.from('profiles').upsert({
+    id: crypto.randomUUID(), email,
+    nom: nom || email.split('@')[0],
+    prenom, role, lot, actif: false
+  }, { onConflict: 'email' });
+
+  // Email de bienvenue via Resend
+  await sendEmailDirect('bienvenue', email, {
+    prenom: prenom || email.split('@')[0],
+    nom, role, lot,
+    app_url: 'https://app-syndic.vercel.app'
+  });
+
+  await addLog('Invitation envoyée', 'user', null, { email, role });
+  $('inv-btn').disabled = false;
+  $('inv-btn').textContent = 'Envoyer l\'invitation';
+  closeModal('m-invite');
+  toast(`Invitation envoyée à ${email} ✓`, 'ok');
 }
 
 // ── NOTIFICATIONS ──
