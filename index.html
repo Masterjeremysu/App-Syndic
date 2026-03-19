@@ -5222,9 +5222,10 @@ async function saveDoc(id) {
   toast(id ? 'Document mis à jour ✓' : 'Document publié ✓', 'ok');
   // Notif si nouveau doc
   if (!id) {
-    const { data: allUsers } = await sb.from('profiles').select('id').eq('actif', true);
+    const { data: allUsers } = await sb.from('profiles').select('id, email').eq('actif', true);
     const notifs = (allUsers||[]).filter(u=>u.id!==user.id).map(u=>({
       destinataire_id: u.id,
+      destinataire_email: u.email || '',
       sujet: `📄 Nouveau document : ${titre}`,
       lu: false
     }));
@@ -5621,9 +5622,10 @@ async function saveVote(statut) {
   document.getElementById('modal-vote')?.remove();
   toast(statut === 'ouvert' ? 'Vote publié ✓' : 'Brouillon sauvegardé ✓', 'ok');
   if (statut === 'ouvert') {
-    const { data: allUsers } = await sb.from('profiles').select('id').eq('actif', true);
+    const { data: allUsers } = await sb.from('profiles').select('id, email').eq('actif', true);
     const notifs = (allUsers||[]).filter(u=>u.id!==user.id).map(u=>({
       destinataire_id: u.id,
+      destinataire_email: u.email || '',
       sujet: `${voteType==='officiel'?'🗳️':'📊'} Nouveau ${voteType==='officiel'?'vote':'sondage'} : ${titre}`,
       lu: false
     }));
