@@ -2535,6 +2535,54 @@ async function renderDashboard() {
           </div>
         </div>
 
+        <!-- Widget Votes en cours -->
+        ${_votesCache.filter(v=>v.statut==='ouvert').length > 0 ? `
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">🗳️ Votes en cours</span>
+            <button class="btn btn-ghost btn-sm" onclick="nav('votes')">Voter →</button>
+          </div>
+          <div style="padding:8px 16px 12px;">
+            ${_votesCache.filter(v=>v.statut==='ouvert').slice(0,3).map(v => {
+              const maRep = _reponsesCache[v.id];
+              const total = (_allReponsesCache[v.id]||[]).length;
+              return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="nav('votes')">
+                <div style="font-size:20px;">${VOTE_TYPES[v.type]?.ico||'🗳️'}</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(v.titre)}</div>
+                  <div style="font-size:11px;color:var(--text-3);">${total} participant${total>1?'s':''}</div>
+                </div>
+                ${maRep
+                  ? '<span style="font-size:10px;background:var(--green-light);color:var(--green);padding:2px 7px;border-radius:8px;font-weight:700;">✓ Voté</span>'
+                  : '<span style="font-size:10px;background:var(--orange-light);color:var(--orange);padding:2px 7px;border-radius:8px;font-weight:700;">À voter</span>'}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>` : ''}
+
+        <!-- Widget Documents récents -->
+        ${_docsCache.length > 0 ? `
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">📄 Documents récents</span>
+            <button class="btn btn-ghost btn-sm" onclick="nav('documents')">Voir tous →</button>
+          </div>
+          <div style="padding:8px 16px 12px;">
+            ${_docsCache.slice(0,4).map(d => {
+              const cat = DOC_CATS[d.categorie] || { ico:'📄', color:'#6b7280' };
+              const isNew = !_docsVus.has(d.id);
+              return `<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer;" onclick="nav('documents')">
+                <div style="font-size:18px;">${cat.ico}</div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(d.titre)}</div>
+                  <div style="font-size:11px;color:var(--text-3);">${fmtD(d.created_at)}</div>
+                </div>
+                ${isNew ? '<span style="font-size:10px;background:var(--accent);color:#fff;padding:2px 7px;border-radius:8px;font-weight:700;">Nouveau</span>' : ''}
+              </div>`;
+            }).join('')}
+          </div>
+        </div>` : ''}
+
         <div class="card">
           <div class="card-body" style="text-align:center;">
             <div style="font-size:24px;margin-bottom:8px;">📱</div>
@@ -3705,23 +3753,63 @@ async function markRead(id) {
 
 // ── PROFILE ──
 function renderProfile() {
-  const tours = ['', ...COPRO.tours];
+  const initial = (profile?.prenom||profile?.nom||profile?.email||'?').charAt(0).toUpperCase();
+  const mesTickets = cache.tickets.filter(x => x.auteur_id === user.id);
+  const mesOuverts = mesTickets.filter(x => x.statut !== 'résolu' && x.statut !== 'clos');
+  const mesResolus = mesTickets.filter(x => x.statut === 'résolu' || x.statut === 'clos');
+  const roleLabels = { administrateur:'Administrateur', syndic:'Syndic', membre_cs:'Conseil Syndical', 'copropriétaire':'Copropriétaire' };
+  const colors = ['#6366f1','#10b981','#f59e0b','#ef4444','#2563eb','#8b5cf6','#ec4899'];
+  const avatarColor = colors[(initial.charCodeAt(0)) % colors.length];
+
   $('page').innerHTML = `
-  <div style="padding:24px;max-width:480px;">
-    <div class="ph"><h1>Mon profil</h1></div>
-    <div class="card">
-      <div class="card-body">
-        <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);">
-          <div class="user-av" style="width:52px;height:52px;font-size:20px;">${(profile?.prenom||profile?.nom||profile?.email||'?').charAt(0).toUpperCase()}</div>
-          <div>
-            <div style="font-family:var(--font-head);font-size:18px;font-weight:700;">${displayNameFromProfile(profile, user?.email)}</div>
-            <span class="role-pill role-${profile?.role}">${{administrateur:'Administrateur',syndic:'Syndic',membre_cs:'Conseil Syndical','copropriétaire':'Copropriétaire'}[profile?.role]||profile?.role}</span>
+  <div style="padding:24px;max-width:520px;">
+    <div class="ph"><h1>Mon profil</h1><p>Vos informations personnelles</p></div>
+
+    <!-- Avatar + infos rapides -->
+    <div class="card" style="margin-bottom:18px;">
+      <div style="padding:24px;display:flex;align-items:center;gap:18px;">
+        <div style="width:68px;height:68px;border-radius:50%;background:${avatarColor};color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;font-family:var(--font-head);flex-shrink:0;">${initial}</div>
+        <div style="flex:1;">
+          <div style="font-family:var(--font-head);font-size:20px;font-weight:800;margin-bottom:4px;">${displayNameFromProfile(profile, user?.email)}</div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <span class="role-pill role-${profile?.role}">${roleLabels[profile?.role]||profile?.role}</span>
+            ${profile?.tour ? `<span style="font-size:12px;color:var(--text-3);">🏢 ${profile.tour}</span>` : ''}
+            ${profile?.lot ? `<span style="font-size:12px;color:var(--text-3);">🔑 Lot ${profile.lot}</span>` : ''}
           </div>
+          <div style="font-size:12px;color:var(--text-3);margin-top:4px;">${user.email}</div>
         </div>
-        <div class="fg"><label class="label">Prénom</label><input type="text" id="p-prenom" class="input" value="${profile?.prenom||''}"></div>
-        <div class="fg"><label class="label">Nom</label><input type="text" id="p-nom" class="input" value="${profile?.nom||''}"></div>
-        <div class="fg"><label class="label">Téléphone</label><input type="text" id="p-tel" class="input" value="${profile?.telephone||''}" placeholder="+33 6 ..."></div>
-        <div class="fg"><label class="label">Email</label><input type="email" class="input" value="${user.email}" disabled style="opacity:.6;"></div>
+      </div>
+      <!-- Stats personnelles -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--border);">
+        <div style="padding:14px;text-align:center;border-right:1px solid var(--border);">
+          <div style="font-size:22px;font-weight:800;font-family:var(--font-head);color:var(--orange);">${mesOuverts.length}</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:2px;">En cours</div>
+        </div>
+        <div style="padding:14px;text-align:center;border-right:1px solid var(--border);">
+          <div style="font-size:22px;font-weight:800;font-family:var(--font-head);color:var(--green);">${mesResolus.length}</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Résolus</div>
+        </div>
+        <div style="padding:14px;text-align:center;">
+          <div style="font-size:22px;font-weight:800;font-family:var(--font-head);color:var(--accent);">${mesTickets.length}</div>
+          <div style="font-size:11px;color:var(--text-3);margin-top:2px;">Total</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulaire -->
+    <div class="card">
+      <div class="card-header"><span class="card-title">✏️ Modifier mes informations</span></div>
+      <div class="card-body">
+        <div class="fg-row">
+          <div class="fg"><label class="label">Prénom</label><input type="text" id="p-prenom" class="input" value="${escHtml(profile?.prenom||'')}" placeholder="Prénom"></div>
+          <div class="fg"><label class="label">Nom</label><input type="text" id="p-nom" class="input" value="${escHtml(profile?.nom||'')}" placeholder="Nom de famille"></div>
+        </div>
+        <div class="fg"><label class="label">Téléphone</label><input type="tel" id="p-tel" class="input" value="${escHtml(profile?.telephone||'')}" placeholder="+33 6 ..."></div>
+        <div class="fg">
+          <label class="label">Email</label>
+          <input type="email" class="input" value="${user.email}" disabled style="opacity:.6;cursor:not-allowed;">
+          <div style="font-size:11px;color:var(--text-3);margin-top:3px;">L'email ne peut pas être modifié ici</div>
+        </div>
         <div class="fg">
           <label class="label">Ma tour 🏠</label>
           <select id="p-tour" class="select" style="width:100%;">
@@ -3730,10 +3818,21 @@ function renderProfile() {
           </select>
           <div style="font-size:11px;color:var(--text-3);margin-top:4px;">Vous rejoindrez automatiquement le groupe de messagerie de votre tour</div>
         </div>
-        ${profile?.lot ? `<div class="fg"><label class="label">Lot</label><input type="text" id="p-lot" class="input" value="${profile.lot||''}" placeholder="Ex: 3B"></div>` :
-          `<div class="fg"><label class="label">Numéro de lot</label><input type="text" id="p-lot" class="input" value="${profile?.lot||''}" placeholder="Ex: 3B"></div>`}
-        <button class="btn btn-primary" style="width:100%;justify-content:center;" onclick="saveProfile()">Enregistrer</button>
+        <div class="fg">
+          <label class="label">Numéro de lot</label>
+          <input type="text" id="p-lot" class="input" value="${escHtml(profile?.lot||'')}" placeholder="Ex: 148">
+        </div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:4px;" onclick="saveProfile()">
+          Enregistrer les modifications
+        </button>
       </div>
+    </div>
+
+    <!-- Déconnexion -->
+    <div style="margin-top:16px;text-align:center;">
+      <button class="btn btn-ghost btn-sm" style="color:var(--red);" onclick="if(confirm('Se déconnecter ?')){sb.auth.signOut().then(()=>location.reload())}">
+        🚪 Se déconnecter
+      </button>
     </div>
   </div>`;
 }
@@ -4996,6 +5095,11 @@ async function renderDocuments() {
       <div><h1>Documents</h1><p>Base documentaire de la résidence</p></div>
       ${isManager() ? `<button class="btn btn-primary" onclick="openDocModal()">+ Ajouter un document</button>` : ''}
     </div>
+    <div style="display:flex;gap:10px;margin-bottom:16px;align-items:center;">
+      <div style="flex:1;position:relative;">
+        <input type="search" id="doc-search" class="input" placeholder="🔍 Rechercher un document…" oninput="searchDocs(this.value)" style="padding-left:14px;">
+      </div>
+    </div>
     <div class="doc-cats" id="doc-cats">
       <button class="doc-cat-btn active" onclick="filterDocs('tous')">📁 Tous</button>
       ${Object.entries(DOC_CATS).map(([k,v]) => `
@@ -5186,8 +5290,25 @@ function openDocModal(id) {
   updateDocPath();
 }
 
+function searchDocs(query) {
+  const q = query.toLowerCase().trim();
+  if (!q) { renderDocsList(); return; }
+  const filtered = _docsCache.filter(d =>
+    d.titre?.toLowerCase().includes(q) ||
+    d.description?.toLowerCase().includes(q) ||
+    d.fichier_nom?.toLowerCase().includes(q) ||
+    DOC_CATS[d.categorie]?.label.toLowerCase().includes(q)
+  );
+  const el = $('doc-list');
+  if (!el) return;
+  if (!filtered.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-ico">🔍</div><div class="empty-txt">Aucun document pour "<strong>${escHtml(q)}</strong>"</div></div>`;
+    return;
+  }
+  el.innerHTML = `<div class="doc-grid">${filtered.map(d => renderDocCard(d)).join('')}</div>`;
+}
+
 function updateDocPath() {
-  const cat = $('doc-cat')?.value || 'ag';
   const annee = $('doc-annee')?.value || new Date().getFullYear();
   const preview = $('doc-path-preview');
   if (preview) preview.textContent = `📁 Chemin : ${cat}/${annee}/`;
