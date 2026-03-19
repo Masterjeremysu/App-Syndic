@@ -5590,8 +5590,9 @@ function selectVoteType(k) {
 async function saveVote(statut) {
   const titre = $('vote-titre')?.value.trim();
   if (!titre) { toast('Titre requis', 'err'); return; }
+  const voteType = $('vote-type-val')?.value || 'sondage';
   const optInputs = document.querySelectorAll('.vote-opt-input');
-  const isDoodle = type === 'doodle';
+  const isDoodle = voteType === 'doodle';
   const options = [...optInputs].map((el,i) => {
     const val = el.value.trim();
     if (!val) return null;
@@ -5602,13 +5603,12 @@ async function saveVote(statut) {
     return { id:`opt-${i}`, label: val };
   }).filter(Boolean);
   if (options.length < 2) { toast('Minimum 2 options', 'err'); return; }
-  const type = $('vote-type-val')?.value || 'sondage';
   const cloture = $('vote-cloture')?.value;
   const quorum = parseInt($('vote-quorum')?.value) || null;
   const payload = {
-    titre, type, statut,
+    titre, type: voteType, statut,
     description: $('vote-desc')?.value.trim() || null,
-    options: options, // JSONB direct — pas JSON.stringify
+    options: options,
     cible: $('vote-cible')?.value || 'tous',
     anonyme: $('vote-anonyme')?.checked || false,
     choix_multiple: $('vote-multiple')?.checked || false,
@@ -5624,7 +5624,7 @@ async function saveVote(statut) {
     const { data: allUsers } = await sb.from('profiles').select('id').eq('actif', true);
     const notifs = (allUsers||[]).filter(u=>u.id!==user.id).map(u=>({
       destinataire_id: u.id,
-      sujet: `${type==='officiel'?'🗳️':'📊'} Nouveau ${type==='officiel'?'vote':'sondage'} : ${titre}`,
+      sujet: `${voteType==='officiel'?'🗳️':'📊'} Nouveau ${voteType==='officiel'?'vote':'sondage'} : ${titre}`,
       lu: false
     }));
     if (notifs.length) await sb.from('notifications').insert(notifs).then(({error:e})=>{ if(e) console.warn('[notif vote]',e.message); });
