@@ -5224,9 +5224,11 @@ async function saveDoc(id) {
   if (!id) {
     const { data: allUsers } = await sb.from('profiles').select('id').eq('actif', true);
     const notifs = (allUsers||[]).filter(u=>u.id!==user.id).map(u=>({
-      destinataire_id: u.id, sujet:`📄 Nouveau document : ${titre}`, type:'info', lu:false
+      destinataire_id: u.id,
+      sujet: `📄 Nouveau document : ${titre}`,
+      lu: false
     }));
-    if (notifs.length) await sb.from('notifications').insert(notifs);
+    if (notifs.length) await sb.from('notifications').insert(notifs).then(({error:e})=>{ if(e) console.warn('[notif doc]',e.message); });
   }
   await loadDocs();
 }
@@ -5566,7 +5568,7 @@ async function saveVote(statut) {
   const payload = {
     titre, type, statut,
     description: $('vote-desc')?.value.trim() || null,
-    options: JSON.stringify(options),
+    options: options, // JSONB direct — pas JSON.stringify
     cible: $('vote-cible')?.value || 'tous',
     anonyme: $('vote-anonyme')?.checked || false,
     choix_multiple: $('vote-multiple')?.checked || false,
@@ -5583,9 +5585,9 @@ async function saveVote(statut) {
     const notifs = (allUsers||[]).filter(u=>u.id!==user.id).map(u=>({
       destinataire_id: u.id,
       sujet: `${type==='officiel'?'🗳️':'📊'} Nouveau ${type==='officiel'?'vote':'sondage'} : ${titre}`,
-      type:'info', lu:false
+      lu: false
     }));
-    if (notifs.length) await sb.from('notifications').insert(notifs);
+    if (notifs.length) await sb.from('notifications').insert(notifs).then(({error:e})=>{ if(e) console.warn('[notif vote]',e.message); });
   }
   await loadVotes();
 }
