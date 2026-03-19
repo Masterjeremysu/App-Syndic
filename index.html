@@ -917,6 +917,108 @@ tbody tr:hover td { background: var(--bg); }
   display: flex; align-items: center; justify-content: space-between;
 }
 
+/* ── DOCUMENTS ── */
+.doc-cats { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+.doc-cat-btn {
+  display: flex; align-items: center; gap: 6px; padding: 7px 14px;
+  border-radius: 20px; border: 1.5px solid var(--border);
+  background: var(--surface); cursor: pointer; font-size: 13px; font-weight: 500;
+  transition: all .15s; color: var(--text-2);
+}
+.doc-cat-btn:hover { border-color: var(--accent); color: var(--accent); }
+.doc-cat-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.doc-cat-btn .count { background: rgba(255,255,255,.25); border-radius: 10px; padding: 1px 6px; font-size: 11px; }
+.doc-cat-btn:not(.active) .count { background: var(--surface-2); color: var(--text-3); }
+
+.doc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
+.doc-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 18px 20px;
+  display: flex; flex-direction: column; gap: 10px;
+  transition: box-shadow .15s, border-color .15s; position: relative;
+  cursor: pointer;
+}
+.doc-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-md); }
+.doc-card.epingle { border-left: 3px solid var(--accent); }
+.doc-card.nouveau::after {
+  content: 'Nouveau'; position: absolute; top: 12px; right: 12px;
+  background: var(--accent); color: #fff; font-size: 9.5px; font-weight: 700;
+  padding: 2px 7px; border-radius: 10px; text-transform: uppercase; letter-spacing: .05em;
+}
+.doc-card.expire { border-left: 3px solid var(--red); }
+.doc-ico {
+  width: 44px; height: 44px; border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.doc-titre { font-weight: 700; font-size: 14px; line-height: 1.3; }
+.doc-meta { font-size: 11.5px; color: var(--text-3); display: flex; gap: 10px; flex-wrap: wrap; }
+.doc-actions { display: flex; gap: 6px; margin-top: 4px; }
+
+.doc-folder-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0; margin-bottom: 8px;
+  font-family: var(--font-head); font-weight: 700; font-size: 13px;
+  color: var(--text-2); text-transform: uppercase; letter-spacing: .05em;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ── VOTES & SONDAGES ── */
+.vote-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r-lg); padding: 20px 22px; margin-bottom: 14px;
+  transition: box-shadow .15s;
+}
+.vote-card.ouvert { border-left: 3px solid var(--green); }
+.vote-card.clos { border-left: 3px solid var(--text-3); opacity: .8; }
+.vote-card.brouillon { border-left: 3px solid var(--amber); }
+.vote-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.vote-type-ico { font-size: 24px; flex-shrink: 0; }
+.vote-titre { font-family: var(--font-head); font-weight: 700; font-size: 16px; margin-bottom: 4px; }
+.vote-meta { font-size: 12px; color: var(--text-3); }
+
+.vote-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.vote-option {
+  display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+  border: 1.5px solid var(--border); border-radius: var(--r-md);
+  cursor: pointer; transition: all .15s; user-select: none;
+}
+.vote-option:hover { border-color: var(--accent); background: var(--blue-light); }
+.vote-option.selected { border-color: var(--accent); background: var(--blue-light); }
+.vote-option.selected .vote-opt-check { background: var(--accent); border-color: var(--accent); }
+.vote-option.selected .vote-opt-check::after { opacity: 1; }
+.vote-opt-check {
+  width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border);
+  flex-shrink: 0; position: relative; transition: all .15s;
+}
+.vote-opt-check.square { border-radius: 4px; }
+.vote-opt-check::after {
+  content: '✓'; position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-size: 11px; font-weight: 700; opacity: 0; transition: opacity .15s;
+}
+.vote-opt-label { flex: 1; font-size: 14px; font-weight: 500; }
+.vote-opt-count { font-size: 12px; color: var(--text-3); font-weight: 600; }
+
+.vote-bar-wrap { height: 6px; background: var(--border); border-radius: 3px; flex: 1; overflow: hidden; }
+.vote-bar { height: 100%; border-radius: 3px; background: var(--accent); transition: width .4s ease; }
+
+.vote-result-option {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.vote-quorum {
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--r-md); padding: 10px 14px; font-size: 13px;
+  display: flex; align-items: center; gap: 10px; margin-top: 12px;
+}
+.vote-quorum.ok { background: var(--green-light); border-color: var(--green-border); }
+.vote-quorum.ko { background: var(--red-light); border-color: var(--red-border); }
+
+@media (max-width: 480px) {
+  .doc-grid { grid-template-columns: 1fr; }
+  .doc-cats { gap: 6px; }
+}
+
 /* ── ANNONCES ── */
 .annonce-card {
   background: var(--surface); border: 1px solid var(--border);
@@ -1248,6 +1350,16 @@ tbody tr:hover td { background: var(--bg); }
     <a class="nav-item" data-page="contacts" onclick="nav('contacts')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.22 1.18a2 2 0 012-2.18h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
       Contacts & Urgences
+    </a>
+    <a class="nav-item" data-page="documents" onclick="nav('documents')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+      Documents
+      <span class="nav-count" id="nc-documents" style="display:none;">0</span>
+    </a>
+    <a class="nav-item" data-page="votes" onclick="nav('votes')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+      Votes & Sondages
+      <span class="nav-count" id="nc-votes" style="display:none;">0</span>
     </a>
 
     <div class="nav-section nav-admin-only" id="nav-section-gestion">Gestion</div>
@@ -2213,7 +2325,7 @@ function nav(page, noClose) {
     contrats:'Contrats', cles:'Clés', journal:'Journal', users:'Utilisateurs',
     rapport:'Rapport syndic', notifications:'Notifications', profile:'Mon profil',
     messages:'Messages', annonces:'Annonces', agenda:'Agenda',
-    contacts:'Contacts & Urgences'
+    contacts:'Contacts & Urgences', documents:'Documents', votes:'Votes & Sondages'
   };
   $('topbar-title').textContent = titles[page] || page;
   renderPage(page);
@@ -2256,6 +2368,8 @@ function renderPage(p) {
   else if (p === 'annonces') renderAnnonces();
   else if (p === 'agenda') renderAgenda();
   else if (p === 'contacts') renderContacts();
+  else if (p === 'documents') renderDocuments();
+  else if (p === 'votes') renderVotes();
 }
 
 // ── DASHBOARD ──
@@ -4839,6 +4953,693 @@ async function nextOnboardStep() {
 function skipOnboarding() {
   localStorage.setItem('coprosync-onboarded', '1');
   $('onboarding-overlay')?.remove();
+}
+
+// ══════════════════════════════════════════════
+// DOCUMENTS
+// ══════════════════════════════════════════════
+const DOC_CATS = {
+  ag:            { label:'Assemblées Générales', ico:'🏛️', color:'#6366f1' },
+  financier:     { label:'Financier',           ico:'💰', color:'#10b981' },
+  technique:     { label:'Technique',           ico:'🔧', color:'#f59e0b' },
+  juridique:     { label:'Juridique',           ico:'⚖️', color:'#ef4444' },
+  administratif: { label:'Administratif',       ico:'📋', color:'#2563eb' },
+  contrats:      { label:'Contrats',            ico:'📄', color:'#8b5cf6' },
+  diagnostics:   { label:'Diagnostics',         ico:'🔍', color:'#ec4899' },
+};
+
+let _docsCache = [];
+let _docsCatActive = 'tous';
+let _docsVus = new Set();
+
+async function renderDocuments() {
+  $('page').innerHTML = `<div style="padding:24px;">
+    <div class="ph" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div><h1>Documents</h1><p>Base documentaire de la résidence</p></div>
+      ${isManager() ? `<button class="btn btn-primary" onclick="openDocModal()">+ Ajouter un document</button>` : ''}
+    </div>
+    <div class="doc-cats" id="doc-cats">
+      <button class="doc-cat-btn active" onclick="filterDocs('tous')">📁 Tous</button>
+      ${Object.entries(DOC_CATS).map(([k,v]) => `
+        <button class="doc-cat-btn" onclick="filterDocs('${k}')" id="doccat-${k}">
+          ${v.ico} ${v.label} <span class="count" id="doccnt-${k}">0</span>
+        </button>`).join('')}
+    </div>
+    <div id="doc-list"><div style="text-align:center;padding:40px;color:var(--text-3);">Chargement…</div></div>
+  </div>`;
+  await loadDocs();
+}
+
+async function loadDocs() {
+  const { data } = await sb.from('documents').select('*').order('epingle', { ascending:false }).order('created_at', { ascending:false });
+  _docsCache = data || [];
+  // Charge les docs vus
+  const { data: vus } = await sb.from('documents_vus').select('document_id').eq('user_id', user.id);
+  _docsVus = new Set((vus||[]).map(v => v.document_id));
+  renderDocsList();
+  updateDocsBadge();
+}
+
+function filterDocs(cat) {
+  _docsCatActive = cat;
+  document.querySelectorAll('.doc-cat-btn').forEach(b => b.classList.remove('active'));
+  const btn = cat === 'tous' ? document.querySelector('.doc-cat-btn') : $(`doccat-${cat}`);
+  if (btn) btn.classList.add('active');
+  renderDocsList();
+}
+
+function renderDocsList() {
+  const el = $('doc-list');
+  if (!el) return;
+  const list = _docsCatActive === 'tous' ? _docsCache : _docsCache.filter(d => d.categorie === _docsCatActive);
+
+  // Met à jour les compteurs
+  Object.keys(DOC_CATS).forEach(k => {
+    const el = $(`doccnt-${k}`);
+    if (el) el.textContent = _docsCache.filter(d => d.categorie === k).length;
+  });
+
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-ico">📁</div><div class="empty-txt">Aucun document${_docsCatActive !== 'tous' ? ' dans cette catégorie' : ''}</div></div>`;
+    return;
+  }
+
+  // Groupe par catégorie si "tous"
+  if (_docsCatActive === 'tous') {
+    let html = '';
+    Object.entries(DOC_CATS).forEach(([cat, meta]) => {
+      const docs = list.filter(d => d.categorie === cat);
+      if (!docs.length) return;
+      html += `<div class="doc-folder-header">
+        <span style="font-size:18px;">${meta.ico}</span>
+        <span>${meta.label}</span>
+        <span style="font-size:12px;color:var(--text-3);font-family:var(--font);font-weight:400;text-transform:none;letter-spacing:0;">${docs.length} document${docs.length>1?'s':''}</span>
+      </div>
+      <div class="doc-grid" style="margin-bottom:24px;">${docs.map(d => renderDocCard(d)).join('')}</div>`;
+    });
+    // Docs sans catégorie connue
+    const autres = list.filter(d => !DOC_CATS[d.categorie]);
+    if (autres.length) html += `<div class="doc-grid">${autres.map(d => renderDocCard(d)).join('')}</div>`;
+    el.innerHTML = html;
+  } else {
+    el.innerHTML = `<div class="doc-grid">${list.map(d => renderDocCard(d)).join('')}</div>`;
+  }
+}
+
+function renderDocCard(d) {
+  const cat = DOC_CATS[d.categorie] || { ico:'📄', color:'#6b7280', label:d.categorie };
+  const isNew = !_docsVus.has(d.id);
+  const isExpire = d.date_expiration && new Date(d.date_expiration) < new Date();
+  const isSoonExpire = d.date_expiration && !isExpire && daysUntil(d.date_expiration) <= 30;
+  const taille = d.fichier_taille ? (d.fichier_taille > 1048576 ? (d.fichier_taille/1048576).toFixed(1)+'Mo' : Math.round(d.fichier_taille/1024)+'Ko') : '';
+  const ext = (d.fichier_nom||'').split('.').pop().toUpperCase();
+  return `<div class="doc-card${d.epingle?' epingle':''}${isNew?' nouveau':''}${isExpire?' expire':''}" onclick="openDoc('${d.id}')">
+    <div style="display:flex;align-items:flex-start;gap:12px;">
+      <div class="doc-ico" style="background:${cat.color}22;">${cat.ico}</div>
+      <div style="flex:1;min-width:0;">
+        <div class="doc-titre">${escHtml(d.titre)}</div>
+        ${d.description ? `<div style="font-size:12px;color:var(--text-3);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(d.description)}</div>` : ''}
+      </div>
+    </div>
+    <div class="doc-meta">
+      ${ext ? `<span style="background:var(--surface-2);padding:1px 6px;border-radius:4px;font-weight:700;">${ext}</span>` : ''}
+      ${taille ? `<span>${taille}</span>` : ''}
+      ${d.version > 1 ? `<span>v${d.version}</span>` : ''}
+      <span>${fmtD(d.created_at)}</span>
+      ${isSoonExpire ? `<span style="color:var(--orange);font-weight:600;">⚠️ Expire dans ${daysUntil(d.date_expiration)}j</span>` : ''}
+      ${isExpire ? `<span style="color:var(--red);font-weight:600;">❌ Expiré</span>` : ''}
+      ${d.visible_pour === 'managers' ? `<span style="color:var(--violet);">🔒 CS/Syndic</span>` : ''}
+    </div>
+    <div class="doc-actions">
+      <a href="${d.fichier_url}" target="_blank" class="btn btn-primary btn-sm" onclick="event.stopPropagation();markDocVu('${d.id}')">
+        📥 Télécharger
+      </a>
+      ${d.fichier_type?.includes('pdf') ? `<a href="${d.fichier_url}" target="_blank" class="btn btn-secondary btn-sm" onclick="event.stopPropagation();markDocVu('${d.id}')">👁️ Voir</a>` : ''}
+      ${isManager() ? `<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();openDocModal('${d.id}')">✏️</button>
+      <button class="btn btn-ghost btn-sm" style="color:var(--red);" onclick="event.stopPropagation();deleteDoc('${d.id}')">🗑</button>` : ''}
+    </div>
+  </div>`;
+}
+
+async function openDoc(docId) {
+  await markDocVu(docId);
+  const doc = _docsCache.find(d => d.id === docId);
+  if (doc?.fichier_url) window.open(doc.fichier_url, '_blank');
+}
+
+async function markDocVu(docId) {
+  if (_docsVus.has(docId)) return;
+  await sb.from('documents_vus').upsert({ document_id: docId, user_id: user.id }, { onConflict: 'document_id,user_id' });
+  _docsVus.add(docId);
+  updateDocsBadge();
+  // Retire badge "nouveau" du card
+  renderDocsList();
+}
+
+function updateDocsBadge() {
+  const nonVus = _docsCache.filter(d => !_docsVus.has(d.id)).length;
+  const el = $('nc-documents');
+  if (el) { el.textContent = nonVus; el.style.display = nonVus > 0 ? '' : 'none'; }
+}
+
+function openDocModal(id) {
+  const d = id ? _docsCache.find(x => x.id === id) : null;
+  const isEdit = !!d;
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay open';
+  overlay.id = 'modal-doc';
+  overlay.innerHTML = `<div class="modal" style="max-width:540px;">
+    <div class="mh">
+      <span class="mh-title">${isEdit ? 'Modifier le document' : 'Ajouter un document'}</span>
+      <button class="mclose" onclick="document.getElementById('modal-doc').remove()">×</button>
+    </div>
+    <div class="mb">
+      <div class="fg"><label class="label">Titre *</label>
+        <input type="text" id="doc-titre" class="input" placeholder="Ex: PV Assemblée Générale 2025" value="${escHtml(d?.titre||'')}">
+      </div>
+      <div class="fg"><label class="label">Description</label>
+        <input type="text" id="doc-desc" class="input" placeholder="Courte description…" value="${escHtml(d?.description||'')}">
+      </div>
+      <div class="fg-row">
+        <div class="fg"><label class="label">Catégorie</label>
+          <select id="doc-cat" class="select" style="width:100%;" onchange="updateDocPath()">
+            ${Object.entries(DOC_CATS).map(([k,v]) => `<option value="${k}" ${d?.categorie===k?'selected':''}>${v.ico} ${v.label}</option>`).join('')}
+          </select>
+        </div>
+        <div class="fg"><label class="label">Année</label>
+          <input type="number" id="doc-annee" class="input" value="${d?.annee||new Date().getFullYear()}" min="2000" max="2099">
+        </div>
+      </div>
+      <div class="fg-row">
+        <div class="fg"><label class="label">Visible pour</label>
+          <select id="doc-visible" class="select" style="width:100%;">
+            <option value="tous" ${(!d||d?.visible_pour==='tous')?'selected':''}>👥 Tous les résidents</option>
+            <option value="managers" ${d?.visible_pour==='managers'?'selected':''}>🔒 CS / Syndic uniquement</option>
+          </select>
+        </div>
+        <div class="fg"><label class="label">Date d'expiration</label>
+          <input type="date" id="doc-expiration" class="input" value="${d?.date_expiration||''}">
+        </div>
+      </div>
+      <div class="fg" style="display:flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="doc-epingle" ${d?.epingle?'checked':''}>
+        <label for="doc-epingle" style="cursor:pointer;font-size:13px;">📌 Épingler ce document en haut</label>
+      </div>
+      ${!isEdit ? `
+      <div class="fg">
+        <label class="label">Fichier *</label>
+        <div style="font-size:11px;color:var(--text-3);margin-bottom:6px;" id="doc-path-preview">📁 Chemin : ag/${new Date().getFullYear()}/</div>
+        <input type="file" id="doc-fichier" class="input" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg">
+      </div>` : `
+      <div style="padding:10px 14px;background:var(--surface-2);border-radius:var(--r-sm);font-size:13px;color:var(--text-2);">
+        📄 Fichier actuel : <strong>${escHtml(d?.fichier_nom||'Document')}</strong>
+        <div style="margin-top:6px;"><input type="file" id="doc-fichier" class="input" accept=".pdf,.doc,.docx,.xls,.xlsx,.png,.jpg,.jpeg"> <span style="font-size:11px;color:var(--text-3);">(laisser vide pour garder l'actuel)</span></div>
+      </div>`}
+    </div>
+    <div class="mf">
+      ${isEdit ? `<button class="btn btn-ghost btn-sm" style="color:var(--red);margin-right:auto;" onclick="deleteDoc('${d.id}')">🗑 Supprimer</button>` : ''}
+      <button class="btn btn-secondary" onclick="document.getElementById('modal-doc').remove()">Annuler</button>
+      <button class="btn btn-primary" id="doc-save-btn" onclick="saveDoc('${d?.id||''}')">
+        ${isEdit ? 'Enregistrer' : 'Publier'}
+      </button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+  updateDocPath();
+}
+
+function updateDocPath() {
+  const cat = $('doc-cat')?.value || 'ag';
+  const annee = $('doc-annee')?.value || new Date().getFullYear();
+  const preview = $('doc-path-preview');
+  if (preview) preview.textContent = `📁 Chemin : ${cat}/${annee}/`;
+}
+
+async function saveDoc(id) {
+  const titre = $('doc-titre')?.value.trim();
+  if (!titre) { toast('Titre requis', 'err'); return; }
+  const fichierInput = $('doc-fichier');
+  const fichier = fichierInput?.files[0];
+  if (!id && !fichier) { toast('Fichier requis', 'err'); return; }
+  const btn = $('doc-save-btn');
+  btn.disabled = true; btn.textContent = 'Envoi…';
+  const cat = $('doc-cat')?.value || 'ag';
+  const annee = $('doc-annee')?.value || new Date().getFullYear();
+  let fichier_url = id ? _docsCache.find(d => d.id === id)?.fichier_url : null;
+  let fichier_nom = id ? _docsCache.find(d => d.id === id)?.fichier_nom : null;
+  let fichier_taille = id ? _docsCache.find(d => d.id === id)?.fichier_taille : null;
+  let fichier_type = id ? _docsCache.find(d => d.id === id)?.fichier_type : null;
+  // Upload si nouveau fichier
+  if (fichier) {
+    btn.textContent = 'Upload…';
+    const safeName = fichier.name.replace(/[^a-zA-Z0-9._-]/g, '-').toLowerCase();
+    const path = `${cat}/${annee}/${Date.now()}-${safeName}`;
+    const { error: upErr } = await sb.storage.from('documents').upload(path, fichier, { upsert: true, contentType: fichier.type });
+    if (upErr) { toast('Erreur upload : ' + upErr.message, 'err'); btn.disabled=false; btn.textContent='Publier'; return; }
+    const { data: urlData } = sb.storage.from('documents').getPublicUrl(path);
+    fichier_url = urlData?.publicUrl;
+    fichier_nom = fichier.name;
+    fichier_taille = fichier.size;
+    fichier_type = fichier.type;
+  }
+  const payload = {
+    titre,
+    description: $('doc-desc')?.value.trim() || null,
+    categorie: cat,
+    annee: parseInt(annee),
+    visible_pour: $('doc-visible')?.value || 'tous',
+    date_expiration: $('doc-expiration')?.value || null,
+    epingle: $('doc-epingle')?.checked || false,
+    auteur_id: user.id,
+    fichier_url, fichier_nom, fichier_taille, fichier_type,
+    ...(id ? { version: (_docsCache.find(d=>d.id===id)?.version||1) + (fichier?1:0) } : {}),
+  };
+  let error;
+  if (id) { ({ error } = await sb.from('documents').update(payload).eq('id', id)); }
+  else { ({ error } = await sb.from('documents').insert(payload)); }
+  if (error) { toast('Erreur : ' + error.message, 'err'); btn.disabled=false; btn.textContent='Publier'; return; }
+  document.getElementById('modal-doc')?.remove();
+  toast(id ? 'Document mis à jour ✓' : 'Document publié ✓', 'ok');
+  // Notif si nouveau doc
+  if (!id) {
+    const { data: allUsers } = await sb.from('profiles').select('id').eq('actif', true);
+    const notifs = (allUsers||[]).filter(u=>u.id!==user.id).map(u=>({
+      destinataire_id: u.id, sujet:`📄 Nouveau document : ${titre}`, type:'info', lu:false
+    }));
+    if (notifs.length) await sb.from('notifications').insert(notifs);
+  }
+  await loadDocs();
+}
+
+async function deleteDoc(id) {
+  if (!confirm('Supprimer ce document définitivement ?')) return;
+  await sb.from('documents').delete().eq('id', id);
+  document.getElementById('modal-doc')?.remove();
+  toast('Document supprimé', 'ok');
+  await loadDocs();
+}
+
+// ══════════════════════════════════════════════
+// VOTES & SONDAGES
+// ══════════════════════════════════════════════
+const VOTE_TYPES = {
+  officiel: { label:'Vote officiel', ico:'🗳️', desc:'Pour/Contre/Abstention avec quorum' },
+  sondage:  { label:'Sondage',       ico:'📊', desc:'Question à choix multiples' },
+  doodle:   { label:'Disponibilités',ico:'📅', desc:'Trouver une date commune' },
+};
+
+let _votesCache = [];
+let _reponsesCache = {};
+
+async function renderVotes() {
+  $('page').innerHTML = `<div style="padding:24px;max-width:760px;">
+    <div class="ph" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div><h1>Votes & Sondages</h1><p>Décisions participatives de la résidence</p></div>
+      ${isManager() ? `<button class="btn btn-primary" onclick="openVoteModal()">+ Créer</button>` : ''}
+    </div>
+    <div id="votes-list"><div style="text-align:center;padding:40px;color:var(--text-3);">Chargement…</div></div>
+  </div>`;
+  await loadVotes();
+}
+
+async function loadVotes() {
+  const { data: votes } = await sb.from('votes').select('*').order('created_at', { ascending:false });
+  const { data: reponses } = await sb.from('votes_reponses').select('*').eq('user_id', user.id);
+  _votesCache = votes || [];
+  _reponsesCache = {};
+  (reponses||[]).forEach(r => { _reponsesCache[r.vote_id] = r; });
+  renderVotesList();
+  // Badge
+  const nonRepondus = _votesCache.filter(v => v.statut==='ouvert' && !_reponsesCache[v.id]).length;
+  const el = $('nc-votes');
+  if (el) { el.textContent = nonRepondus; el.style.display = nonRepondus>0?'':'none'; }
+}
+
+function renderVotesList() {
+  const el = $('votes-list');
+  if (!el) return;
+  if (!_votesCache.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-ico">🗳️</div><div class="empty-txt">Aucun vote ou sondage pour l\'instant</div></div>';
+    return;
+  }
+  const ouverts = _votesCache.filter(v => v.statut === 'ouvert');
+  const clos = _votesCache.filter(v => v.statut === 'clos');
+  const brouillons = isManager() ? _votesCache.filter(v => v.statut === 'brouillon') : [];
+  let html = '';
+  if (ouverts.length) {
+    html += `<div style="font-family:var(--font-head);font-weight:700;font-size:13px;color:var(--green);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">🟢 En cours (${ouverts.length})</div>`;
+    html += ouverts.map(v => renderVoteCard(v)).join('');
+  }
+  if (brouillons.length) {
+    html += `<div style="font-family:var(--font-head);font-weight:700;font-size:13px;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;">✏️ Brouillons</div>`;
+    html += brouillons.map(v => renderVoteCard(v)).join('');
+  }
+  if (clos.length) {
+    html += `<div style="font-family:var(--font-head);font-weight:700;font-size:13px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin:18px 0 10px;">📁 Terminés (${clos.length})</div>`;
+    html += clos.map(v => renderVoteCard(v)).join('');
+  }
+  el.innerHTML = html;
+}
+
+function renderVoteCard(v) {
+  const type = VOTE_TYPES[v.type] || VOTE_TYPES.sondage;
+  const maReponse = _reponsesCache[v.id];
+  const dejaVote = !!maReponse;
+  const options = v.options || [];
+  const totalVotes = 0; // sera chargé si nécessaire
+  const cloture = v.date_cloture ? new Date(v.date_cloture) : null;
+  const joursRestants = cloture ? Math.ceil((cloture - new Date()) / 86400000) : null;
+  return `<div class="vote-card ${v.statut}">
+    <div class="vote-header">
+      <div class="vote-type-ico">${type.ico}</div>
+      <div style="flex:1;">
+        <div class="vote-titre">${escHtml(v.titre)}</div>
+        <div class="vote-meta">
+          ${type.label}
+          ${cloture && v.statut==='ouvert' ? ` · ${joursRestants>0?'Clôture dans '+joursRestants+'j':'Clôture aujourd\'hui'}` : ''}
+          ${v.statut==='clos' ? ' · Terminé' : ''}
+          ${v.cible !== 'tous' ? ` · ${escHtml(v.cible)}` : ''}
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        ${v.statut==='ouvert' && !dejaVote ? `<span style="background:var(--orange-light);color:var(--orange);font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;">À voter</span>` : ''}
+        ${dejaVote ? `<span style="background:var(--green-light);color:var(--green);font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;">✓ Voté</span>` : ''}
+        ${isManager() ? `<button class="btn btn-ghost btn-sm" onclick="openVoteDetail('${v.id}')">Résultats</button>` : ''}
+      </div>
+    </div>
+    ${v.description ? `<p style="font-size:13px;color:var(--text-2);margin-bottom:14px;">${escHtml(v.description)}</p>` : ''}
+    ${v.statut==='ouvert' && !dejaVote ? renderVoteForm(v) : renderVoteResults(v, maReponse)}
+    ${isManager() ? `
+    <div style="display:flex;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);">
+      ${v.statut==='brouillon' ? `<button class="btn btn-primary btn-sm" onclick="publierVote('${v.id}')">▶ Publier</button>` : ''}
+      ${v.statut==='ouvert' ? `<button class="btn btn-secondary btn-sm" onclick="cloturerVote('${v.id}')">⏹ Clôturer</button>` : ''}
+      <button class="btn btn-ghost btn-sm" onclick="exportVotePDF('${v.id}')">🖨️ PDF</button>
+      <button class="btn btn-ghost btn-sm" style="color:var(--red);" onclick="deleteVote('${v.id}')">🗑</button>
+    </div>` : ''}
+  </div>`;
+}
+
+function renderVoteForm(v) {
+  const isMultiple = v.choix_multiple;
+  return `<div class="vote-options" id="vopts-${v.id}">
+    ${(v.options||[]).map(opt => `
+      <div class="vote-option" onclick="toggleVoteOption('${v.id}','${opt.id}',${isMultiple})" id="vopt-${v.id}-${opt.id}">
+        <div class="vote-opt-check${isMultiple?' square':''}"></div>
+        <div class="vote-opt-label">${escHtml(opt.label)}</div>
+      </div>`).join('')}
+  </div>
+  <button class="btn btn-primary btn-sm" onclick="submitVote('${v.id}',${isMultiple})">
+    ${v.type==='officiel' ? '🗳️ Voter' : '📊 Répondre'}
+  </button>`;
+}
+
+let _selectedOptions = {};
+function toggleVoteOption(voteId, optId, multiple) {
+  if (!_selectedOptions[voteId]) _selectedOptions[voteId] = new Set();
+  const sel = _selectedOptions[voteId];
+  if (!multiple) {
+    sel.clear();
+    document.querySelectorAll(`[id^="vopt-${voteId}-"]`).forEach(el => el.classList.remove('selected'));
+  }
+  if (sel.has(optId)) { sel.delete(optId); $(`vopt-${voteId}-${optId}`)?.classList.remove('selected'); }
+  else { sel.add(optId); $(`vopt-${voteId}-${optId}`)?.classList.add('selected'); }
+}
+
+async function submitVote(voteId, multiple) {
+  const sel = _selectedOptions[voteId];
+  if (!sel?.size) { toast('Sélectionnez une option', 'warn'); return; }
+  const { error } = await sb.from('votes_reponses').insert({
+    vote_id: voteId, user_id: user.id,
+    options_choisies: JSON.stringify([...sel])
+  });
+  if (error) { toast('Erreur : ' + error.message, 'err'); return; }
+  toast('Vote enregistré ✓', 'ok');
+  delete _selectedOptions[voteId];
+  await loadVotes();
+}
+
+async function renderVoteResults(v, maReponse) {
+  // Charge toutes les réponses pour ce vote
+  const { data: allRep } = await sb.from('votes_reponses').select('*').eq('vote_id', v.id);
+  const total = (allRep||[]).length;
+  const opts = v.options || [];
+  return opts.map(opt => {
+    const count = (allRep||[]).filter(r => {
+      const chosen = JSON.parse(r.options_choisies||'[]');
+      return chosen.includes(opt.id);
+    }).length;
+    const pct = total ? Math.round(count/total*100) : 0;
+    const isMine = maReponse && JSON.parse(maReponse.options_choisies||'[]').includes(opt.id);
+    return `<div class="vote-result-option">
+      <div style="width:28px;text-align:center;font-size:13px;">${isMine?'✓':''}</div>
+      <div style="flex:1;">
+        <div style="font-size:13px;font-weight:${isMine?'700':'500'};margin-bottom:4px;">${escHtml(opt.label)}</div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <div class="vote-bar-wrap"><div class="vote-bar" style="width:${pct}%;background:${isMine?'var(--green)':'var(--accent)'};"></div></div>
+          <span style="font-size:12px;color:var(--text-3);min-width:60px;">${count} vote${count>1?'s':''} · ${pct}%</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('') + `<div style="font-size:12px;color:var(--text-3);margin-top:8px;">${total} participant${total>1?'s':''} au total${v.anonyme?' · Anonyme':''}</div>`;
+}
+
+async function openVoteDetail(voteId) {
+  const v = _votesCache.find(x => x.id === voteId);
+  if (!v) return;
+  const { data: allRep } = await sb.from('votes_reponses').select('*, profiles(nom,prenom)').eq('vote_id', voteId);
+  const total = (allRep||[]).length;
+  const opts = v.options || [];
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay open';
+  overlay.id = 'modal-vote-detail';
+  const quorumOk = v.quorum_requis ? Math.round(total/240*100) >= v.quorum_requis : true;
+  overlay.innerHTML = `<div class="modal" style="max-width:540px;">
+    <div class="mh">
+      <span class="mh-title">Résultats — ${escHtml(v.titre)}</span>
+      <button class="mclose" onclick="document.getElementById('modal-vote-detail').remove()">×</button>
+    </div>
+    <div class="mb">
+      <div style="font-size:13px;color:var(--text-2);margin-bottom:16px;">${total} participant${total>1?'s':''} · ${v.anonyme?'Vote anonyme':'Vote nominatif'}</div>
+      ${opts.map(opt => {
+        const count = (allRep||[]).filter(r => JSON.parse(r.options_choisies||'[]').includes(opt.id)).length;
+        const pct = total ? Math.round(count/total*100) : 0;
+        return `<div style="margin-bottom:14px;">
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+            <span style="font-weight:600;">${escHtml(opt.label)}</span>
+            <span style="font-weight:700;color:var(--accent);">${count} (${pct}%)</span>
+          </div>
+          <div style="height:10px;background:var(--border);border-radius:5px;overflow:hidden;">
+            <div style="height:100%;width:${pct}%;background:var(--accent);border-radius:5px;transition:width .4s;"></div>
+          </div>
+        </div>`;
+      }).join('')}
+      ${v.quorum_requis ? `<div class="vote-quorum ${quorumOk?'ok':'ko'}">
+        ${quorumOk?'✅':'❌'} Quorum ${quorumOk?'atteint':'non atteint'} — ${Math.round(total/240*100)}% de participation (requis: ${v.quorum_requis}%)
+      </div>` : ''}
+      ${!v.anonyme && allRep?.length ? `
+      <div style="margin-top:16px;font-size:12px;color:var(--text-3);">
+        <div style="font-weight:700;margin-bottom:6px;">Participants :</div>
+        ${allRep.map(r => `<span style="background:var(--surface-2);border-radius:10px;padding:2px 8px;margin:2px;display:inline-block;">${displayName(r.profiles?.prenom,r.profiles?.nom,null,'?')}</span>`).join('')}
+      </div>` : ''}
+    </div>
+    <div class="mf">
+      <button class="btn btn-secondary" onclick="document.getElementById('modal-vote-detail').remove()">Fermer</button>
+      <button class="btn btn-primary" onclick="exportVotePDF('${voteId}')">🖨️ Exporter PDF</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+function openVoteModal() {
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay open';
+  overlay.id = 'modal-vote';
+  overlay.innerHTML = `<div class="modal" style="max-width:560px;">
+    <div class="mh">
+      <span class="mh-title">Créer un vote / sondage</span>
+      <button class="mclose" onclick="document.getElementById('modal-vote').remove()">×</button>
+    </div>
+    <div class="mb">
+      <div class="fg"><label class="label">Type</label>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px;">
+          ${Object.entries(VOTE_TYPES).map(([k,v],i) => `
+          <label style="border:1.5px solid var(--border);border-radius:var(--r-md);padding:10px;cursor:pointer;text-align:center;">
+            <input type="radio" name="vote-type" value="${k}" ${i===1?'checked':''} style="display:none;">
+            <div style="font-size:20px;">${v.ico}</div>
+            <div style="font-size:12px;font-weight:600;margin-top:4px;">${v.label}</div>
+            <div style="font-size:10px;color:var(--text-3);">${v.desc}</div>
+          </label>`).join('')}
+        </div>
+      </div>
+      <div class="fg"><label class="label">Question / Titre *</label>
+        <input type="text" id="vote-titre" class="input" placeholder="Ex: Êtes-vous pour le remplacement de la chaudière ?">
+      </div>
+      <div class="fg"><label class="label">Description (optionnel)</label>
+        <textarea id="vote-desc" class="textarea" rows="2" placeholder="Contexte, enjeux…"></textarea>
+      </div>
+      <div class="fg">
+        <label class="label">Options de réponse *</label>
+        <div id="vote-options-list">
+          <div style="display:flex;gap:6px;margin-bottom:6px;"><input type="text" class="input vote-opt-input" placeholder="Option 1…"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">×</button></div>
+          <div style="display:flex;gap:6px;margin-bottom:6px;"><input type="text" class="input vote-opt-input" placeholder="Option 2…"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">×</button></div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="addVoteOption()">+ Ajouter une option</button>
+      </div>
+      <div class="fg-row">
+        <div class="fg">
+          <label class="label">Concerne</label>
+          <select id="vote-cible" class="select" style="width:100%;">
+            <option value="tous">Tous les résidents</option>
+            <option value="cs">Conseil Syndical</option>
+            ${COPRO.tours.map(t=>`<option value="${t}">${t}</option>`).join('')}
+          </select>
+        </div>
+        <div class="fg"><label class="label">Clôture</label>
+          <input type="datetime-local" id="vote-cloture" class="input">
+        </div>
+      </div>
+      <div class="fg-row">
+        <div class="fg" style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" id="vote-anonyme">
+          <label for="vote-anonyme" style="cursor:pointer;font-size:13px;">🔒 Vote anonyme</label>
+        </div>
+        <div class="fg" style="display:flex;align-items:center;gap:8px;">
+          <input type="checkbox" id="vote-multiple">
+          <label for="vote-multiple" style="cursor:pointer;font-size:13px;">☑️ Choix multiples</label>
+        </div>
+      </div>
+      <div class="fg" style="display:flex;align-items:center;gap:8px;">
+        <input type="number" id="vote-quorum" class="input" style="width:80px;" placeholder="0" min="0" max="100">
+        <label style="font-size:13px;color:var(--text-2);">% de participation minimum requis (laisser vide = sans quorum)</label>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn btn-secondary" onclick="document.getElementById('modal-vote').remove()">Annuler</button>
+      <button class="btn btn-secondary" onclick="saveVote('brouillon')">💾 Brouillon</button>
+      <button class="btn btn-primary" onclick="saveVote('ouvert')">▶ Publier</button>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+function addVoteOption() {
+  const list = $('vote-options-list');
+  if (!list) return;
+  const div = document.createElement('div');
+  div.style.cssText = 'display:flex;gap:6px;margin-bottom:6px;';
+  div.innerHTML = `<input type="text" class="input vote-opt-input" placeholder="Nouvelle option…"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">×</button>`;
+  list.appendChild(div);
+}
+
+async function saveVote(statut) {
+  const titre = $('vote-titre')?.value.trim();
+  if (!titre) { toast('Titre requis', 'err'); return; }
+  const optInputs = document.querySelectorAll('.vote-opt-input');
+  const options = [...optInputs].map((el,i) => ({ id: `opt-${i}`, label: el.value.trim() })).filter(o => o.label);
+  if (options.length < 2) { toast('Minimum 2 options', 'err'); return; }
+  const type = document.querySelector('input[name="vote-type"]:checked')?.value || 'sondage';
+  const cloture = $('vote-cloture')?.value;
+  const quorum = parseInt($('vote-quorum')?.value) || null;
+  const payload = {
+    titre, type, statut,
+    description: $('vote-desc')?.value.trim() || null,
+    options: JSON.stringify(options),
+    cible: $('vote-cible')?.value || 'tous',
+    anonyme: $('vote-anonyme')?.checked || false,
+    choix_multiple: $('vote-multiple')?.checked || false,
+    quorum_requis: quorum,
+    date_cloture: cloture ? new Date(cloture).toISOString() : null,
+    auteur_id: user.id,
+  };
+  const { error } = await sb.from('votes').insert(payload);
+  if (error) { toast('Erreur : ' + error.message, 'err'); return; }
+  document.getElementById('modal-vote')?.remove();
+  toast(statut === 'ouvert' ? 'Vote publié ✓' : 'Brouillon sauvegardé ✓', 'ok');
+  if (statut === 'ouvert') {
+    const { data: allUsers } = await sb.from('profiles').select('id').eq('actif', true);
+    const notifs = (allUsers||[]).filter(u=>u.id!==user.id).map(u=>({
+      destinataire_id: u.id,
+      sujet: `${type==='officiel'?'🗳️':'📊'} Nouveau ${type==='officiel'?'vote':'sondage'} : ${titre}`,
+      type:'info', lu:false
+    }));
+    if (notifs.length) await sb.from('notifications').insert(notifs);
+  }
+  await loadVotes();
+}
+
+async function publierVote(id) {
+  await sb.from('votes').update({ statut:'ouvert' }).eq('id', id);
+  toast('Vote publié ✓', 'ok');
+  await loadVotes();
+}
+
+async function cloturerVote(id) {
+  if (!confirm('Clôturer ce vote ? Les résidents ne pourront plus voter.')) return;
+  await sb.from('votes').update({ statut:'clos' }).eq('id', id);
+  toast('Vote clôturé', 'ok');
+  await loadVotes();
+}
+
+async function deleteVote(id) {
+  if (!confirm('Supprimer ce vote et tous ses résultats ?')) return;
+  await sb.from('votes').delete().eq('id', id);
+  document.getElementById('modal-vote-detail')?.remove();
+  toast('Vote supprimé', 'ok');
+  await loadVotes();
+}
+
+async function exportVotePDF(voteId) {
+  const v = _votesCache.find(x => x.id === voteId);
+  if (!v) return;
+  const { data: allRep } = await sb.from('votes_reponses').select('*, profiles(nom,prenom)').eq('vote_id', voteId);
+  const total = (allRep||[]).length;
+  const opts = v.options || [];
+  const today = new Date().toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
+  const quorumPct = Math.round(total/240*100);
+  const quorumOk = v.quorum_requis ? quorumPct >= v.quorum_requis : true;
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+  <title>Résultats — ${v.titre}</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    @page{size:A4;margin:18mm 16mm;}
+    body{font-family:'Helvetica Neue',Arial,sans-serif;color:#1a1917;font-size:12px;line-height:1.5;}
+    .header{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:12px;border-bottom:2px solid #1a1917;margin-bottom:20px;}
+    .header-left .org{font-size:9.5px;color:#9b9890;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
+    .header-left .doc-type{font-size:20px;font-weight:800;}
+    h2{font-size:15px;font-weight:700;margin-bottom:8px;}
+    .question{font-size:17px;font-weight:800;margin-bottom:6px;}
+    .meta{font-size:11px;color:#9b9890;margin-bottom:20px;}
+    .opt{margin-bottom:16px;}
+    .opt-label{display:flex;justify-content:space-between;margin-bottom:5px;font-size:13px;}
+    .opt-label span:last-child{font-weight:700;color:#2563eb;}
+    .bar-wrap{height:12px;background:#f0ede8;border-radius:6px;overflow:hidden;}
+    .bar{height:100%;background:#2563eb;border-radius:6px;}
+    .quorum{margin-top:20px;padding:12px 16px;border-radius:8px;font-size:12px;}
+    .quorum.ok{background:#f0fdf4;border:1px solid #bbf7d0;color:#16a34a;}
+    .quorum.ko{background:#fef2f2;border:1px solid #fecaca;color:#dc2626;}
+    .footer{margin-top:32px;padding-top:10px;border-top:1px solid #e8e5df;display:flex;justify-content:space-between;font-size:9px;color:#9b9890;}
+  </style></head><body>
+  <div class="header">
+    <div class="header-left">
+      <div class="org">Résidence le Floréal · 13-19 Rue du Moucherotte, 38360 Sassenage</div>
+      <div class="doc-type">${VOTE_TYPES[v.type]?.ico} Résultats ${v.type==='officiel'?'du vote':'du sondage'}</div>
+    </div>
+    <div style="text-align:right;font-size:9.5px;color:#9b9890;"><div>Exporté le ${today}</div><div>Par ${displayNameFromProfile(profile,user?.email)}</div></div>
+  </div>
+  <div class="question">${escHtml(v.titre)}</div>
+  ${v.description?`<p style="font-size:13px;color:#6b6860;margin-bottom:10px;">${escHtml(v.description)}</p>`:''}
+  <div class="meta">${total} participant${total>1?'s':''} · ${v.anonyme?'Anonyme':'Nominatif'} · ${v.cible==='tous'?'Tous les résidents':v.cible}</div>
+  ${opts.map(opt=>{
+    const count=(allRep||[]).filter(r=>JSON.parse(r.options_choisies||'[]').includes(opt.id)).length;
+    const pct=total?Math.round(count/total*100):0;
+    return`<div class="opt"><div class="opt-label"><span>${escHtml(opt.label)}</span><span>${count} vote${count>1?'s':''} · ${pct}%</span></div><div class="bar-wrap"><div class="bar" style="width:${pct}%"></div></div></div>`;
+  }).join('')}
+  ${v.quorum_requis?`<div class="quorum ${quorumOk?'ok':'ko'}">${quorumOk?'✅':'❌'} Quorum ${quorumOk?'atteint':'non atteint'} — ${quorumPct}% de participation (requis: ${v.quorum_requis}%)</div>`:''}
+  <div class="footer"><span>CoproSync · Résidence le Floréal</span><span>Document officiel — usage interne</span><span>${today}</span></div>
+  <script>window.onload=()=>{window.print();}<\/script>
+  </body></html>`);
+  win.document.close();
 }
 
 // ── MESSAGERIE ──
