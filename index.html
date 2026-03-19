@@ -3054,21 +3054,8 @@ async function submitTicket() {
 
   let photo_url = null;
   const photos_urls = [];
-  const filesToUpload = photoFiles.filter(Boolean);
-  if (filesToUpload.length > 0) {
-    btn.innerHTML = '<span class="spin"></span> Upload photos...';
-    for (const f of filesToUpload) {
-      const ext = (f.name.split('.').pop() || 'jpg').toLowerCase();
-      const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { data: upData, error: upErr } = await sb.storage.from('tickets').upload(path, f, { upsert: true });
-      if (!upErr) {
-        const { data: urlData } = sb.storage.from('tickets').getPublicUrl(path);
-        if (urlData?.publicUrl) photos_urls.push(urlData.publicUrl);
-      }
-    }
-    photo_url = photos_urls[0] || null; // première photo = photo principale
-  }
 
+  // 1. Crée le ticket d'abord (sans photos) pour avoir l'ID
   const ticket = {
     titre,
     batiment,
@@ -3077,7 +3064,8 @@ async function submitTicket() {
     categorie: categorie || 'autre',
     description: document.getElementById('t-desc')?.value || null,
     auteur_id: user.id,
-    photo_url,
+    photo_url: null,
+    photos_urls: [],
     statut: 'nouveau',
     lat: coords[0],
     lng: coords[1],
@@ -3088,6 +3076,37 @@ async function submitTicket() {
   btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20,6 9,17 4,12"/></svg>Créer le signalement';
 
   if (error) { toast('Erreur: ' + error.message, 'err'); return; }
+
+  // 2. Upload les photos dans le dossier du ticket
+  const filesToUpload = photoFiles.filter(Boolean);
+  if (filesToUpload.length > 0) {
+    toast('Upload des photos...', 'ok');
+    for (let i = 0; i < filesToUpload.length; i++) {
+      const f = filesToUpload[i];
+      const ext = (f.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+      // Dossier organisé : tickets/{ticket_id}/photo-{i+1}.{ext}
+      const path = `tickets/${data.id}/photo-${i+1}.${ext}`;
+      const { error: upErr } = await sb.storage.from('tickets').upload(path, f, {
+        upsert: true,
+        contentType: f.type || 'image/jpeg'
+      });
+      if (!upErr) {
+        const { data: urlData } = sb.storage.from('tickets').getPublicUrl(path);
+        if (urlData?.publicUrl) photos_urls.push(urlData.publicUrl);
+      } else {
+        console.warn('[upload photo]', upErr.message);
+      }
+    }
+    // 3. Met à jour le ticket avec les URLs
+    if (photos_urls.length > 0) {
+      await sb.from('tickets').update({
+        photo_url: photos_urls[0],
+        photos_urls: photos_urls
+      }).eq('id', data.id);
+      data.photo_url = photos_urls[0];
+      data.photos_urls = photos_urls;
+    }
+  }
 
   await addLog('Ticket créé', 'ticket', data.id, { titre, urgence: urgencySelected, batiment });
   await sendEmailNotif(urgencySelected === 'critique' ? 'ticket_critique' : 'nouveau_ticket', {
