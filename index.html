@@ -2146,10 +2146,8 @@ function startRealtime() {
       console.log('[realtime] nouvelle notif:', payload.new);
       _notifCache.unshift(payload.new);
       refreshNotifBadge();
-      // Toast discret
       const isMention = payload.new.type === 'mention';
       toast((isMention ? '🏷 ' : '🔔 ') + (payload.new.sujet || 'Nouvelle notification'), isMention ? 'warn' : 'ok');
-      // Push si app en arrière-plan
       pushNotif(
         isMention ? 'Mention' : 'CoproSync',
         payload.new.sujet || 'Nouvelle notification',
@@ -2158,6 +2156,26 @@ function startRealtime() {
       );
     })
     .subscribe(status => console.log('[realtime] status:', status));
+
+  // Realtime votes — barres en direct
+  sb.channel('votes-live')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'votes_reponses' }, async payload => {
+      const voteId = payload.new?.vote_id || payload.old?.vote_id;
+      if (!voteId) return;
+      // Recharge uniquement les réponses de ce vote
+      const { data } = await sb.from('votes_reponses').select('*').eq('vote_id', voteId);
+      _allReponsesCache[voteId] = data || [];
+      // Refresh uniquement si on est sur la page votes
+      if (currentPage === 'votes') {
+        // Met à jour le badge
+        const nonRepondus = _votesCache.filter(v => v.statut==='ouvert' && !_reponsesCache[v.id]).length;
+        const el = $('nc-votes');
+        if (el) { el.textContent = nonRepondus; el.style.display = nonRepondus>0?'':'none'; }
+        // Re-render la liste (léger — pas de fetch réseau)
+        renderVotesList();
+      }
+    })
+    .subscribe();
 }
 
 function toggleNotifPanel() {
@@ -5354,15 +5372,20 @@ function renderVoteCard(v) {
 
 function renderVoteForm(v) {
   const isMultiple = v.choix_multiple;
-  return `<div class="vote-options" id="vopts-${v.id}">
-    ${(v.options||[]).map(opt => `
+  const total = (_allReponsesCache[v.id] || []).length;
+  const opts = Array.isArray(v.options) ? v.options
+    : (typeof v.options === 'string' ? JSON.parse(v.options||'[]') : []);
+  return `
+  ${total > 0 ? `<div style="font-size:12px;color:var(--text-3);margin-bottom:10px;">👥 ${total} personne${total>1?'s':''} ont déjà voté</div>` : ''}
+  <div class="vote-options" id="vopts-${v.id}">
+    ${opts.map(opt => `
       <div class="vote-option" onclick="toggleVoteOption('${v.id}','${opt.id}',${isMultiple})" id="vopt-${v.id}-${opt.id}">
         <div class="vote-opt-check${isMultiple?' square':''}"></div>
         <div class="vote-opt-label">${escHtml(opt.label)}</div>
       </div>`).join('')}
   </div>
   <button class="btn btn-primary btn-sm" onclick="submitVote('${v.id}',${isMultiple})">
-    ${v.type==='officiel' ? '🗳️ Voter' : '📊 Répondre'}
+    ${v.type==='officiel' ? '🗳️ Voter' : v.type==='doodle' ? '📅 Indiquer mes disponibilités' : '📊 Répondre'}
   </button>`;
 }
 
@@ -5383,7 +5406,7 @@ async function submitVote(voteId, multiple) {
   if (!sel?.size) { toast('Sélectionnez une option', 'warn'); return; }
   const { error } = await sb.from('votes_reponses').insert({
     vote_id: voteId, user_id: user.id,
-    options_choisies: JSON.stringify([...sel])
+    options_choisies: [...sel] // JSONB array direct
   });
   if (error) { toast('Erreur : ' + error.message, 'err'); return; }
   toast('Vote enregistré ✓', 'ok');
@@ -5438,7 +5461,11 @@ async function openVoteDetail(voteId) {
     <div class="mb">
       <div style="font-size:13px;color:var(--text-2);margin-bottom:16px;">${total} participant${total>1?'s':''} · ${v.anonyme?'Vote anonyme':'Vote nominatif'}</div>
       ${opts.map(opt => {
-        const count = (allRep||[]).filter(r => JSON.parse(r.options_choisies||'[]').includes(opt.id)).length;
+        const count = (allRep||[]).filter(r => {
+          const chosen = Array.isArray(r.options_choisies) ? r.options_choisies
+            : JSON.parse(r.options_choisies||'[]');
+          return chosen.includes(opt.id);
+        }).length;
         const pct = total ? Math.round(count/total*100) : 0;
         return `<div style="margin-bottom:14px;">
           <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
