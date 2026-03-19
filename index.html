@@ -2677,7 +2677,7 @@ async function uploadTicketPhoto(ticketId, input) {
   const file = input.files[0];
   if (!file) return;
   toast('Upload en cours…', 'ok');
-  const path = `tickets/${ticketId}/${Date.now()}.${file.name.split('.').pop()}`;
+  const path = `${ticketId}/${Date.now()}.${file.name.split('.').pop()}`;
   const { data: upData, error } = await sb.storage.from('tickets').upload(path, file, { upsert: true });
   if (error) { toast('Erreur upload : ' + error.message, 'err'); return; }
   const { data: urlData } = sb.storage.from('tickets').getPublicUrl(path);
@@ -3085,7 +3085,7 @@ async function submitTicket() {
       const f = filesToUpload[i];
       const ext = (f.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
       // Dossier organisé : tickets/{ticket_id}/photo-{i+1}.{ext}
-      const path = `tickets/${data.id}/photo-${i+1}.${ext}`;
+      const path = `${data.id}/photo-${i+1}.${ext}`;
       const { error: upErr } = await sb.storage.from('tickets').upload(path, f, {
         upsert: true,
         contentType: f.type || 'image/jpeg'
