@@ -5461,15 +5461,15 @@ function openVoteModal() {
     </div>
     <div class="mb">
       <div class="fg"><label class="label">Type</label>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px;">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:4px;" id="vote-type-grid">
           ${Object.entries(VOTE_TYPES).map(([k,v],i) => `
-          <label style="border:1.5px solid var(--border);border-radius:var(--r-md);padding:10px;cursor:pointer;text-align:center;">
-            <input type="radio" name="vote-type" value="${k}" ${i===1?'checked':''} style="display:none;">
+          <div onclick="selectVoteType('${k}')" id="vtype-${k}" style="border:2px solid ${i===1?'var(--accent)':'var(--border)'};border-radius:var(--r-md);padding:10px;cursor:pointer;text-align:center;background:${i===1?'var(--blue-light)':'var(--surface)'};transition:all .15s;">
             <div style="font-size:20px;">${v.ico}</div>
             <div style="font-size:12px;font-weight:600;margin-top:4px;">${v.label}</div>
             <div style="font-size:10px;color:var(--text-3);">${v.desc}</div>
-          </label>`).join('')}
+          </div>`).join('')}
         </div>
+        <input type="hidden" id="vote-type-val" value="sondage">
       </div>
       <div class="fg"><label class="label">Question / Titre *</label>
         <input type="text" id="vote-titre" class="input" placeholder="Ex: Êtes-vous pour le remplacement de la chaudière ?">
@@ -5531,13 +5531,36 @@ function addVoteOption() {
   list.appendChild(div);
 }
 
+function selectVoteType(k) {
+  $('vote-type-val').value = k;
+  Object.keys(VOTE_TYPES).forEach(key => {
+    const el = $(`vtype-${key}`);
+    if (!el) return;
+    if (key === k) {
+      el.style.border = '2px solid var(--accent)';
+      el.style.background = 'var(--blue-light)';
+    } else {
+      el.style.border = '2px solid var(--border)';
+      el.style.background = 'var(--surface)';
+    }
+  });
+  // Si vote officiel → options prédéfinies Pour/Contre/Abstention
+  if (k === 'officiel') {
+    const list = $('vote-options-list');
+    if (list) list.innerHTML = `
+      <div style="display:flex;gap:6px;margin-bottom:6px;"><input type="text" class="input vote-opt-input" value="Pour"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">×</button></div>
+      <div style="display:flex;gap:6px;margin-bottom:6px;"><input type="text" class="input vote-opt-input" value="Contre"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">×</button></div>
+      <div style="display:flex;gap:6px;margin-bottom:6px;"><input type="text" class="input vote-opt-input" value="Abstention"><button class="btn btn-ghost btn-sm" onclick="this.parentElement.remove()">×</button></div>`;
+  }
+}
+
 async function saveVote(statut) {
   const titre = $('vote-titre')?.value.trim();
   if (!titre) { toast('Titre requis', 'err'); return; }
   const optInputs = document.querySelectorAll('.vote-opt-input');
   const options = [...optInputs].map((el,i) => ({ id: `opt-${i}`, label: el.value.trim() })).filter(o => o.label);
   if (options.length < 2) { toast('Minimum 2 options', 'err'); return; }
-  const type = document.querySelector('input[name="vote-type"]:checked')?.value || 'sondage';
+  const type = $('vote-type-val')?.value || 'sondage';
   const cloture = $('vote-cloture')?.value;
   const quorum = parseInt($('vote-quorum')?.value) || null;
   const payload = {
