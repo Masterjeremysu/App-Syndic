@@ -402,6 +402,39 @@ tbody tr:hover td { background: var(--bg); }
 .photo-label { font-size: 13px; color: var(--text-2); margin-top: 6px; }
 .photo-icon { font-size: 28px; margin-bottom: 6px; opacity: .5; }
 
+/* ── MULTI PHOTOS ── */
+.photo-zone { display: flex; flex-direction: column; gap: 10px; }
+.photo-btns { display: flex; gap: 8px; }
+.photo-btn {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px 10px; border: 2px dashed var(--border); border-radius: var(--r);
+  background: var(--surface-2); cursor: pointer; font-size: 13px; color: var(--text-2);
+  transition: all .15s; font-family: var(--font);
+}
+.photo-btn:hover { border-color: var(--accent); background: var(--blue-light); color: var(--accent); }
+.photo-btn:active { transform: scale(.97); }
+.photo-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.photo-thumb {
+  position: relative; border-radius: var(--r-sm); overflow: hidden;
+  aspect-ratio: 1; background: var(--surface-2);
+}
+.photo-thumb img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+  cursor: zoom-in;
+}
+.photo-thumb-del {
+  position: absolute; top: 4px; right: 4px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: rgba(0,0,0,.6); color: #fff; border: none;
+  cursor: pointer; font-size: 13px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+}
+.photo-count {
+  font-size: 12px; color: var(--text-3); text-align: center;
+}
+
 /* ── MODAL ── */
 .overlay {
   position: fixed; inset: 0;
@@ -1396,12 +1429,21 @@ tbody tr:hover td { background: var(--bg); }
 
       <!-- PHOTO -->
       <div class="fg">
-        <label class="label">Photo</label>
-        <div class="photo-area" id="photo-area" onclick="document.getElementById('photo-in').click()">
-          <div class="photo-icon">📷</div>
-          <div class="photo-label">Prendre une photo ou choisir depuis la galerie</div>
+        <label class="label">Photos <span style="color:var(--text-3);font-weight:400;">(optionnel · max 5)</span></label>
+        <div class="photo-zone">
+          <div class="photo-btns">
+            <button type="button" class="photo-btn" onclick="document.getElementById('photo-cam').click()">
+              📷 Prendre une photo
+            </button>
+            <button type="button" class="photo-btn" onclick="document.getElementById('photo-gal').click()">
+              🖼️ Galerie
+            </button>
+          </div>
+          <div class="photo-grid" id="photo-grid"></div>
+          <div class="photo-count" id="photo-count" style="display:none;"></div>
         </div>
-        <input type="file" id="photo-in" accept="image/*" capture="environment" style="display:none" onchange="handlePhoto(event)">
+        <input type="file" id="photo-cam" accept="image/*" capture="environment" style="display:none" multiple onchange="handlePhotos(event)">
+        <input type="file" id="photo-gal" accept="image/*" style="display:none" multiple onchange="handlePhotos(event)">
       </div>
 
     </div>
@@ -2528,10 +2570,19 @@ async function openDetail(id) {
   const statutHistory = (history||[]).filter(h => h.details?.statut || h.action === 'Ticket créé' || h.action === 'Statut modifié');
 
   $('m-detail-title').textContent = t.titre;
+  // Toutes les photos du ticket (photo_url + photos_urls si dispo)
+  const allPhotos = t.photos_urls?.length ? t.photos_urls : (t.photo_url ? [t.photo_url] : []);
   d($('m-detail-body'), `
-    ${t.photo_url ? `
+    ${allPhotos.length > 0 ? `
     <div style="margin-bottom:16px;">
-      <img src="${t.photo_url}" class="detail-photo" alt="Photo du signalement" style="cursor:zoom-in;" onclick="window.open('${t.photo_url}','_blank')">
+      ${allPhotos.length === 1
+        ? `<img src="${allPhotos[0]}" class="detail-photo" alt="Photo" style="cursor:zoom-in;border-radius:var(--r);" onclick="window.open('${allPhotos[0]}','_blank')">`
+        : `<div style="display:grid;grid-template-columns:repeat(${Math.min(allPhotos.length,3)},1fr);gap:6px;">
+            ${allPhotos.map(url => `
+              <div style="border-radius:var(--r-sm);overflow:hidden;aspect-ratio:1;">
+                <img src="${url}" style="width:100%;height:100%;object-fit:cover;cursor:zoom-in;" onclick="window.open('${url}','_blank')">
+              </div>`).join('')}
+           </div>`}
     </div>` : canManage || isAuthor ? `
     <div style="margin-bottom:16px;">
       <label style="display:flex;align-items:center;gap:8px;padding:10px 14px;border:2px dashed var(--border);border-radius:var(--r);cursor:pointer;font-size:13px;color:var(--text-3);transition:border-color .15s;" onmouseenter="this.style.borderColor='var(--accent)'" onmouseleave="this.style.borderColor='var(--border)'">
@@ -2899,8 +2950,7 @@ function openNewTicket() {
   ['t-titre','t-desc','t-zone-free'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
   if(document.getElementById('t-bat')) document.getElementById('t-bat').value = '';
   if(document.getElementById('t-zone-select')) document.getElementById('t-zone-select').innerHTML = '<option value="">Sélectionner zone d\'abord</option>';
-  const area = document.getElementById('photo-area');
-  if(area) { area.innerHTML = '<div class="photo-icon">📷</div><div class="photo-label">Prendre une photo ou choisir depuis la galerie</div>'; area.classList.remove('loaded'); }
+  resetPhotos();
   photoFile = null;
   // Cache/affiche Critique et hint selon rôle
   const critEl = $('urg-critique');
@@ -2926,17 +2976,59 @@ function setUrgency(u) {
   });
 }
 
-function handlePhoto(e) {
-  const f = e.target.files[0];
-  if (!f) return;
-  photoFile = f;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    const area = $('photo-area');
-    area.classList.add('loaded');
-    area.innerHTML = `<img src="${ev.target.result}" alt="Photo"><div style="padding:6px;text-align:center;font-size:11px;color:var(--text-3);">Toucher pour changer</div>`;
-  };
-  reader.readAsDataURL(f);
+let photoFiles = []; // tableau de File objects
+
+function handlePhotos(e) {
+  const newFiles = Array.from(e.target.files || []);
+  e.target.value = ''; // reset pour permettre re-sélection
+  const remaining = 5 - photoFiles.length;
+  if (remaining <= 0) { toast('Maximum 5 photos atteint', 'warn'); return; }
+  const toAdd = newFiles.slice(0, remaining);
+  if (newFiles.length > remaining) toast(`Maximum 5 photos — ${newFiles.length - remaining} ignorée(s)`, 'warn');
+  toAdd.forEach(f => {
+    photoFiles.push(f);
+    const idx = photoFiles.length - 1;
+    const reader = new FileReader();
+    reader.onload = ev => addPhotoThumb(ev.target.result, idx);
+    reader.readAsDataURL(f);
+  });
+}
+
+function addPhotoThumb(src, idx) {
+  const grid = $('photo-grid');
+  if (!grid) return;
+  const thumb = document.createElement('div');
+  thumb.className = 'photo-thumb';
+  thumb.id = `thumb-${idx}`;
+  thumb.innerHTML = `
+    <img src="${src}" alt="Photo ${idx+1}" onclick="window.open('${src}','_blank')">
+    <button class="photo-thumb-del" onclick="removePhoto(${idx})" title="Supprimer">×</button>`;
+  grid.appendChild(thumb);
+  updatePhotoCount();
+}
+
+function removePhoto(idx) {
+  photoFiles[idx] = null; // marque comme supprimé
+  const thumb = $(`thumb-${idx}`);
+  if (thumb) thumb.remove();
+  updatePhotoCount();
+}
+
+function updatePhotoCount() {
+  const count = photoFiles.filter(Boolean).length;
+  const el = $('photo-count');
+  if (!el) return;
+  if (count === 0) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  el.textContent = `${count} photo${count > 1 ? 's' : ''} sélectionnée${count > 1 ? 's' : ''} · ${5 - count} restante${5 - count > 1 ? 's' : ''}`;
+}
+
+function resetPhotos() {
+  photoFiles = [];
+  const grid = $('photo-grid');
+  if (grid) grid.innerHTML = '';
+  const count = $('photo-count');
+  if (count) count.style.display = 'none';
 }
 
 async function submitTicket() {
@@ -2961,14 +3053,20 @@ async function submitTicket() {
   btn.innerHTML = '<span class="spin"></span> Envoi...';
 
   let photo_url = null;
-  if (photoFile) {
-    const ext = photoFile.name.split('.').pop();
-    const path = `${user.id}/${Date.now()}.${ext}`;
-    const { data: upData, error: upErr } = await sb.storage.from('tickets').upload(path, photoFile, { upsert: true });
-    if (!upErr) {
-      const { data: urlData } = sb.storage.from('tickets').getPublicUrl(path);
-      photo_url = urlData?.publicUrl;
+  const photos_urls = [];
+  const filesToUpload = photoFiles.filter(Boolean);
+  if (filesToUpload.length > 0) {
+    btn.innerHTML = '<span class="spin"></span> Upload photos...';
+    for (const f of filesToUpload) {
+      const ext = (f.name.split('.').pop() || 'jpg').toLowerCase();
+      const path = `${user.id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { data: upData, error: upErr } = await sb.storage.from('tickets').upload(path, f, { upsert: true });
+      if (!upErr) {
+        const { data: urlData } = sb.storage.from('tickets').getPublicUrl(path);
+        if (urlData?.publicUrl) photos_urls.push(urlData.publicUrl);
+      }
     }
+    photo_url = photos_urls[0] || null; // première photo = photo principale
   }
 
   const ticket = {
