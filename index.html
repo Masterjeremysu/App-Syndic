@@ -3673,6 +3673,11 @@ async function moveCle(id, statut) {
     await sb.from('cles').update({ statut: 'disponible', detenteur_nom: null, date_sortie: null }).eq('id', id);
     await sb.from('cles_historique').insert({ cle_id: id, action: 'retour', personne_nom: cle.detenteur_nom, created_by: user.id });
     await addLog('Retour de clé', 'cle', id, { cle: cle.nom });
+    await sendEmailDirect('nouvelle_annonce', null, {
+      titre: `🔑 Retour de clé : ${cle.nom}`,
+      type: 'info',
+      contenu: `La clé "${cle.nom}" a été rendue par ${cle.detenteur_nom || 'N/A'}.`
+    });
     toast('Clé marquée comme rendue', 'ok');
   } else {
     const det = prompt('Nom du destinataire :');
@@ -3680,6 +3685,11 @@ async function moveCle(id, statut) {
     await sb.from('cles').update({ statut: 'sortie', detenteur_nom: det, date_sortie: new Date().toISOString() }).eq('id', id);
     await sb.from('cles_historique').insert({ cle_id: id, action: 'sortie', personne_nom: det, created_by: user.id });
     await addLog('Sortie de clé', 'cle', id, { cle: cle.nom, personne: det });
+    await sendEmailDirect('nouvelle_annonce', null, {
+      titre: `🔑 Sortie de clé : ${cle.nom}`,
+      type: 'info',
+      contenu: `La clé "${cle.nom}" a été remise à ${det}.`
+    });
     toast(`Clé remise à ${det}`, 'ok');
   }
   await loadCles();
@@ -5540,6 +5550,11 @@ async function saveDoc(id) {
       lu: false
     }));
     if (notifs.length) await sb.from('notifications').insert(notifs).then(({error:e})=>{ if(e) console.warn('[notif doc]',e.message); });
+    // Email syndic — nouveau document
+    await sendEmailDirect('nouvelle_annonce', null, {
+      titre, type: 'info',
+      contenu: `Nouveau document publié : ${titre} (catégorie : ${DOC_CATS[cat]?.label || cat})`
+    });
   }
   await loadDocs();
 }
@@ -5960,6 +5975,12 @@ async function saveVote(statut) {
       lu: false
     }));
     if (notifs.length) await sb.from('notifications').insert(notifs).then(({error:e})=>{ if(e) console.warn('[notif vote]',e.message); });
+    // Email syndic — vote publié
+    await sendEmailDirect('nouvelle_annonce', null, {
+      titre: `${voteType==='officiel'?'🗳️ Vote officiel':'📊 Sondage'} : ${titre}`,
+      type: 'important',
+      contenu: `Un nouveau ${voteType==='officiel'?'vote':'sondage'} vient d'être publié sur CoproSync.`
+    });
   }
   await loadVotes();
 }
@@ -5972,8 +5993,27 @@ async function publierVote(id) {
 
 async function cloturerVote(id) {
   if (!confirm('Clôturer ce vote ? Les résidents ne pourront plus voter.')) return;
+  const v = _votesCache.find(x => x.id === id);
   await sb.from('votes').update({ statut:'clos' }).eq('id', id);
   toast('Vote clôturé', 'ok');
+  // Email syndic avec résultats
+  if (v) {
+    const allRep = _allReponsesCache[id] || [];
+    const total = allRep.length;
+    const opts = Array.isArray(v.options) ? v.options : JSON.parse(v.options||'[]');
+    const resultats = opts.map(opt => {
+      const count = allRep.filter(r => {
+        const chosen = Array.isArray(r.options_choisies) ? r.options_choisies : JSON.parse(r.options_choisies||'[]');
+        return chosen.includes(opt.id);
+      }).length;
+      return `${opt.label} : ${count} vote${count>1?'s':''} (${total?Math.round(count/total*100):0}%)`;
+    }).join(' | ');
+    await sendEmailDirect('nouvelle_annonce', null, {
+      titre: `⏹ Vote clôturé : ${v.titre}`,
+      type: 'important',
+      contenu: `Résultats (${total} participant${total>1?'s':''}) — ${resultats}`
+    });
+  }
   await loadVotes();
 }
 
