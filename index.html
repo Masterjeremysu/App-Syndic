@@ -3816,22 +3816,28 @@ async function submitInvite() {
   const lot    = $('inv-lot')?.value.trim();
 
   $('inv-btn').disabled = true;
-  $('inv-btn').textContent = 'Envoi en cours…';
+  $('inv-btn').textContent = 'Création…';
 
   try {
-    const res = await fetch(INVITE_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${SUPA_KEY}`,
-      },
-      body: JSON.stringify({ email, prenom, nom, role, lot })
-    });
-    const result = await res.json();
-    if (!result.ok) throw new Error(result.error || 'Erreur inconnue');
-    await addLog('Invitation envoyée', 'user', null, { email, role });
+    // Crée le profil en base avec les infos renseignées
+    const { error } = await sb.from('profiles').upsert({
+      email,
+      nom: nom || null,
+      prenom: prenom || null,
+      role: role || 'copropriétaire',
+      lot: lot || null,
+      actif: false,
+    }, { onConflict: 'email' });
+
+    if (error) throw new Error(error.message);
+
+    await addLog('Profil créé en attente', 'user', null, { email, role });
     closeModal('m-invite');
-    toast(`✅ Invitation envoyée à ${email}`, 'ok');
+    toast(`✅ Profil créé pour ${email}`, 'ok');
+
+    // Rappel : envoyer l'invitation depuis Supabase → Auth → Users → Invite
+    setTimeout(() => toast('💡 N\'oublie pas d\'envoyer le magic link depuis Supabase → Auth → Users', 'warn'), 2000);
+
   } catch(e) {
     toast('Erreur : ' + e.message, 'err');
   } finally {
