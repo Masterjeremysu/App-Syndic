@@ -3831,6 +3831,7 @@ async function submitInvite() {
   try {
     // Crée le profil en base avec les infos renseignées
     const { error } = await sb.from('profiles').upsert({
+      id: crypto.randomUUID(),
       email,
       nom: nom || null,
       prenom: prenom || null,
