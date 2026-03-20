@@ -2772,59 +2772,6 @@ function renderDashChart() {
   ctx.fillStyle = textColor;
   ctx.fillText('Résolus', legendX + 70, 12);
 }
-  const canFilter = true;
-  const myTickets = !isManager();
-
-  $('page').innerHTML = `
-  <div style="padding:24px;">
-    <div class="ph">
-      <h1>Signalements</h1>
-      <p>${cache.tickets.length} au total · ${cache.tickets.filter(t=>t.statut!=='résolu'&&t.statut!=='clos').length} ouverts</p>
-    </div>
-    <div class="fbar">
-      <input type="text" class="input" id="f-search" placeholder="🔍 Rechercher..." oninput="filterTickets()" style="flex:1;min-width:150px;">
-      <select class="select" id="f-statut" onchange="filterTickets()" style="width:auto;">
-        <option value="">Tous statuts</option>
-        <option value="nouveau">Nouveau</option>
-        <option value="en_cours">En cours</option>
-        <option value="transmis_syndic">Transmis syndic</option>
-        <option value="attente_intervention">En attente</option>
-        <option value="résolu">Résolu</option>
-        <option value="clos">Clos</option>
-      </select>
-      <select class="select" id="f-urgence" onchange="filterTickets()" style="width:auto;">
-        <option value="">Urgence</option>
-        <option value="critique">🔴 Critique</option>
-        <option value="important">🟠 Important</option>
-        <option value="normal">🔵 Normal</option>
-      </select>
-      <select class="select" id="f-bat" onchange="filterTickets()" style="width:auto;">
-        <option value="">Zone</option>
-        <optgroup label="Tours">
-          <option>Tour 13</option><option>Tour 15</option><option>Tour 17</option><option>Tour 19</option>
-        </optgroup>
-        <optgroup label="Communs">
-          <option>Parking visiteurs</option><option>Parking privé</option><option>Garages</option>
-          <option>Aire de jeux</option><option>Portails / portillons</option><option>Extérieur général</option>
-        </optgroup>
-      </select>
-      <span id="f-count" style="font-size:12px;color:var(--text-3);white-space:nowrap;"></span>
-      <button class="btn btn-ghost btn-sm" id="f-reset" onclick="resetFilters()" style="display:none;">✕ Effacer</button>
-      <button class="btn btn-primary" onclick="openNewTicket()">+ Signaler</button>
-    </div>
-    <div class="card">
-      <div class="tbl-wrap">
-        <table>
-          <thead>
-            <tr><th>Signalement</th><th>Urgence</th><th>Statut</th><th>Bâtiment</th><th>Date</th><th></th></tr>
-          </thead>
-          <tbody id="tickets-tbody">
-            ${renderTicketsRows(cache.tickets)}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>`;
 function renderTickets() {
   const myTickets = !isManager();
   $('page').innerHTML = `
