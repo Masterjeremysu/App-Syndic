@@ -5490,6 +5490,7 @@ function searchDocs(query) {
 }
 
 function updateDocPath() {
+  const cat = $('doc-cat')?.value || 'ag';
   const annee = $('doc-annee')?.value || new Date().getFullYear();
   const preview = $('doc-path-preview');
   if (preview) preview.textContent = `📁 Chemin : ${cat}/${annee}/`;
