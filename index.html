@@ -2523,7 +2523,7 @@ async function renderDashboard() {
   const expirants = isManager() ? cache.contrats.filter(c => { const d = daysUntil(c.date_echeance); return d >= 0 && d <= 90; }) : [];
 
   el.innerHTML = `
-  <div style="padding:24px;" id="dash-content">
+  <div style="padding:16px;max-width:100%;box-sizing:border-box;" id="dash-content">
     <div class="ph">
       <h1>Bonjour, ${displayName(profile?.prenom, profile?.nom, user?.email, 'bienvenue').split(' ')[0]} 👋</h1>
       <p>${new Date().toLocaleDateString('fr-FR', {weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p>
@@ -2543,12 +2543,12 @@ async function renderDashboard() {
       ${isManager() ? `
       <div class="stat blue">
         <div class="stat-num">${syndic.length}</div>
-        <div class="stat-label">Transmis syndic</div>
-        <div class="stat-sub">En attente réponse</div>
+        <div class="stat-label">Transmis</div>
+        <div class="stat-sub">En attente</div>
       </div>` : `
       <div class="stat blue">
         <div class="stat-num">${t.filter(x=>x.auteur_id===user.id).length}</div>
-        <div class="stat-label">Mes signalements</div>
+        <div class="stat-label">Les miens</div>
         <div class="stat-sub">Créés par moi</div>
       </div>`}
       <div class="stat green">
@@ -2559,13 +2559,13 @@ async function renderDashboard() {
     </div>
 
     ${critiques.length > 0 ? `
-    <div style="background:var(--red-light);border:1px solid var(--red-border);border-radius:var(--r-lg);padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;gap:12px;">
-      <span style="font-size:20px;">🚨</span>
-      <div>
-        <div style="font-weight:700;color:var(--red);font-family:var(--font-head);">${critiques.length} signalement(s) critique(s) actif(s)</div>
-        <div style="font-size:12px;color:var(--red);opacity:.8;margin-top:2px;">${critiques.map(c=>c.titre).join(' · ')}</div>
+    <div style="background:var(--red-light);border:1px solid var(--red-border);border-radius:var(--r-lg);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;overflow:hidden;">
+      <span style="font-size:18px;flex-shrink:0;">🚨</span>
+      <div style="flex:1;min-width:0;">
+        <div style="font-weight:700;color:var(--red);font-size:13px;">${critiques.length} signalement(s) critique(s)</div>
+        <div style="font-size:11px;color:var(--red);opacity:.8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${critiques.map(c=>c.titre).join(' · ')}</div>
       </div>
-      <button class="btn btn-danger btn-sm" style="margin-left:auto;" onclick="nav('tickets')">Voir →</button>
+      <button class="btn btn-danger btn-sm" style="flex-shrink:0;" onclick="nav('tickets')">Voir</button>
     </div>` : ''}
 
     <div class="g2">
@@ -2574,32 +2574,32 @@ async function renderDashboard() {
           <span class="card-title">Signalements récents</span>
           <button class="btn btn-ghost btn-sm" onclick="nav('tickets')">Tout voir →</button>
         </div>
-        <div style="padding:8px 0;">
+        <div style="padding:4px 0;">
           ${recent.length === 0 ? '<div class="empty"><div class="empty-ico">📋</div><div class="empty-txt">Aucun signalement</div></div>' :
             recent.map(t => `
-              <div class="act-item" style="padding:10px 20px;cursor:pointer;" onclick="openDetail('${t.id}')">
-                <div class="act-ic" style="background:${t.urgence==='critique'?'var(--red-light)':t.urgence==='important'?'var(--orange-light)':'var(--blue-light)'};">
+              <div class="act-item" style="padding:10px 14px;cursor:pointer;" onclick="openDetail('${t.id}')">
+                <div class="act-ic" style="background:${t.urgence==='critique'?'var(--red-light)':t.urgence==='important'?'var(--orange-light)':'var(--blue-light)'};flex-shrink:0;">
                   ${t.urgence==='critique'?'🔴':t.urgence==='important'?'🟠':'🔵'}
                 </div>
-                <div style="flex:1;min-width:0;">
-                  <div class="act-txt" style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.titre}</div>
-                  <div class="act-sub">${t.batiment || ''}${t.zone?' · '+t.zone:''} · ${badgeStatut(t.statut)}</div>
-                </div>
-                <div class="act-time" style="flex-shrink:0;text-align:right;">
-                  <div>${fmtD(t.created_at)}</div>
-                  <div style="font-size:11px;color:var(--text-3);margin-top:2px;">⏱ ${depuisJours(t.created_at)}</div>
+                <div style="flex:1;min-width:0;overflow:hidden;">
+                  <div class="act-txt" style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">${escHtml(t.titre)}</div>
+                  <div class="act-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(t.batiment||'')}${t.zone?' · '+escHtml(t.zone):''}</div>
+                  <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+                    ${badgeStatut(t.statut)}
+                    <span style="font-size:10px;color:var(--text-3);">⏱ ${depuisJours(t.created_at)}</span>
+                  </div>
                 </div>
               </div>`).join('')}
         </div>
       </div>
 
-      <div style="display:flex;flex-direction:column;gap:18px;">
+      <div style="display:flex;flex-direction:column;gap:14px;">
         <!-- Widget stats mensuelles -->
         <div class="card">
           <div class="card-header">
             <span class="card-title">📈 Activité (6 mois)</span>
           </div>
-          <div style="padding:16px 20px;">
+          <div style="padding:12px 14px;">
             <canvas id="dash-chart" height="120"></canvas>
           </div>
         </div>
@@ -2608,17 +2608,17 @@ async function renderDashboard() {
           <div class="card-header">
             <span class="card-title">Par bâtiment</span>
           </div>
-          <div style="padding:16px 20px;">
+          <div style="padding:12px 14px;">
             ${[...COPRO.tours, 'Parking visiteurs','Parking privé','Garages','Aire de jeux','Portails / portillons','Extérieur général'].map(zone => {
               const cnt = ouverts.filter(t => t.batiment === zone).length;
               if (cnt === 0) return '';
               const isTour = zone.startsWith('Tour');
-              return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-                <div style="font-size:13px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${isTour ? '🏢 '+zone : '📍 '+zone}</div>
-                <div style="background:var(--bg);border-radius:4px;height:8px;flex:2;overflow:hidden;">
+              return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;min-width:0;">
+                <div style="font-size:12px;flex-shrink:0;width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${isTour ? '🏢 '+zone : '📍 '+zone}</div>
+                <div style="background:var(--bg);border-radius:4px;height:8px;flex:1;overflow:hidden;">
                   <div style="background:var(--accent);height:100%;width:${Math.min(100,cnt*25)}%;border-radius:4px;transition:width .4s;"></div>
                 </div>
-                <div style="font-size:13px;font-weight:700;color:var(--accent);min-width:20px;text-align:right;">${cnt}</div>
+                <div style="font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0;min-width:16px;text-align:right;">${cnt}</div>
               </div>`;
             }).join('') || '<div style="font-size:13px;color:var(--text-3);">Aucun problème ouvert 🎉</div>'}
           </div>
