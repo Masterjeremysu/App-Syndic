@@ -549,6 +549,23 @@ tbody tr:hover td { background: var(--bg); }
 
 /* ── EMPTY STATE ── */
 .empty { text-align: center; padding: 48px 20px; }
+
+/* ── SKELETON LOADER ── */
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--border) 25%, var(--surface-2) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: var(--r-sm);
+}
+.sk-line { height: 14px; margin-bottom: 8px; }
+.sk-line.w-60 { width: 60%; }
+.sk-line.w-80 { width: 80%; }
+.sk-line.w-100 { width: 100%; }
+.sk-box { height: 80px; border-radius: var(--r-md); margin-bottom: 10px; }
 .empty-ico { font-size: 40px; opacity: .3; margin-bottom: 10px; }
 .empty-txt { font-size: 14px; color: var(--text-2); }
 
@@ -1908,25 +1925,33 @@ function displayName(prenom, nom, email, fallback) {
   const p = (prenom || '').trim();
   const n = (nom || '').trim();
   const e = (email || '').trim();
-  // Si prénom dispo → l'utilise toujours
-  if (p) {
-    // Si nom ressemble à un email/username (pas de majuscule, contient @, chiffres) → ignore-le
-    const nomPropre = n && /^[A-ZÀÂÄÉÈÊËÎÏÔÙÛÜ]/.test(n) && !n.includes('@') && !/\d/.test(n);
-    return nomPropre ? p + ' ' + n : p;
+
+  function isUsername(s) {
+    if (!s) return true;
+    if (s.includes('@')) return true;
+    if (/\d/.test(s)) return true;
+    if (s.length > 25) return true;
+    if (e && s === e.split('@')[0]) return true;
+    if (s === s.toLowerCase() && !s.includes(' ') && s.length > 5) return true;
+    return false;
   }
-  // Pas de prénom → tente le nom
-  if (n && /^[A-ZÀÂÄÉÈÊËÎÏÔÙÛÜ]/.test(n) && !n.includes('@')) return n;
-  // Fallback : partie locale de l'email capitalisée
+
+  if (p && !isUsername(p)) {
+    if (n && !isUsername(n)) return p + ' ' + n;
+    return p;
+  }
+  if (n && !isUsername(n)) return n;
   if (e) {
-    const local = e.split('@')[0].replace(/[._-]/g, ' ').replace(/\w/g, c => c.toUpperCase());
-    return local;
+    const local = e.split('@')[0];
+    if (/\d/.test(local) || local.length > 15) return fallback || 'Résident';
+    return local.charAt(0).toUpperCase() + local.slice(1);
   }
   return fallback || '—';
 }
 
 function displayNameFromProfile(p, email) {
-  if (!p) return email?.split('@')[0] || '—';
-  return displayName(p.prenom, p.nom, p.email || email);
+  if (!p) return '—';
+  return displayName(p.prenom, p.nom, p.email || email, 'Résident');
 }
 
 function fmt(iso) {
@@ -2149,6 +2174,8 @@ async function loadAll() {
     if (isManager()) await loadJournal();
     updateBadges();
     checkNotifications();
+    // Re-render le dashboard maintenant que les données sont chargées
+    if (currentPage === 'dashboard') renderDashboard();
   } catch(e) {
     console.error('loadAll error:', e);
   }
@@ -2512,6 +2539,22 @@ function renderPage(p) {
 // ── DASHBOARD ──
 async function renderDashboard() {
   const el = $('page');
+
+  // Skeleton immédiat — évite le layout shift
+  if (!cache.tickets.length) {
+    el.innerHTML = `<div style="padding:16px;">
+      <div class="skeleton sk-line w-60" style="height:28px;margin-bottom:6px;"></div>
+      <div class="skeleton sk-line w-40" style="height:14px;margin-bottom:20px;"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+        <div class="skeleton sk-box"></div><div class="skeleton sk-box"></div>
+        <div class="skeleton sk-box"></div><div class="skeleton sk-box"></div>
+      </div>
+      <div class="skeleton" style="height:200px;border-radius:var(--r-lg);margin-bottom:14px;"></div>
+      <div class="skeleton" style="height:160px;border-radius:var(--r-lg);"></div>
+    </div>`;
+    return;
+  }
+
   const t = cache.tickets;
   const ouverts = t.filter(x => x.statut !== 'résolu' && x.statut !== 'clos');
   const critiques = t.filter(x => x.urgence === 'critique' && x.statut !== 'résolu' && x.statut !== 'clos');
@@ -4042,8 +4085,8 @@ function renderProfile() {
     <div class="card" style="margin-bottom:18px;">
       <div style="padding:24px;display:flex;align-items:center;gap:18px;">
         <div style="width:68px;height:68px;border-radius:50%;background:${avatarColor};color:#fff;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;font-family:var(--font-head);flex-shrink:0;">${initial}</div>
-        <div style="flex:1;">
-          <div style="font-family:var(--font-head);font-size:20px;font-weight:800;margin-bottom:4px;">${displayNameFromProfile(profile, user?.email)}</div>
+        <div style="flex:1;min-width:0;overflow:hidden;">
+          <div style="font-family:var(--font-head);font-size:18px;font-weight:800;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${displayNameFromProfile(profile, user?.email)}</div>
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
             <span class="role-pill role-${profile?.role}">${roleLabels[profile?.role]||profile?.role}</span>
             ${profile?.tour ? `<span style="font-size:12px;color:var(--text-3);">🏢 ${profile.tour}</span>` : ''}
