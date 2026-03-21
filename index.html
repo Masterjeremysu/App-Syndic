@@ -128,13 +128,11 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
-  min-height: 100dvh; /* dynamic viewport height iOS Safari */
+  min-height: 100dvh;
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
-  /* Évite le rebond iOS */
-  overscroll-behavior-y: none;
 }
 
 /* ── LAYOUT ── */
@@ -256,7 +254,7 @@ body {
 #menu-btn { display: none; background: none; border: none; cursor: pointer; padding: 6px; color: var(--text-2); }
 
 /* ── PAGE ── */
-#page { flex: 1; padding: 24px; max-width: 1280px; }
+#page { flex: 1; padding: 24px; max-width: 1280px; width: 100%; }
 
 /* ── PAGE HEADER ── */
 .ph { margin-bottom: 22px; }
@@ -775,14 +773,12 @@ tbody tr:hover td { background: var(--bg); }
   #bottom-nav {
     display: flex !important;
     position: fixed; bottom: 0; left: 0; right: 0;
-    height: 60px; background: var(--surface);
-    border-top: 1px solid var(--border);
+    height: 62px;
     z-index: 150;
-    padding-bottom: env(safe-area-inset-bottom);
     padding-bottom: max(env(safe-area-inset-bottom), 0px);
   }
-  .bn-item { font-size: 10px; }
-  .bn-item svg { width: 20px; height: 20px; }
+  .bn-item { font-size: 9px; padding: 6px 2px 4px; }
+  .bn-item svg { width: 22px; height: 22px; }
 
   /* ── MODALS → plein écran bas ── */
   .overlay { align-items: flex-end; padding: 0; }
@@ -859,27 +855,74 @@ tbody tr:hover td { background: var(--bg); }
 
 /* ── BOTTOM NAV ── */
 #bottom-nav {
-  display: none; /* visible uniquement via media query mobile */
+  display: none;
   align-items: stretch;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
 }
+
 .bn-item {
   flex: 1; display: flex; flex-direction: column; align-items: center;
-  justify-content: center; gap: 3px; padding: 6px 4px;
+  justify-content: center; gap: 4px; padding: 8px 4px 6px;
   cursor: pointer; border: none; background: none;
   color: var(--text-3); font-size: 9.5px; font-weight: 600;
   text-transform: uppercase; letter-spacing: .04em;
-  transition: color .15s; position: relative;
+  transition: color .2s; position: relative;
+  -webkit-tap-highlight-color: transparent;
 }
+
+/* Indicateur actif — pill au-dessus de l'icône */
+.bn-item::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%) scaleX(0);
+  width: 32px; height: 3px;
+  background: var(--accent);
+  border-radius: 0 0 3px 3px;
+  transition: transform .2s cubic-bezier(.34,1.56,.64,1);
+}
+.bn-item.active::before { transform: translateX(-50%) scaleX(1); }
 .bn-item.active { color: var(--accent); }
-.bn-item svg { width: 20px; height: 20px; stroke-width: 2; }
+
+/* Icône avec fond actif */
+.bn-item svg {
+  width: 22px; height: 22px; stroke-width: 1.8;
+  transition: transform .2s cubic-bezier(.34,1.56,.64,1);
+}
+.bn-item.active svg { transform: scale(1.1); }
+
+/* Bouton Signaler central — FAB style */
+.bn-signaler {
+  flex: 1.2;
+  color: var(--accent) !important;
+}
+.bn-signaler::before { display: none; }
+.bn-signaler-ico {
+  width: 48px; height: 48px;
+  background: var(--accent);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(37,99,235,.4);
+  transition: transform .15s, box-shadow .15s;
+  margin-bottom: 0;
+}
+.bn-signaler:active .bn-signaler-ico {
+  transform: scale(.93);
+  box-shadow: 0 2px 8px rgba(37,99,235,.3);
+}
+.bn-signaler-ico svg { stroke: white; width: 22px; height: 22px; stroke-width: 2.5; }
+
 .bn-badge {
-  position: absolute; top: 4px; right: calc(50% - 18px);
+  position: absolute; top: 6px; right: calc(50% - 20px);
   background: var(--red); color: #fff;
   font-size: 9px; font-weight: 700;
-  min-width: 15px; height: 15px; border-radius: 8px;
+  min-width: 16px; height: 16px; border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
   border: 2px solid var(--surface);
+  animation: popIn .2s cubic-bezier(.34,1.56,.64,1);
 }
+@keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
 
 /* ── ROLE BADGE ── */
 .role-pill {
@@ -1515,9 +1558,9 @@ tbody tr:hover td { background: var(--bg); }
     Signalements
     <span class="bn-badge" id="bn-badge-tickets" style="display:none"></span>
   </button>
-  <button class="bn-item bn-signaler" onclick="openNewTicket()" style="color:var(--accent);">
-    <div style="width:44px;height:44px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;margin-bottom:2px;box-shadow:0 4px 12px rgba(99,102,241,.4);">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+  <button class="bn-item bn-signaler" onclick="openNewTicket()">
+    <div class="bn-signaler-ico">
+      <svg viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
     </div>
     Signaler
   </button>
