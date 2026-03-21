@@ -3829,25 +3829,21 @@ async function submitInvite() {
   $('inv-btn').textContent = 'Création…';
 
   try {
-    // Crée le profil en base avec les infos renseignées
-    const { error } = await sb.from('profiles').upsert({
-      id: crypto.randomUUID(),
+    // Stocke l'invitation en attente (pas dans profiles — FK vers auth.users)
+    const { error } = await sb.from('invitations').upsert({
       email,
       nom: nom || null,
       prenom: prenom || null,
       role: role || 'copropriétaire',
       lot: lot || null,
-      actif: false,
     }, { onConflict: 'email' });
 
     if (error) throw new Error(error.message);
 
-    await addLog('Profil créé en attente', 'user', null, { email, role });
+    await addLog('Invitation créée', 'user', null, { email, role });
     closeModal('m-invite');
-    toast(`✅ Profil créé pour ${email}`, 'ok');
-
-    // Rappel : envoyer l'invitation depuis Supabase → Auth → Users → Invite
-    setTimeout(() => toast('💡 N\'oublie pas d\'envoyer le magic link depuis Supabase → Auth → Users', 'warn'), 2000);
+    toast(`✅ Invitation enregistrée pour ${email}`, 'ok');
+    setTimeout(() => toast('💡 Envoie maintenant le magic link depuis Supabase → Auth → Users → Invite', 'warn'), 2000);
 
   } catch(e) {
     toast('Erreur : ' + e.message, 'err');
