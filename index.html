@@ -5585,9 +5585,11 @@ async function renderDocuments() {
 }
 
 async function loadDocs() {
-  const { data } = await sb.from('documents').select('*').order('epingle', { ascending:false }).order('created_at', { ascending:false });
+  // Managers voient tout, copropriétaires uniquement les docs publics
+  let query = sb.from('documents').select('*').order('epingle', { ascending:false }).order('created_at', { ascending:false });
+  if (!isManager()) query = query.eq('visible_pour', 'tous');
+  const { data } = await query;
   _docsCache = data || [];
-  // Charge les docs vus
   const { data: vus } = await sb.from('documents_vus').select('document_id').eq('user_id', user.id);
   _docsVus = new Set((vus||[]).map(v => v.document_id));
   renderDocsList();
