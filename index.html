@@ -265,7 +265,7 @@ body {
 #menu-btn { display: none; background: none; border: none; cursor: pointer; padding: 6px; color: var(--text-2); }
 
 /* ── PAGE ── */
-#page { flex: 1; padding: 24px; max-width: 1280px; width: 100%; }
+#page { flex: 1; padding: 24px; max-width: 1280px; width: 100%; position: relative; }
 
 /* ── PAGE HEADER ── */
 .ph { margin-bottom: 22px; }
@@ -656,18 +656,162 @@ tbody tr:hover td { background: var(--bg); }
 
 /* ── LOGIN ── */
 #login-screen {
-  position: fixed; inset: 0; background: var(--bg);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 9999; padding: 20px;
+  position: fixed; inset: 0;
+  display: flex; align-items: stretch; justify-content: center;
+  z-index: 9999;
+  background: #0c0b09;
+  overflow: hidden;
 }
+
+/* Fond architectural — silhouette tours */
+#login-screen::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 100%, rgba(37,99,235,.12) 0%, transparent 70%),
+    radial-gradient(ellipse 40% 40% at 20% 80%, rgba(124,58,237,.08) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* Grille de fond subtile */
+#login-screen::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 0%, transparent 100%);
+}
+
+/* Split layout desktop */
+.login-split {
+  display: flex; width: 100%; max-width: 1100px;
+  margin: auto; align-items: center;
+  padding: 40px; gap: 80px;
+  position: relative; z-index: 1;
+}
+
+/* Côté gauche — branding */
+.login-hero {
+  flex: 1; display: flex; flex-direction: column;
+  justify-content: center; padding: 20px 0;
+}
+.login-hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 20px; padding: 5px 14px;
+  font-size: 11px; font-weight: 600; color: rgba(255,255,255,.5);
+  letter-spacing: .08em; text-transform: uppercase;
+  margin-bottom: 28px; width: fit-content;
+}
+.login-hero-badge span { color: rgba(37,99,235,.9); }
+.login-hero-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(38px, 5vw, 64px);
+  font-weight: 800; line-height: 1.0;
+  letter-spacing: -2px; color: #fff;
+  margin-bottom: 20px;
+}
+.login-hero-title em {
+  font-style: normal;
+  background: linear-gradient(135deg, #3b82f6, #818cf8);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.login-hero-desc {
+  font-size: 15px; color: rgba(255,255,255,.4);
+  line-height: 1.7; max-width: 380px; margin-bottom: 40px;
+}
+.login-hero-stats {
+  display: flex; gap: 28px;
+}
+.login-stat {
+  display: flex; flex-direction: column; gap: 3px;
+}
+.login-stat-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 28px; font-weight: 800; color: #fff; line-height: 1;
+}
+.login-stat-label {
+  font-size: 11px; color: rgba(255,255,255,.35);
+  text-transform: uppercase; letter-spacing: .07em;
+}
+
+/* Côté droit — formulaire */
 .login-box {
-  background: var(--surface); border: 1px solid var(--border);
-  border-radius: var(--r-lg); padding: 36px;
-  width: 100%; max-width: 400px;
-  box-shadow: var(--shadow-lg);
+  width: 100%; max-width: 400px; flex-shrink: 0;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 24px; padding: 40px;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 32px 64px rgba(0,0,0,.4), inset 0 1px 0 rgba(255,255,255,.06);
 }
-.login-brand { font-family: var(--font-head); font-size: 26px; font-weight: 800; letter-spacing: -1px; margin-bottom: 2px; }
-.login-tag { font-size: 13px; color: var(--text-2); margin-bottom: 28px; }
+.login-box-header { margin-bottom: 32px; }
+.login-brand {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px; font-weight: 800;
+  letter-spacing: -0.5px; color: #fff;
+  margin-bottom: 4px;
+}
+.login-tag {
+  font-size: 12px; color: rgba(255,255,255,.35);
+  margin-bottom: 0; line-height: 1.5;
+}
+
+/* Inputs dark glass */
+.login-box .label {
+  color: rgba(255,255,255,.4); font-size: 11px;
+  font-weight: 700; letter-spacing: .08em;
+}
+.login-box .input {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  color: #fff; border-radius: 10px;
+  transition: all .2s;
+}
+.login-box .input:focus {
+  border-color: rgba(59,130,246,.6);
+  background: rgba(255,255,255,.08);
+  box-shadow: 0 0 0 3px rgba(59,130,246,.12);
+}
+.login-box .input::placeholder { color: rgba(255,255,255,.2); }
+
+/* Bouton connexion premium */
+.login-box .btn-primary {
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  border: none; border-radius: 12px;
+  font-size: 14px; font-weight: 700;
+  letter-spacing: .02em; height: 48px;
+  box-shadow: 0 8px 20px rgba(37,99,235,.35);
+  transition: all .2s; color: #fff;
+}
+.login-box .btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(37,99,235,.45);
+}
+.login-box .btn-primary:active { transform: translateY(0); }
+.login-box .btn-primary:disabled {
+  opacity: .6; transform: none;
+  box-shadow: none;
+}
+
+/* Mobile — stack vertical */
+@media (max-width: 768px) {
+  .login-split {
+    flex-direction: column; padding: 24px;
+    gap: 32px; align-items: stretch;
+  }
+  .login-hero {
+    text-align: center; align-items: center;
+  }
+  .login-hero-title { font-size: 36px; }
+  .login-hero-desc { display: none; }
+  .login-hero-stats { justify-content: center; }
+  .login-box { max-width: 100%; padding: 28px 24px; }
+}
 
 /* ── NOTIFICATION BELL ── */
 .notif-btn {
@@ -1183,14 +1327,7 @@ tbody tr:hover td { background: var(--bg); }
   background: #1c1b19;
   border-color: #2e2c29;
 }
-/* Login screen */
-[data-theme="dark"] #login-screen {
-  background: #111110;
-}
-[data-theme="dark"] .login-box {
-  background: #1c1b19;
-  border-color: #2e2c29;
-}
+/* Login is always dark — no override needed */
 .role-pill {
   display: inline-block; padding: 2px 8px; border-radius: 20px;
   font-size: 10.5px; font-weight: 700; text-transform: uppercase;
@@ -1533,8 +1670,8 @@ tbody tr:hover td { background: var(--bg); }
 ══════════════════════════════════════════ */
 .msg-layout {
   display: flex;
-  position: fixed;
-  top: 52px; left: var(--sidebar-w); right: 0; bottom: 0;
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
   overflow: hidden;
   background: var(--bg);
 }
@@ -1921,33 +2058,65 @@ tbody tr:hover td { background: var(--bg); }
 
 <!-- LOGIN -->
 <div id="login-screen">
-  <div class="login-box">
-    <div class="login-brand">CoproSync</div>
-    <div class="login-tag">Résidence le Floréal — 13-19 rue du Moucherotte, Sassenage</div>
-    <div id="auth-form">
-      <div class="fg">
-        <label class="label">Email</label>
-        <input type="email" id="auth-email" class="input" placeholder="votre@email.com" autocomplete="off" data-lpignore="true" data-form-type="other">
+  <div class="login-split">
+
+    <!-- HERO GAUCHE -->
+    <div class="login-hero">
+      <div class="login-hero-badge">
+        <span>●</span> Résidence le Floréal
       </div>
-      <div class="fg">
-        <label class="label">Mot de passe</label>
-        <input type="password" id="auth-pass" class="input" placeholder="••••••••" autocomplete="new-password" data-lpignore="true" data-form-type="other">
+      <div class="login-hero-title">
+        Votre résidence,<br><em>connectée.</em>
       </div>
-      <div id="auth-error" style="color:var(--red);font-size:12px;margin-bottom:12px;display:none;"></div>
-      <button class="btn btn-primary" style="width:100%;justify-content:center;" id="auth-btn" onclick="doAuth()">
-        <span id="auth-btn-text">Se connecter</span>
-      </button>
-      <div style="text-align:center;margin-top:14px;">
-        <a href="#" onclick="toggleAuthMode(event)" style="font-size:12px;color:var(--text-2);text-decoration:underline;" id="auth-toggle-link">
-          Pas encore de compte ? Créer un compte
-        </a>
+      <div class="login-hero-desc">
+        Signalez, échangez, votez — tout ce dont vous avez besoin pour vivre mieux ensemble au 13-19 rue du Moucherotte, Sassenage.
       </div>
-      <div style="text-align:center;margin-top:6px;">
-        <a href="#" onclick="forgotPassword(event)" style="font-size:12px;color:var(--text-3);text-decoration:underline;">
-          Mot de passe oublié ?
-        </a>
+      <div class="login-hero-stats">
+        <div class="login-stat">
+          <div class="login-stat-num">240</div>
+          <div class="login-stat-label">Logements</div>
+        </div>
+        <div class="login-stat">
+          <div class="login-stat-num">4</div>
+          <div class="login-stat-label">Tours</div>
+        </div>
+        <div class="login-stat">
+          <div class="login-stat-num">24/7</div>
+          <div class="login-stat-label">Disponible</div>
+        </div>
       </div>
     </div>
+
+    <!-- FORMULAIRE DROIT -->
+    <div class="login-box">
+      <div class="login-box-header">
+        <div class="login-brand">CoproSync</div>
+        <div class="login-tag">Résidence le Floréal · Sassenage</div>
+      </div>
+      <div id="auth-form">
+        <div class="fg">
+          <label class="label">Email</label>
+          <input type="email" id="auth-email" class="input" placeholder="votre@email.com" autocomplete="off" data-lpignore="true" data-form-type="other">
+        </div>
+        <div class="fg">
+          <label class="label">Mot de passe</label>
+          <input type="password" id="auth-pass" class="input" placeholder="••••••••" autocomplete="new-password" data-lpignore="true" data-form-type="other">
+        </div>
+        <div id="auth-error" style="color:#f87171;font-size:12px;margin-bottom:12px;display:none;background:rgba(248,113,113,.1);padding:8px 12px;border-radius:8px;border:1px solid rgba(248,113,113,.2);"></div>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;" id="auth-btn" onclick="doAuth()">
+          <span id="auth-btn-text">Se connecter</span>
+        </button>
+        <div style="text-align:center;margin-top:16px;display:flex;flex-direction:column;gap:6px;">
+          <a href="#" onclick="toggleAuthMode(event)" style="font-size:12px;color:rgba(255,255,255,.3);text-decoration:none;" id="auth-toggle-link">
+            Pas encore de compte ? <span style="color:rgba(59,130,246,.8);text-decoration:underline;">Créer un compte</span>
+          </a>
+          <a href="#" onclick="forgotPassword(event)" style="font-size:12px;color:rgba(255,255,255,.2);text-decoration:underline;">
+            Mot de passe oublié ?
+          </a>
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -3019,16 +3188,30 @@ async function sendEmailDirect(type, to, data) {
 
 // ── NAVIGATION ──
 function nav(page, noClose) {
+  // Détruit la carte Leaflet proprement avant de quitter la page map
+  if (currentPage === 'map' && page !== 'map') {
+    const mapEl = $('map');
+    if (mapEl?._resizeObserver) { mapEl._resizeObserver.disconnect(); }
+    if (mapInstance) { mapInstance.remove(); mapInstance = null; mapMarkers = []; }
+  }
+
   currentPage = page;
   if (!noClose) closeSidebar();
-  // Sidebar active
+  // Retire le padding de #page pour les pages full-height
+  const pageEl = $('page');
+  if (page === 'messages' || page === 'map') {
+    pageEl.style.padding = '0';
+    pageEl.style.maxWidth = 'none';
+  } else {
+    pageEl.style.padding = '';
+    pageEl.style.maxWidth = '';
+  }
   document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
   const active = document.querySelector(`[data-page="${page}"]`);
   if (active) active.classList.add('active');
-  // Bottom nav active
   document.querySelectorAll('.bn-item').forEach(el => el.classList.remove('active'));
   const bnMap = { dashboard:'bn-dashboard', tickets:'bn-tickets', map:'bn-map', messages:'bn-messages' };
-  if (bnMap[page]) $( bnMap[page])?.classList.add('active');
+  if (bnMap[page]) $(bnMap[page])?.classList.add('active');
 
   const titles = {
     dashboard:'Vue d\'ensemble', tickets:'Signalements', map:'Carte',
@@ -4222,66 +4405,95 @@ async function submitTicket() {
 
 // ── MAP ──
 function renderMapPage() {
+  // Nettoie proprement l'ancienne instance
+  if (mapInstance) { mapInstance.remove(); mapInstance = null; mapMarkers = []; }
+
   $('page').innerHTML = `
-  <div style="padding:24px;">
-    <div class="ph"><h1>Carte des signalements</h1><p>${cache.tickets.length} signalement(s) géolocalisé(s)</p></div>
-    <div id="map" style="margin-bottom:16px;"></div>
-    <div class="card">
-      <div class="card-body" style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;">
-        <span style="font-size:12px;font-weight:600;color:var(--text-2);">Légende :</span>
+  <div style="padding:0;height:100%;display:flex;flex-direction:column;">
+    <div style="padding:14px 16px 10px;flex-shrink:0;">
+      <div class="ph" style="margin-bottom:8px;">
+        <h1>Carte des signalements</h1>
+        <p>${cache.tickets.filter(t=>t.lat&&t.lng).length} signalement(s) géolocalisé(s)</p>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;">
         ${[['#dc2626','Critique'],['#ea580c','Important'],['#2563eb','Normal'],['#16a34a','Résolu']].map(([c,l])=>
-          `<span style="display:flex;align-items:center;gap:5px;font-size:13px;">
-            <span style="width:10px;height:10px;border-radius:50%;background:${c};display:inline-block;"></span>${l}
+          `<span style="display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;">
+            <span style="width:10px;height:10px;border-radius:50%;background:${c};display:inline-block;flex-shrink:0;"></span>${l}
           </span>`
         ).join('')}
-        <div style="margin-left:auto;font-size:12px;color:var(--text-3);">Cliquer sur un marqueur pour voir les détails</div>
+      </div>
+    </div>
+    <div style="flex:1;min-height:0;padding:0 16px 16px;">
+      <div class="card" style="overflow:hidden;height:100%;min-height:300px;">
+        <div id="map" style="height:100%;width:100%;min-height:300px;"></div>
       </div>
     </div>
   </div>`;
 }
 
 function initMap() {
-  if (!$('map')) return;
+  const mapEl = $('map');
+  if (!mapEl) return;
   if (mapInstance) { mapInstance.remove(); mapInstance = null; }
 
-  mapInstance = L.map('map').setView([COPRO.lat, COPRO.lng], 19);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap', maxZoom: 19
-  }).addTo(mapInstance);
+  // Attend que le DOM soit rendu avant d'initialiser
+  requestAnimationFrame(() => {
+    mapInstance = L.map('map', {
+      zoomControl: true,
+      tap: true, // fix iOS touch
+      tapTolerance: 15,
+    }).setView([COPRO.lat, COPRO.lng], 17);
 
-  // Marqueur de la résidence
-  const resBounds = L.popup().setContent(`<strong>${COPRO.nom}</strong><br><small>${COPRO.adresse}</small>`);
-  L.marker([COPRO.lat, COPRO.lng], {
-    icon: L.divIcon({ className:'', html:'<div style="width:12px;height:12px;border-radius:2px;background:#1a1917;border:2px solid white;"></div>', iconSize:[12,12], iconAnchor:[6,6] })
-  }).addTo(mapInstance).bindPopup(resBounds);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap', maxZoom: 19
+    }).addTo(mapInstance);
 
-  mapMarkers = [];
-  cache.tickets.forEach(t => {
-    const lat = t.lat || (48.856 + (Math.random() - 0.5) * 0.008);
-    const lng = t.lng || (2.352 + (Math.random() - 0.5) * 0.008);
-    const c = t.statut === 'résolu' || t.statut === 'clos' ? '#16a34a' :
-              t.urgence === 'critique' ? '#dc2626' :
-              t.urgence === 'important' ? '#ea580c' : '#2563eb';
+    // Marqueur résidence
+    L.marker([COPRO.lat, COPRO.lng], {
+      icon: L.divIcon({
+        className: '',
+        html: '<div style="width:14px;height:14px;border-radius:3px;background:#1a1917;border:2.5px solid white;box-shadow:0 2px 6px rgba(0,0,0,.4);"></div>',
+        iconSize: [14,14], iconAnchor: [7,7]
+      })
+    }).addTo(mapInstance)
+      .bindPopup(`<strong>${COPRO.nom}</strong><br><small>${COPRO.adresse}</small>`);
 
-    const icon = L.divIcon({
-      className: '',
-      html: `<div style="width:14px;height:14px;border-radius:50%;background:${c};border:2.5px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3);"></div>`,
-      iconSize: [14,14], iconAnchor: [7,7]
+    mapMarkers = [];
+    cache.tickets.forEach(t => {
+      if (!t.lat || !t.lng) return;
+      const c = t.statut === 'résolu' || t.statut === 'clos' ? '#16a34a' :
+                t.urgence === 'critique' ? '#dc2626' :
+                t.urgence === 'important' ? '#ea580c' : '#2563eb';
+      const icon = L.divIcon({
+        className: '',
+        html: `<div style="width:14px;height:14px;border-radius:50%;background:${c};border:2.5px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3);"></div>`,
+        iconSize: [14,14], iconAnchor: [7,7]
+      });
+      const m = L.marker([t.lat, t.lng], { icon }).addTo(mapInstance);
+      m.bindPopup(`
+        <div style="min-width:180px;font-family:sans-serif;">
+          <div style="font-weight:700;margin-bottom:4px;font-size:13px;">${t.titre}</div>
+          <div style="font-size:11px;color:#666;margin-bottom:8px;">📍 ${t.batiment||''}${t.zone?' · '+t.zone:''}</div>
+          <button onclick="openDetail('${t.id}')"
+            style="width:100%;background:${c};color:white;border:none;padding:6px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">
+            Voir le signalement →
+          </button>
+        </div>
+      `);
+      mapMarkers.push(m);
     });
-    const m = L.marker([lat, lng], { icon }).addTo(mapInstance);
-    m.bindPopup(`
-      <div style="min-width:190px;font-family:var(--font-body);">
-        <div style="font-weight:700;margin-bottom:5px;">${t.titre}</div>
-        <div style="font-size:12px;color:#666;margin-bottom:8px;">📍 ${t.batiment||''}${t.zone?' · '+t.zone:''}</div>
-        <button onclick="openDetail('${t.id}')"
-          style="width:100%;background:${c};color:white;border:none;padding:6px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">
-          Voir le signalement
-        </button>
-      </div>
-    `);
-    mapMarkers.push(m);
+
+    // Force resize après que le conteneur soit vraiment dimensionné
+    setTimeout(() => mapInstance?.invalidateSize({ animate: false }), 150);
+    setTimeout(() => mapInstance?.invalidateSize({ animate: false }), 500);
+
+    // ResizeObserver pour détecter les changements de taille (orientation mobile)
+    if (window.ResizeObserver) {
+      const ro = new ResizeObserver(() => mapInstance?.invalidateSize({ animate: false }));
+      ro.observe(mapEl);
+      mapEl._resizeObserver = ro;
+    }
   });
-  setTimeout(() => mapInstance.invalidateSize(), 150);
 }
 
 // ── CONTRATS ──
