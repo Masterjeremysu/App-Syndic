@@ -2129,16 +2129,40 @@ async function startApp() {
 async function loadProfile() {
   console.log('[loadProfile] start, user.id=', user?.id);
   try {
-    // Timeout de sécurité 5s
-    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 5000));
+    const timeout = new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000));
     const query = sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
     const { data, error } = await Promise.race([query, timeout]);
     console.log('[loadProfile] data=', data, 'error=', error);
-    profile = data || { id: user.id, email: user.email, nom: user.email.split('@')[0], role: 'copropriétaire' };
+    if (data) {
+      profile = data;
+    } else {
+      // Pas de profil en base — profil minimal SANS forcer le rôle
+      // Le rôle vient de user_metadata si dispo
+      const meta = user.user_metadata || {};
+      profile = {
+        id: user.id,
+        email: user.email,
+        nom: meta.nom || null,
+        prenom: meta.prenom || null,
+        role: meta.role || 'copropriétaire',
+        tour: meta.tour || null,
+        lot: meta.lot || null,
+      };
+    }
     console.log('[loadProfile] role =', profile.role);
   } catch(e) {
     console.error('[loadProfile] CRASH/TIMEOUT:', e.message);
-    profile = { id: user.id, email: user.email, nom: user.email.split('@')[0], role: 'copropriétaire' };
+    // En cas de timeout → réessaie une fois sans timeout
+    try {
+      const { data } = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+      if (data) { profile = data; return; }
+    } catch {}
+    const meta = user.user_metadata || {};
+    profile = {
+      id: user.id, email: user.email,
+      nom: meta.nom || null, prenom: meta.prenom || null,
+      role: meta.role || 'copropriétaire',
+    };
   }
 }
 
