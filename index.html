@@ -1528,6 +1528,9 @@ tbody tr:hover td { background: var(--bg); }
    MESSAGERIE — Mobile-first, fluide
    ══════════════════════════════════════ */
 
+/* ══════════════════════════════════════════
+   MESSAGERIE v2 — Discord style + Feed
+══════════════════════════════════════════ */
 .msg-layout {
   display: flex;
   position: fixed;
@@ -1535,85 +1538,98 @@ tbody tr:hover td { background: var(--bg); }
   overflow: hidden;
   background: var(--bg);
 }
+@media (max-width: 900px) { .msg-layout { left: 0; } }
 
-/* Sur mobile la sidebar est cachée donc left:0 */
-@media (max-width: 900px) {
-  .msg-layout { left: 0; }
-}
-
-/* ── Liste conversations ── */
-.conv-list {
-  width: 300px; flex-shrink: 0;
+/* ── Sidebar gauche (canaux + DMs) ── */
+.msg-sidebar {
+  width: 260px; flex-shrink: 0;
   display: flex; flex-direction: column;
-  border-right: 1px solid var(--border);
   background: var(--surface);
+  border-right: 1px solid var(--border);
   overflow: hidden;
 }
-.conv-list-header {
-  padding: 16px 18px;
+.msg-sidebar-header {
+  padding: 14px 16px 10px;
   border-bottom: 1px solid var(--border);
-  font-family: var(--font-head); font-weight: 700; font-size: 15px;
+  font-family: var(--font-head); font-size: 14px; font-weight: 800;
+  letter-spacing: -.2px;
   display: flex; align-items: center; justify-content: space-between;
+}
+.msg-sidebar-scroll { flex: 1; overflow-y: auto; padding: 8px 0; }
+.msg-section-label {
+  padding: 10px 16px 4px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .1em; color: var(--text-3);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.msg-section-label button {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-3); font-size: 16px; line-height: 1;
+  padding: 0; width: 18px; height: 18px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 4px; transition: all .15s;
+}
+.msg-section-label button:hover { background: var(--bg); color: var(--text); }
+.msg-chan-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 12px; margin: 1px 6px; border-radius: 6px;
+  cursor: pointer; transition: background .12s; user-select: none;
+  color: var(--text-3); font-size: 13.5px; font-weight: 500;
+  position: relative;
+}
+.msg-chan-item:hover { background: var(--surface-2); color: var(--text-2); }
+.msg-chan-item.active { background: var(--accent-light); color: var(--accent); font-weight: 600; }
+.msg-chan-ico { font-size: 16px; flex-shrink: 0; width: 22px; text-align: center; }
+.msg-chan-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.msg-chan-badge {
+  background: var(--red); color: #fff; font-size: 10px; font-weight: 700;
+  min-width: 18px; height: 18px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center; padding: 0 4px;
   flex-shrink: 0;
 }
-.conv-items-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
-.conv-item {
-  display: flex; align-items: center; gap: 12px;
-  padding: 14px 18px; cursor: pointer;
-  border-bottom: 1px solid var(--border);
-  transition: background .12s; user-select: none;
+/* DM item */
+.msg-dm-item {
+  display: flex; align-items: center; gap: 9px;
+  padding: 5px 12px; margin: 1px 6px; border-radius: 6px;
+  cursor: pointer; transition: background .12s;
+  color: var(--text-3); font-size: 13px; font-weight: 500;
 }
-.conv-item:hover { background: var(--bg); }
-.conv-item:active { background: var(--surface-2); }
-.conv-item.active {
-  background: var(--blue-light);
-  border-left: 3px solid var(--accent);
-  padding-left: 15px;
+.msg-dm-item:hover { background: var(--surface-2); color: var(--text-2); }
+.msg-dm-item.active { background: var(--accent-light); color: var(--accent); }
+.msg-dm-av {
+  width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff;
+  position: relative;
 }
-.conv-avatar {
-  width: 46px; height: 46px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), #818cf8);
-  color: #fff; display: flex; align-items: center; justify-content: center;
-  font-size: 20px; flex-shrink: 0;
-}
-.conv-avatar.prive { background: linear-gradient(135deg, var(--violet), #a78bfa); }
-.conv-info { flex: 1; min-width: 0; }
-.conv-name { font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.conv-last { font-size: 12px; color: var(--text-3); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.conv-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; flex-shrink: 0; }
-.conv-time { font-size: 10.5px; color: var(--text-3); }
-.conv-unread {
-  background: var(--accent); color: #fff;
-  font-size: 10px; font-weight: 700;
-  min-width: 20px; height: 20px; border-radius: 10px;
-  display: flex; align-items: center; justify-content: center; padding: 0 5px;
+.msg-dm-online::after {
+  content: ''; position: absolute; bottom: 0; right: 0;
+  width: 9px; height: 9px; border-radius: 50%;
+  background: var(--green); border: 2px solid var(--surface);
 }
 
-/* ── Zone chat ── */
-.chat-zone { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
-.chat-header {
+/* ── Zone principale ── */
+.msg-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+/* Header du canal */
+.msg-chan-header {
   padding: 12px 18px; border-bottom: 1px solid var(--border);
-  background: var(--surface); display: flex; align-items: center; gap: 12px;
-  flex-shrink: 0; min-height: 60px;
+  background: var(--surface); display: flex; align-items: center; gap: 10px;
+  flex-shrink: 0; min-height: 52px;
 }
-.chat-back {
-  display: none; width: 34px; height: 34px; border-radius: 50%;
+.msg-back-btn {
+  display: none; width: 32px; height: 32px; border-radius: 50%;
   border: none; background: var(--surface-2); cursor: pointer;
   align-items: center; justify-content: center; flex-shrink: 0;
-  font-size: 18px; color: var(--text); line-height: 1;
+  font-size: 16px; color: var(--text);
 }
-.chat-header-av {
-  width: 38px; height: 38px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent), #818cf8);
-  display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
-}
-.chat-header-info { flex: 1; min-width: 0; }
-.chat-header-name { font-family: var(--font-head); font-weight: 700; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.chat-header-sub { font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+.msg-chan-title { font-family: var(--font-head); font-weight: 700; font-size: 15px; flex: 1; }
+.msg-chan-desc { font-size: 11.5px; color: var(--text-3); }
 
+/* Messages */
 .chat-messages {
   flex: 1; overflow-y: auto; overflow-x: hidden;
-  padding: 16px 18px 8px;
+  padding: 12px 16px 8px;
   display: flex; flex-direction: column; gap: 2px;
   background: var(--bg);
   -webkit-overflow-scrolling: touch;
@@ -1621,14 +1637,73 @@ tbody tr:hover td { background: var(--bg); }
 .msg-group { display: flex; flex-direction: column; margin-bottom: 10px; }
 .msg-group.mine { align-items: flex-end; }
 .msg-group.theirs { align-items: flex-start; }
-.msg-sender-name { font-size: 11px; font-weight: 600; color: var(--accent); margin-bottom: 4px; padding: 0 6px; }
+.msg-sender-name { font-size: 11px; font-weight: 600; color: var(--accent); margin-bottom: 3px; padding: 0 6px; }
 .msg-bubble {
-  max-width: min(72%, 380px); padding: 10px 14px; border-radius: 18px;
-  font-size: 14px; line-height: 1.5; word-break: break-word; white-space: pre-wrap; margin-bottom: 2px;
+  max-width: min(75%, 400px); padding: 9px 13px;
+  border-radius: 18px; font-size: 14px; line-height: 1.5;
+  word-break: break-word; white-space: pre-wrap; margin-bottom: 2px;
+  position: relative;
 }
 .msg-bubble.mine { background: var(--accent); color: #fff; border-bottom-right-radius: 5px; }
 .msg-bubble.theirs { background: var(--surface); border: 1px solid var(--border); border-bottom-left-radius: 5px; }
-.msg-mention-tag { font-weight: 700; opacity: .9; }
+
+/* Reply */
+.msg-reply-preview {
+  font-size: 12px; padding: 4px 8px; border-radius: 6px;
+  border-left: 3px solid var(--accent); margin-bottom: 4px;
+  background: rgba(0,0,0,.08); color: rgba(255,255,255,.75);
+  max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.msg-bubble.theirs .msg-reply-preview {
+  background: var(--bg); color: var(--text-3); border-color: var(--accent);
+}
+
+/* Réactions */
+.msg-reactions {
+  display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; padding: 0 4px;
+}
+.msg-reaction {
+  display: flex; align-items: center; gap: 3px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 2px 7px; font-size: 12px; cursor: pointer;
+  transition: all .12s; user-select: none;
+}
+.msg-reaction:hover { border-color: var(--accent); background: var(--accent-light); }
+.msg-reaction.mine { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+.msg-reaction-count { font-size: 11px; font-weight: 600; color: var(--text-2); }
+
+/* Boutons action sur message (hover) */
+.msg-actions {
+  position: absolute; right: -4px; top: -14px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 2px 4px;
+  display: none; gap: 2px; align-items: center;
+  box-shadow: var(--shadow-md); z-index: 10;
+}
+.msg-group:hover .msg-actions { display: flex; }
+.msg-action-btn {
+  width: 28px; height: 28px; border-radius: 6px; border: none;
+  background: none; cursor: pointer; font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .1s; color: var(--text-2);
+}
+.msg-action-btn:hover { background: var(--bg); color: var(--text); }
+
+/* Reply bar */
+.msg-reply-bar {
+  padding: 6px 16px 0; background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px; font-size: 12px;
+}
+.msg-reply-bar-content {
+  flex: 1; color: var(--text-2);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.msg-reply-bar-close {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-3); font-size: 16px; padding: 0; line-height: 1;
+}
+
 .msg-time-row { font-size: 10.5px; color: var(--text-3); padding: 0 6px; margin-top: 1px; }
 .msg-date-sep {
   display: flex; align-items: center; gap: 10px;
@@ -1636,19 +1711,21 @@ tbody tr:hover td { background: var(--bg); }
 }
 .msg-date-sep::before, .msg-date-sep::after { content:''; flex:1; height:1px; background:var(--border); }
 
+/* Input */
 .chat-input-bar {
   padding: 10px 14px; border-top: 1px solid var(--border);
-  background: var(--surface); display: flex; gap: 10px; align-items: flex-end; flex-shrink: 0;
+  background: var(--surface); display: flex; gap: 8px; align-items: flex-end;
+  flex-shrink: 0;
 }
 .chat-input-wrap { flex: 1; position: relative; }
 .chat-input {
   width: 100%; box-sizing: border-box;
   border: 1.5px solid var(--border); border-radius: 22px;
-  padding: 11px 16px; font-size: 15px; resize: none;
+  padding: 10px 16px; font-size: 15px; resize: none;
   max-height: 120px; min-height: 44px;
-  background: var(--bg); color: var(--text); font-family: var(--font);
+  background: var(--bg); color: var(--text); font-family: var(--font-body);
   outline: none; line-height: 1.4; display: block; overflow-y: auto;
-  -webkit-overflow-scrolling: touch;
+  -webkit-overflow-scrolling: touch; transition: border-color .15s;
 }
 .chat-input:focus { border-color: var(--accent); }
 .chat-mention-pop {
@@ -1661,34 +1738,183 @@ tbody tr:hover td { background: var(--bg); }
   width: 44px; height: 44px; border-radius: 50%; border: none;
   background: var(--accent); color: #fff; cursor: pointer;
   display: flex; align-items: center; justify-content: center;
-  transition: transform .1s; flex-shrink: 0;
+  transition: transform .1s, background .15s; flex-shrink: 0;
 }
+.chat-send:hover { background: var(--accent-hover); }
 .chat-send:active { transform: scale(.88); }
+
+/* Typing indicator */
+.chat-typing {
+  padding: 4px 18px; font-size: 11.5px; color: var(--text-3);
+  font-style: italic; min-height: 20px; flex-shrink: 0;
+}
+
+/* Empty state chat */
 .chat-empty {
   flex: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: 10px; color: var(--text-3); padding: 40px; text-align: center;
 }
 
-/* ── Mobile plein écran ── */
+/* ══════════════════════════════
+   FEED COMMUNAUTAIRE
+══════════════════════════════ */
+.feed-layout {
+  display: flex; flex-direction: column;
+  flex: 1; overflow: hidden;
+}
+.feed-compose {
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+  background: var(--surface); flex-shrink: 0;
+}
+.feed-compose-box {
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.feed-compose-av {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--text); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700; flex-shrink: 0;
+  font-family: var(--font-head);
+}
+.feed-compose-input {
+  flex: 1; background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 22px; padding: 9px 14px; font-size: 14px;
+  color: var(--text); font-family: var(--font-body);
+  outline: none; resize: none; line-height: 1.4;
+  transition: border-color .15s; min-height: 40px; max-height: 120px;
+  -webkit-overflow-scrolling: touch;
+}
+.feed-compose-input:focus { border-color: var(--accent); }
+.feed-compose-input::placeholder { color: var(--text-3); }
+.feed-compose-actions {
+  display: flex; align-items: center; justify-content: flex-end;
+  gap: 8px; margin-top: 8px; padding-left: 46px;
+}
+.feed-scroll { flex: 1; overflow-y: auto; padding: 10px 0; -webkit-overflow-scrolling: touch; }
+
+/* Post card */
+.feed-post {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  transition: background .1s;
+  animation: pageIn .25s ease both;
+}
+.feed-post:hover { background: var(--surface-2); }
+.feed-post-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.feed-post-av {
+  width: 38px; height: 38px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; font-weight: 700; color: #fff; flex-shrink: 0;
+  font-family: var(--font-head);
+}
+.feed-post-meta { flex: 1; min-width: 0; }
+.feed-post-author { font-weight: 600; font-size: 14px; }
+.feed-post-time { font-size: 11.5px; color: var(--text-3); margin-top: 1px; }
+.feed-post-body { font-size: 14px; line-height: 1.6; color: var(--text); margin-bottom: 10px; white-space: pre-wrap; word-break: break-word; }
+
+/* Post événement auto */
+.feed-event-card {
+  background: var(--bg); border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--r-md); padding: 10px 14px;
+  margin-bottom: 10px; font-size: 13px; color: var(--text-2);
+}
+.feed-event-card.ticket { border-left-color: var(--orange); }
+.feed-event-card.resolved { border-left-color: var(--green); }
+.feed-event-card.vote { border-left-color: var(--violet); }
+.feed-event-card.member { border-left-color: var(--accent); }
+
+/* Actions post */
+.feed-post-actions { display: flex; align-items: center; gap: 4px; }
+.feed-action-btn {
+  display: flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 20px; border: none;
+  background: none; cursor: pointer; font-size: 13px; font-weight: 500;
+  color: var(--text-3); transition: all .15s; font-family: var(--font-body);
+}
+.feed-action-btn:hover { background: var(--bg); color: var(--text-2); }
+.feed-action-btn.liked { color: #ef4444; }
+.feed-action-btn.reacted { color: var(--accent); }
+
+/* Réactions sous un post */
+.feed-reactions { display: flex; flex-wrap: wrap; gap: 4px; margin: 4px 0 8px; }
+.feed-reaction {
+  display: flex; align-items: center; gap: 3px;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 12px; padding: 3px 8px; font-size: 13px; cursor: pointer;
+  transition: all .12s;
+}
+.feed-reaction:hover { border-color: var(--accent); background: var(--accent-light); }
+.feed-reaction.mine { background: var(--accent-light); border-color: var(--accent); }
+.feed-reaction-count { font-size: 12px; font-weight: 600; color: var(--text-2); }
+
+/* Commentaires */
+.feed-comments { padding: 8px 0 0; border-top: 1px solid var(--border); margin-top: 8px; }
+.feed-comment {
+  display: flex; gap: 8px; margin-bottom: 8px;
+  animation: pageIn .2s ease both;
+}
+.feed-comment-av {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.feed-comment-bubble {
+  flex: 1; background: var(--bg); border-radius: 12px;
+  padding: 7px 12px; font-size: 13px; line-height: 1.5;
+}
+.feed-comment-author { font-weight: 600; font-size: 12px; margin-bottom: 2px; }
+.feed-comment-input-row {
+  display: flex; gap: 8px; align-items: center; margin-top: 6px;
+}
+.feed-comment-input {
+  flex: 1; background: var(--bg); border: 1.5px solid var(--border);
+  border-radius: 18px; padding: 7px 12px; font-size: 13px;
+  color: var(--text); font-family: var(--font-body); outline: none;
+  transition: border-color .15s;
+}
+.feed-comment-input:focus { border-color: var(--accent); }
+
+/* Emoji picker */
+.emoji-picker {
+  position: absolute; background: var(--surface);
+  border: 1px solid var(--border); border-radius: var(--r-md);
+  padding: 8px; display: flex; gap: 4px; flex-wrap: wrap;
+  box-shadow: var(--shadow-md); z-index: 200;
+  width: 200px;
+}
+.emoji-opt {
+  width: 36px; height: 36px; border-radius: 6px; border: none;
+  background: none; cursor: pointer; font-size: 20px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .1s;
+}
+.emoji-opt:hover { background: var(--bg); }
+
+/* Mobile */
 @media (max-width: 768px) {
   .msg-layout { bottom: 60px; }
-  .conv-list {
+  .msg-sidebar {
     width: 100%; position: absolute; inset: 0; z-index: 2;
     transition: transform .25s ease;
   }
-  .conv-list.hidden { transform: translateX(-100%); pointer-events: none; }
-  .chat-zone {
+  .msg-sidebar.hidden { transform: translateX(-100%); pointer-events: none; }
+  .msg-main {
     position: absolute; inset: 0; z-index: 1;
     transform: translateX(100%); transition: transform .25s ease;
   }
-  .chat-zone.visible { transform: translateX(0); z-index: 3; }
-  .chat-back { display: flex !important; }
-  .msg-bubble { max-width: min(82%, 340px); font-size: 15px; }
+  .msg-main.visible { transform: translateX(0); z-index: 3; }
+  .msg-back-btn { display: flex !important; }
+  .msg-bubble { max-width: min(85%, 340px); font-size: 15px; }
   .chat-input { font-size: 16px; }
-  .chat-input-bar { padding: 8px 12px; }
-  .chat-messages { padding: 12px 12px 6px; }
+  .chat-input-bar { padding: 8px 10px; }
+  .chat-messages { padding: 10px 10px 6px; }
+  .feed-compose { padding: 10px 12px; }
+  .feed-post { padding: 12px 12px; }
 }
+
 </style>
 </head>
 <body>
@@ -3641,6 +3867,8 @@ async function changeStatut(id, statut) {
       ...t, statut,
       titre: `[${statut === 'résolu' ? '✅ Résolu' : '📁 Clos'}] ${t.titre}`,
     });
+    // Publie dans le feed
+    await publishFeedEvent('resolved', `✅ Signalement résolu : ${t.titre}${t.batiment ? ' — '+t.batiment : ''}`);
   }
 
   toast('Statut mis à jour', 'ok');
@@ -3971,6 +4199,11 @@ async function submitTicket() {
     ...data,
     auteur_nom: displayNameFromProfile(profile, user?.email)
   });
+
+  // Publie dans le feed communautaire
+  const urgenceLabel = urgencySelected === 'critique' ? '🔴 Critique' : urgencySelected === 'important' ? '🟠 Important' : '🔵 Normal';
+  await publishFeedEvent('ticket', `🔧 Nouveau signalement ${urgenceLabel} : ${titre}${batiment ? ' — '+batiment : ''}`);
+
   // Notif push locale
   await pushNotif(
     urgencySelected === 'critique' ? '🚨 Signalement critique !' : 'Nouveau signalement',
@@ -4759,6 +4992,13 @@ async function submitRegister() {
           contenu: `${prenom} ${nom||''} vient de créer son compte. Tour : ${tour} · Lot : ${lot} · Email : ${email}`
         }
       })
+    }).catch(()=>{});
+
+    // Publie dans le feed communautaire
+    await sb2.from('feed_posts').insert({
+      auteur_id: data.user.id,
+      contenu: `👋 ${prenom}${nom?' '+nom:''} vient de rejoindre la résidence !${tour?' ('+tour+')':''}`,
+      type: 'member'
     }).catch(()=>{});
   }
 
@@ -6906,8 +7146,10 @@ async function saveVote(statut) {
 }
 
 async function publierVote(id) {
+  const v = _votesCache.find(x => x.id === id);
   await sb.from('votes').update({ statut:'ouvert' }).eq('id', id);
   toast('Vote publié ✓', 'ok');
+  if (v) await publishFeedEvent('vote', `🗳️ Nouveau vote ouvert : "${v.titre}" — Participez depuis l'onglet Votes !`);
   await loadVotes();
 }
 
@@ -6999,129 +7241,460 @@ async function exportVotePDF(voteId) {
   win.document.close();
 }
 
-// ── MESSAGERIE ──
-let _msgState = {
-  conversations: [],
-  activeConvId: null,
-  messages: [],
-  channel: null,
-  mobileView: 'list' // 'list' | 'chat'
+// ══════════════════════════════════════════
+// MESSAGERIE v2 + FEED COMMUNAUTAIRE
+// ══════════════════════════════════════════
+
+const EMOJIS = ['👍','❤️','😂','😮','🙏','✅','🔥','👏'];
+const CHAN_COLORS = {
+  general: '#2563eb', tour13: '#7c3aed', tour15: '#ea580c',
+  tour17: '#16a34a', tour19: '#d97706', cs: '#dc2626', feed: '#2563eb'
 };
 
+// State global messagerie
+let _msgState = {
+  conversations: [], messages: [],
+  activeConvId: null, activeChanType: 'feed', // 'feed' | 'chan' | 'dm'
+  channel: null, feedChannel: null,
+  replyTo: null, // { id, auteur, texte }
+  feed: [], feedReactions: {}, feedComments: {},
+  typingTimeout: null,
+};
+
+// ── RENDER MESSAGES PAGE ──
 async function renderMessages() {
-  $('page').innerHTML = `<div class="msg-layout" id="msg-layout">
-    <div class="conv-list" id="conv-list">
-      <div class="conv-list-header">
-        <span>💬 Messages</span>
-        ${isManager() ? `<button class="btn btn-ghost btn-sm" onclick="newPrivateConv()" title="Nouveau message privé">✏️</button>` : ''}
+  const page = $('page');
+  page.innerHTML = `<div class="msg-layout" id="msg-layout">
+
+    <!-- SIDEBAR GAUCHE -->
+    <div class="msg-sidebar" id="msg-sidebar">
+      <div class="msg-sidebar-header">
+        <span>CoproSync</span>
+        <button class="btn btn-ghost btn-sm" onclick="openNewDM()" title="Message privé" style="padding:4px 6px;font-size:16px;">✏️</button>
       </div>
-      <div class="conv-items-scroll" id="conv-items">
-        <div style="padding:24px;text-align:center;color:var(--text-3);font-size:13px;">Chargement...</div>
+      <div class="msg-sidebar-scroll">
+
+        <!-- Feed -->
+        <div class="msg-section-label">Communauté</div>
+        <div class="msg-chan-item ${_msgState.activeChanType==='feed'?'active':''}" id="chan-feed" onclick="openFeed()">
+          <div class="msg-chan-ico">🏠</div>
+          <div class="msg-chan-name">Fil d'actualité</div>
+        </div>
+
+        <!-- Canaux groupes -->
+        <div class="msg-section-label">Canaux</div>
+        <div id="chan-list-groups"></div>
+
+        <!-- Messages privés -->
+        <div class="msg-section-label">
+          Messages privés
+        </div>
+        <div id="chan-list-dms"></div>
+
       </div>
     </div>
-    <div class="chat-zone" id="chat-zone">
-      <div class="chat-empty">
-        <div class="chat-empty-ico">💬</div>
-        <div style="font-weight:600;font-size:15px;">Sélectionnez une conversation</div>
-        <div style="font-size:13px;">Choisissez un groupe ou démarrez une discussion privée</div>
+
+    <!-- ZONE PRINCIPALE -->
+    <div class="msg-main" id="msg-main">
+      <div class="chat-empty" id="msg-welcome">
+        <div style="font-size:48px;margin-bottom:12px;">🏢</div>
+        <div style="font-family:var(--font-head);font-size:18px;font-weight:800;margin-bottom:6px;">Bienvenue sur CoproSync</div>
+        <div style="font-size:13px;color:var(--text-3);">Rejoignez le fil d'actualité ou une conversation</div>
+      </div>
+    </div>
+
+  </div>`;
+
+  await loadConversations();
+  renderSidebarGroups();
+  renderSidebarDMs();
+  startMsgRealtime();
+  startFeedRealtime();
+
+  // Ouvre le feed par défaut
+  if (_msgState.activeChanType === 'feed') {
+    openFeed();
+  } else if (_msgState.activeConvId) {
+    openConv(_msgState.activeConvId);
+  }
+}
+
+// ── SIDEBAR ──
+function renderSidebarGroups() {
+  const el = $('chan-list-groups');
+  if (!el) return;
+  const convs = filterConvsByRole(_msgState.conversations).filter(c => !c.type || c.type === 'groupe');
+  el.innerHTML = convs.map(c => {
+    const emoji = c.titre?.split(' ')[0] || '💬';
+    const titre = c.titre?.substring(c.titre.indexOf(' ') + 1) || c.titre;
+    const isActive = _msgState.activeConvId === c.id && _msgState.activeChanType === 'chan';
+    return `<div class="msg-chan-item ${isActive?'active':''}" id="chan-${c.id}" onclick="openConv('${c.id}')">
+      <div class="msg-chan-ico">${emoji}</div>
+      <div class="msg-chan-name">${escHtml(titre)}</div>
+    </div>`;
+  }).join('') || '<div style="padding:4px 16px;font-size:12px;color:var(--text-3);">Aucun canal</div>';
+}
+
+function renderSidebarDMs() {
+  const el = $('chan-list-dms');
+  if (!el) return;
+  const dms = _msgState.conversations.filter(c => c.type === 'prive');
+  if (!dms.length) {
+    el.innerHTML = `<div style="padding:4px 16px 8px;font-size:12px;color:var(--text-3);">
+      Aucun message privé<br>
+      <span style="cursor:pointer;color:var(--accent);" onclick="openNewDM()">Démarrer une conversation →</span>
+    </div>`;
+    return;
+  }
+  el.innerHTML = dms.map(c => {
+    const isActive = _msgState.activeConvId === c.id;
+    // Nom de l'autre personne
+    const autreNom = c.titre?.replace(/^🔒\s*/, '') || 'Privé';
+    const initiale = autreNom.charAt(0).toUpperCase();
+    const color = avatarColor(autreNom);
+    return `<div class="msg-dm-item ${isActive?'active':''}" id="chan-${c.id}" onclick="openConv('${c.id}')">
+      <div class="msg-dm-av" style="background:${color};">${initiale}</div>
+      <div style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escHtml(autreNom)}</div>
+    </div>`;
+  }).join('');
+}
+
+function escHtml(t) {
+  return (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+function avatarColor(name) {
+  const colors = ['#2563eb','#7c3aed','#ea580c','#16a34a','#d97706','#dc2626','#0891b2'];
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = name.charCodeAt(i) + ((h << 5) - h);
+  return colors[Math.abs(h) % colors.length];
+}
+
+// ── FEED COMMUNAUTAIRE ──
+async function openFeed() {
+  _msgState.activeChanType = 'feed';
+  _msgState.activeConvId = null;
+
+  // Update sidebar active
+  document.querySelectorAll('.msg-chan-item,.msg-dm-item').forEach(el => el.classList.remove('active'));
+  $('chan-feed')?.classList.add('active');
+
+  // Mobile slide
+  mobileShowMain();
+
+  const main = $('msg-main');
+  if (!main) return;
+  main.innerHTML = `
+    <div class="msg-chan-header">
+      <button class="msg-back-btn" onclick="mobileShowSidebar()">←</button>
+      <div style="font-size:20px;margin-right:2px;">🏠</div>
+      <div>
+        <div class="msg-chan-title">Fil d'actualité</div>
+        <div class="msg-chan-desc">La vie de la Résidence le Floréal</div>
+      </div>
+    </div>
+
+    <!-- Composer -->
+    <div class="feed-compose" id="feed-compose">
+      <div class="feed-compose-box">
+        <div class="feed-compose-av" style="background:${avatarColor(displayNameFromProfile(profile,user?.email))}">
+          ${(profile?.prenom||profile?.nom||user?.email||'?').charAt(0).toUpperCase()}
+        </div>
+        <textarea class="feed-compose-input" id="feed-input" placeholder="Partagez une info, une question… 💬" rows="1"
+          oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,100)+'px'"></textarea>
+      </div>
+      <div class="feed-compose-actions">
+        <button class="btn btn-ghost btn-sm" onclick="pickFeedEmoji(event)">😊</button>
+        <button class="btn btn-primary btn-sm" onclick="publishFeedPost()">Publier</button>
+      </div>
+    </div>
+
+    <!-- Feed scroll -->
+    <div class="feed-scroll" id="feed-scroll">
+      <div style="text-align:center;padding:32px;color:var(--text-3);">Chargement du fil…</div>
+    </div>`;
+
+  await loadFeed();
+}
+
+async function loadFeed() {
+  const { data: posts } = await sb.from('feed_posts')
+    .select('*, profiles(id,prenom,nom,email)')
+    .order('created_at', { ascending: false })
+    .limit(50);
+
+  const { data: reactions } = await sb.from('reactions')
+    .eq('target_type', 'post');
+
+  // Groupe les réactions par post
+  _msgState.feedReactions = {};
+  (reactions || []).forEach(r => {
+    if (!_msgState.feedReactions[r.target_id]) _msgState.feedReactions[r.target_id] = [];
+    _msgState.feedReactions[r.target_id].push(r);
+  });
+
+  _msgState.feed = posts || [];
+  renderFeed();
+}
+
+function renderFeed() {
+  const el = $('feed-scroll');
+  if (!el) return;
+  if (!_msgState.feed.length) {
+    el.innerHTML = `<div style="text-align:center;padding:48px 24px;">
+      <div style="font-size:48px;margin-bottom:12px;">👋</div>
+      <div style="font-family:var(--font-head);font-weight:700;font-size:16px;margin-bottom:6px;">Soyez le premier à poster !</div>
+      <div style="font-size:13px;color:var(--text-3);">Partagez une info, une question, une bonne nouvelle avec vos voisins.</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = _msgState.feed.map(p => renderFeedPost(p)).join('');
+}
+
+function renderFeedPost(p) {
+  const auteur = p.profiles ? displayName(p.profiles.prenom, p.profiles.nom, p.profiles.email, 'Résident') : 'Résident';
+  const initiale = auteur.charAt(0).toUpperCase();
+  const color = avatarColor(auteur);
+  const time = depuisJours(p.created_at);
+  const isMine = p.auteur_id === user?.id;
+
+  // Réactions groupées par emoji
+  const reacts = _msgState.feedReactions[p.id] || [];
+  const reactGroups = {};
+  reacts.forEach(r => {
+    if (!reactGroups[r.emoji]) reactGroups[r.emoji] = { count: 0, mine: false };
+    reactGroups[r.emoji].count++;
+    if (r.user_id === user?.id) reactGroups[r.emoji].mine = true;
+  });
+  const reactHtml = Object.entries(reactGroups).map(([emoji, data]) =>
+    `<div class="feed-reaction ${data.mine?'mine':''}" onclick="toggleFeedReaction('${p.id}','${emoji}')">
+      <span>${emoji}</span>
+      <span class="feed-reaction-count">${data.count}</span>
+    </div>`
+  ).join('');
+
+  // Contenu selon type
+  let body = '';
+  if (p.type === 'post') {
+    body = `<div class="feed-post-body">${escHtml(p.contenu)}</div>`;
+  } else if (p.type === 'ticket') {
+    body = `<div class="feed-event-card ticket">🔧 ${escHtml(p.contenu)}</div>`;
+  } else if (p.type === 'resolved') {
+    body = `<div class="feed-event-card resolved">✅ ${escHtml(p.contenu)}</div>`;
+  } else if (p.type === 'vote') {
+    body = `<div class="feed-event-card vote">🗳️ ${escHtml(p.contenu)}</div>`;
+  } else if (p.type === 'member') {
+    body = `<div class="feed-event-card member">👋 ${escHtml(p.contenu)}</div>`;
+  }
+
+  return `<div class="feed-post" id="post-${p.id}">
+    <div class="feed-post-header">
+      <div class="feed-post-av" style="background:${color};">${initiale}</div>
+      <div class="feed-post-meta">
+        <div class="feed-post-author">${escHtml(auteur)}</div>
+        <div class="feed-post-time">${time}</div>
+      </div>
+      ${isMine ? `<button class="btn btn-ghost btn-sm" style="padding:4px 6px;color:var(--text-3);" onclick="deleteFeedPost('${p.id}')">✕</button>` : ''}
+    </div>
+    ${body}
+    ${reactHtml ? `<div class="feed-reactions">${reactHtml}</div>` : ''}
+    <div class="feed-post-actions">
+      ${EMOJIS.slice(0,4).map(e =>
+        `<button class="feed-action-btn" onclick="toggleFeedReaction('${p.id}','${e}')">${e}</button>`
+      ).join('')}
+      <button class="feed-action-btn" onclick="toggleFeedComments('${p.id}')">
+        💬 Commenter
+      </button>
+    </div>
+    <div id="feed-comments-${p.id}" style="display:none;">
+      <div class="feed-comments" id="feed-comments-list-${p.id}"></div>
+      <div class="feed-comment-input-row" style="padding:0 0 4px;">
+        <div class="feed-compose-av" style="width:28px;height:28px;font-size:12px;background:${avatarColor(auteur)};">${initiale}</div>
+        <input class="feed-comment-input" id="feed-comment-input-${p.id}"
+          placeholder="Écrire un commentaire…"
+          onkeydown="if(event.key==='Enter'){event.preventDefault();sendFeedComment('${p.id}');}">
+        <button class="chat-send" style="width:34px;height:34px;flex-shrink:0;" onclick="sendFeedComment('${p.id}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
+        </button>
       </div>
     </div>
   </div>`;
-  await loadConversations();
-  startMsgRealtime();
 }
 
+async function publishFeedPost() {
+  const input = $('feed-input');
+  const contenu = input?.value.trim();
+  if (!contenu) return;
+  input.value = ''; input.style.height = 'auto';
+
+  const { error } = await sb.from('feed_posts').insert({
+    auteur_id: user.id, contenu, type: 'post'
+  });
+  if (error) { toast('Erreur publication', 'err'); return; }
+  // Optimistic
+  _msgState.feed.unshift({
+    id: 'tmp-' + Date.now(), auteur_id: user.id,
+    contenu, type: 'post', created_at: new Date().toISOString(),
+    profiles: { prenom: profile?.prenom, nom: profile?.nom, email: user.email }
+  });
+  renderFeed();
+}
+
+async function toggleFeedReaction(postId, emoji) {
+  const reacts = _msgState.feedReactions[postId] || [];
+  const existing = reacts.find(r => r.user_id === user.id && r.emoji === emoji);
+  if (existing) {
+    await sb.from('reactions').delete().eq('id', existing.id);
+    _msgState.feedReactions[postId] = reacts.filter(r => r.id !== existing.id);
+  } else {
+    const { data } = await sb.from('reactions').insert({
+      user_id: user.id, target_id: postId, target_type: 'post', emoji
+    }).select().single();
+    if (!_msgState.feedReactions[postId]) _msgState.feedReactions[postId] = [];
+    if (data) _msgState.feedReactions[postId].push(data);
+  }
+  // Re-render juste ce post
+  const postEl = $(`post-${postId}`);
+  const post = _msgState.feed.find(p => p.id === postId);
+  if (postEl && post) postEl.outerHTML = renderFeedPost(post);
+}
+
+async function toggleFeedComments(postId) {
+  const el = $(`feed-comments-${postId}`);
+  if (!el) return;
+  const isOpen = el.style.display !== 'none';
+  el.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) await loadFeedComments(postId);
+}
+
+async function loadFeedComments(postId) {
+  const listEl = $(`feed-comments-list-${postId}`);
+  if (!listEl) return;
+  const { data } = await sb.from('feed_posts')
+    .select('*, profiles(id,prenom,nom,email)')
+    .eq('reference_id', postId).eq('type', 'comment')
+    .order('created_at', { ascending: true });
+  if (!data?.length) { listEl.innerHTML = '<div style="padding:4px 0 8px;font-size:12px;color:var(--text-3);">Aucun commentaire</div>'; return; }
+  listEl.innerHTML = data.map(c => {
+    const auteur = c.profiles ? displayName(c.profiles.prenom, c.profiles.nom, c.profiles.email, 'Résident') : 'Résident';
+    const color = avatarColor(auteur);
+    return `<div class="feed-comment">
+      <div class="feed-comment-av" style="background:${color};">${auteur.charAt(0).toUpperCase()}</div>
+      <div class="feed-comment-bubble">
+        <div class="feed-comment-author">${escHtml(auteur)} <span style="font-weight:400;color:var(--text-3);">${depuisJours(c.created_at)}</span></div>
+        ${escHtml(c.contenu)}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function sendFeedComment(postId) {
+  const input = $(`feed-comment-input-${postId}`);
+  const contenu = input?.value.trim();
+  if (!contenu) return;
+  input.value = '';
+  await sb.from('feed_posts').insert({
+    auteur_id: user.id, contenu, type: 'comment', reference_id: postId
+  });
+  await loadFeedComments(postId);
+}
+
+async function deleteFeedPost(postId) {
+  if (!confirm('Supprimer ce post ?')) return;
+  await sb.from('feed_posts').delete().eq('id', postId);
+  _msgState.feed = _msgState.feed.filter(p => p.id !== postId);
+  renderFeed();
+}
+
+function startFeedRealtime() {
+  if (_msgState.feedChannel) return;
+  _msgState.feedChannel = sb.channel('feed-global')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'feed_posts' }, async payload => {
+      const p = payload.new;
+      if (p.type === 'comment') {
+        // Recharge les commentaires si ouverts
+        const listEl = $(`feed-comments-list-${p.reference_id}`);
+        if (listEl) loadFeedComments(p.reference_id);
+        return;
+      }
+      if (p.auteur_id === user.id) return; // déjà optimiste
+      // Charge le profil
+      const { data: prof } = await sb.from('profiles').select('id,prenom,nom,email').eq('id', p.auteur_id).single();
+      const post = { ...p, profiles: prof };
+      _msgState.feed.unshift(post);
+      if (_msgState.activeChanType === 'feed') renderFeed();
+      else toast('🏠 Nouveau post dans le fil', 'ok');
+    })
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'reactions' }, payload => {
+      const r = payload.new;
+      if (r.target_type === 'post' && r.user_id !== user.id) {
+        if (!_msgState.feedReactions[r.target_id]) _msgState.feedReactions[r.target_id] = [];
+        _msgState.feedReactions[r.target_id].push(r);
+        const post = _msgState.feed.find(p => p.id === r.target_id);
+        const postEl = $(`post-${r.target_id}`);
+        if (postEl && post) postEl.outerHTML = renderFeedPost(post);
+      }
+    })
+    .subscribe();
+}
+
+// Publie dans le feed depuis l'app (tickets, votes, membres)
+async function publishFeedEvent(type, contenu) {
+  await sb.from('feed_posts').insert({
+    auteur_id: user.id, contenu, type
+  }).catch(() => {});
+}
+
+// ── CANAUX DE DISCUSSION ──
 async function loadConversations() {
   const { data, error } = await sb.from('conversations').select('*').order('created_at');
   if (error) { console.warn('[msg] loadConversations:', error.message); return; }
   _msgState.conversations = data || [];
-  renderConvList();
-}
-
-async function renderConvList() {
-  const el = $('conv-items');
-  if (!el) return;
-  // Filtre selon rôle
-  const convs = filterConvsByRole(_msgState.conversations);
-  if (!convs.length) { el.innerHTML = '<div style="padding:20px;text-align:center;color:var(--text-3);">Aucune conversation</div>'; return; }
-
-  // Récupère les derniers messages en batch
-  const { data: lastMsgs } = await sb.from('messages')
-    .select('conversation_id, texte, created_at, auteur_id, profiles(prenom,nom)')
-    .order('created_at', { ascending: false });
-
-  const lastByConv = {};
-  (lastMsgs || []).forEach(m => { if (!lastByConv[m.conversation_id]) lastByConv[m.conversation_id] = m; });
-
-  // Non lus
-  const { data: membres } = await sb.from('conversation_membres')
-    .select('conversation_id, lu_jusqu_a').eq('user_id', user.id);
-  const luMap = {};
-  (membres || []).forEach(m => { luMap[m.conversation_id] = m.lu_jusqu_a; });
-
-  el.innerHTML = convs.map(c => {
-    const last = lastByConv[c.id];
-    const lastTxt = last ? ((last.auteur_id === user.id ? 'Vous : ' : (last.profiles ? displayName(last.profiles.prenom,last.profiles.nom,null,'')+'  : ' : '')) + last.texte) : 'Aucun message';
-    const lastTime = last ? depuisJours(last.created_at) : '';
-    const isActive = _msgState.activeConvId === c.id;
-    const luJusqua = luMap[c.id] ? new Date(luMap[c.id]) : new Date(0);
-    const unread = (lastMsgs || []).filter(m => m.conversation_id === c.id && new Date(m.created_at) > luJusqua && m.auteur_id !== user.id).length;
-    const emoji = c.titre.split(' ')[0];
-    const titre = c.titre.substring(c.titre.indexOf(' ') + 1);
-    return `<div class="conv-item ${isActive ? 'active' : ''}" onclick="openConv('${c.id}')">
-      <div class="conv-avatar ${c.type === 'prive' ? 'prive' : ''}">${emoji}</div>
-      <div class="conv-info">
-        <div class="conv-name">${titre}</div>
-        <div class="conv-last">${escHtml(lastTxt)}</div>
-      </div>
-      <div class="conv-meta">
-        <div class="conv-time">${lastTime}</div>
-        ${unread > 0 ? `<div class="conv-unread">${unread > 9 ? '9+' : unread}</div>` : ''}
-      </div>
-    </div>`;
-  }).join('');
-
-  // Badge messages dans nav
-  const totalUnread = Object.values(luMap).length > 0
-    ? convs.reduce((sum, c) => {
-        const luJusqua = luMap[c.id] ? new Date(luMap[c.id]) : new Date(0);
-        return sum + (lastMsgs || []).filter(m => m.conversation_id === c.id && new Date(m.created_at) > luJusqua && m.auteur_id !== user.id).length;
-      }, 0) : 0;
-  const ncm = $('nc-messages'); if (ncm) { ncm.textContent = totalUnread; ncm.style.display = totalUnread > 0 ? '' : 'none'; }
-  const bnm = $('bn-badge-messages'); if (bnm) { bnm.textContent = totalUnread > 9 ? '9+' : totalUnread; bnm.style.display = totalUnread > 0 ? 'flex' : 'none'; }
+  renderSidebarGroups();
+  renderSidebarDMs();
 }
 
 async function openConv(convId) {
   _msgState.activeConvId = convId;
-  const convList = $('conv-list');
-  const chatZone = $('chat-zone');
-  // Mobile : slide vers le chat
-  if (window.innerWidth <= 768) {
-    if (convList) convList.classList.add('hidden');
-    if (chatZone) chatZone.classList.add('visible');
-  }
-  renderConvList();
+  _msgState.activeChanType = _msgState.conversations.find(c=>c.id===convId)?.type === 'prive' ? 'dm' : 'chan';
+
+  // Update sidebar
+  document.querySelectorAll('.msg-chan-item,.msg-dm-item').forEach(el => el.classList.remove('active'));
+  $(`chan-feed`)?.classList.remove('active');
+  $(`chan-${convId}`)?.classList.add('active');
+
+  // Mobile
+  mobileShowMain();
+
   const conv = _msgState.conversations.find(c => c.id === convId);
   if (!conv) return;
-  const emoji = conv.titre.split(' ')[0];
-  const titre = conv.titre.substring(conv.titre.indexOf(' ') + 1);
-  const chatEl = $('chat-zone');
-  if (!chatEl) return;
-  chatEl.innerHTML = `
-    <div class="chat-header">
-      <button class="chat-back" onclick="backToConvList()">←</button>
-      <div class="chat-header-av">${emoji}</div>
+  const emoji = conv.titre?.split(' ')[0] || '💬';
+  const titre = conv.titre?.substring(conv.titre.indexOf(' ') + 1) || conv.titre;
+  const isPrive = conv.type === 'prive';
+
+  const main = $('msg-main');
+  if (!main) return;
+  main.innerHTML = `
+    <div class="msg-chan-header">
+      <button class="msg-back-btn" onclick="mobileShowSidebar()">←</button>
+      <div style="font-size:20px;margin-right:2px;">${emoji}</div>
       <div class="chat-header-info">
-        <div class="chat-header-name">${titre}</div>
-        <div class="chat-header-sub" id="chat-members-count">…</div>
+        <div class="msg-chan-title">${escHtml(titre)}</div>
+        <div class="msg-chan-desc" id="chat-members-count">${isPrive ? '🔒 Conversation privée' : 'Canal'}</div>
       </div>
     </div>
     <div class="chat-messages" id="chat-messages">
       <div style="text-align:center;padding:24px;color:var(--text-3);font-size:13px;">Chargement…</div>
     </div>
+    <div class="msg-reply-bar" id="msg-reply-bar" style="display:none;">
+      <span style="color:var(--text-3);">↩️ Répondre à</span>
+      <div class="msg-reply-bar-content" id="msg-reply-bar-content"></div>
+      <button class="msg-reply-bar-close" onclick="clearReply()">✕</button>
+    </div>
+    <div class="chat-typing" id="chat-typing"></div>
     <div class="chat-input-bar">
       <div class="chat-input-wrap">
-        <textarea class="chat-input" id="chat-input" placeholder="Message… (@ pour mentionner)" rows="1"
+        <textarea class="chat-input" id="chat-input" placeholder="Message…" rows="1"
           oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';onChatInput(event);"
           onkeydown="if(event.key==='Enter'&&!event.shiftKey&&window.innerWidth>768){event.preventDefault();sendMessage();}"></textarea>
         <div id="chat-mention-list" class="chat-mention-pop" style="display:none;"></div>
@@ -7130,40 +7703,62 @@ async function openConv(convId) {
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22,2 15,22 11,13 2,9"/></svg>
       </button>
     </div>`;
+
   await loadMessages(convId);
   markConvRead(convId);
 }
 
-function backToConvList() {
-  _msgState.activeConvId = null;
-  const convList = $('conv-list');
-  const chatZone = $('chat-zone');
-  if (convList) convList.classList.remove('hidden');
-  if (chatZone) chatZone.classList.remove('visible');
-  renderConvList();
+function mobileShowMain() {
+  const sidebar = $('msg-sidebar');
+  const main = $('msg-main');
+  if (window.innerWidth <= 768) {
+    if (sidebar) sidebar.classList.add('hidden');
+    if (main) main.classList.add('visible');
+  }
 }
 
+function mobileShowSidebar() {
+  const sidebar = $('msg-sidebar');
+  const main = $('msg-main');
+  if (sidebar) sidebar.classList.remove('hidden');
+  if (main) main.classList.remove('visible');
+  _msgState.activeConvId = null;
+}
+
+// ── MESSAGES ──
 async function loadMessages(convId) {
   const { data, error } = await sb.from('messages')
-    .select('*, profiles(nom, prenom)')
+    .select('*, profiles(nom, prenom), reply:reply_to_id(texte, profiles(prenom,nom))')
     .eq('conversation_id', convId)
     .order('created_at', { ascending: true })
     .limit(100);
   if (error) { console.warn('[msg] loadMessages:', error.message); return; }
   _msgState.messages = data || [];
-  renderMessages_bubbles();
+
+  // Charge les réactions des messages
+  const msgIds = (data||[]).map(m => m.id).filter(id => !id.startsWith('tmp-'));
+  if (msgIds.length) {
+    const { data: reacts } = await sb.from('reactions')
+      .select('*').in('target_id', msgIds).eq('target_type', 'message');
+    _msgState.msgReactions = {};
+    (reacts||[]).forEach(r => {
+      if (!_msgState.msgReactions[r.target_id]) _msgState.msgReactions[r.target_id] = [];
+      _msgState.msgReactions[r.target_id].push(r);
+    });
+  }
+
+  renderMessageBubbles();
 }
 
-function renderMessages_bubbles() {
+function renderMessageBubbles() {
   const el = $('chat-messages');
   if (!el) return;
   const msgs = _msgState.messages;
   if (!msgs.length) {
-    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-3);">Aucun message<br>Soyez le premier ! 👋</div>';
+    el.innerHTML = '<div style="text-align:center;padding:48px 24px;"><div style="font-size:40px;margin-bottom:10px;">👋</div><div style="font-size:14px;color:var(--text-3);">Soyez le premier à écrire !</div></div>';
     return;
   }
-  let lastDate = null;
-  let lastAuteur = null;
+  let lastDate = null, lastAuteur = null;
   const html = [];
   msgs.forEach(m => {
     const isMine = m.auteur_id === user.id;
@@ -7172,14 +7767,48 @@ function renderMessages_bubbles() {
     const dateStr = d.toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
     const timeStr = d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
     const showSender = !isMine && auteur !== lastAuteur;
+
     if (dateStr !== lastDate) {
       lastDate = dateStr; lastAuteur = null;
       html.push(`<div class="msg-date-sep">${dateStr}</div>`);
     }
-    const texteHtml = escHtml(m.texte).replace(/@(\S+)/g, '<span class="msg-mention-tag">@$1</span>');
-    html.push(`<div class="msg-group ${isMine ? 'mine' : 'theirs'}">
-      ${showSender ? `<div class="msg-sender-name">${auteur}</div>` : ''}
-      <div class="msg-bubble ${isMine ? 'mine' : 'theirs'}">${texteHtml}</div>
+
+    // Reply preview
+    let replyHtml = '';
+    if (m.reply) {
+      const replyAuteur = m.reply.profiles ? displayName(m.reply.profiles.prenom, m.reply.profiles.nom, null, '?') : '?';
+      replyHtml = `<div class="msg-reply-preview">↩️ ${escHtml(replyAuteur)} : ${escHtml((m.reply.texte||'').substring(0,60))}</div>`;
+    }
+
+    // Réactions
+    const reacts = (_msgState.msgReactions || {})[m.id] || [];
+    const rGroups = {};
+    reacts.forEach(r => {
+      if (!rGroups[r.emoji]) rGroups[r.emoji] = { count:0, mine:false };
+      rGroups[r.emoji].count++;
+      if (r.user_id === user.id) rGroups[r.emoji].mine = true;
+    });
+    const reactHtml = Object.entries(rGroups).map(([e, d]) =>
+      `<div class="msg-reaction ${d.mine?'mine':''}" onclick="toggleMsgReaction('${m.id}','${e}')">
+        <span>${e}</span><span class="msg-reaction-count">${d.count}</span>
+      </div>`
+    ).join('');
+
+    const texteHtml = escHtml(m.texte||'').replace(/@(\S+)/g, '<span class="msg-mention-tag">@$1</span>');
+
+    html.push(`<div class="msg-group ${isMine?'mine':'theirs'}" id="msg-${m.id}">
+      ${showSender ? `<div class="msg-sender-name">${escHtml(auteur)}</div>` : ''}
+      <div style="position:relative;">
+        <div class="msg-bubble ${isMine?'mine':'theirs'}">
+          ${replyHtml}
+          ${texteHtml}
+        </div>
+        <div class="msg-actions">
+          ${EMOJIS.slice(0,3).map(e => `<button class="msg-action-btn" onclick="toggleMsgReaction('${m.id}','${e}')">${e}</button>`).join('')}
+          <button class="msg-action-btn" title="Répondre" onclick="setReply('${m.id}','${escHtml(auteur)}','${escHtml((m.texte||'').substring(0,50)).replace(/'/g,"\\'")}')">↩️</button>
+        </div>
+      </div>
+      ${reactHtml ? `<div class="msg-reactions">${reactHtml}</div>` : ''}
       <div class="msg-time-row">${timeStr}</div>
     </div>`);
     lastAuteur = auteur;
@@ -7188,82 +7817,98 @@ function renderMessages_bubbles() {
   requestAnimationFrame(() => { el.scrollTop = el.scrollHeight; });
 }
 
-function escHtml(t) { return (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>'); }
+function setReply(msgId, auteur, texte) {
+  _msgState.replyTo = { id: msgId, auteur, texte };
+  const bar = $('msg-reply-bar');
+  const content = $('msg-reply-bar-content');
+  if (bar) bar.style.display = 'flex';
+  if (content) content.textContent = `${auteur} : ${texte}`;
+  $('chat-input')?.focus();
+}
+
+function clearReply() {
+  _msgState.replyTo = null;
+  const bar = $('msg-reply-bar');
+  if (bar) bar.style.display = 'none';
+}
+
+async function toggleMsgReaction(msgId, emoji) {
+  if (!_msgState.msgReactions) _msgState.msgReactions = {};
+  const reacts = _msgState.msgReactions[msgId] || [];
+  const existing = reacts.find(r => r.user_id === user.id && r.emoji === emoji);
+  if (existing) {
+    await sb.from('reactions').delete().eq('id', existing.id);
+    _msgState.msgReactions[msgId] = reacts.filter(r => r.id !== existing.id);
+  } else {
+    const { data } = await sb.from('reactions').insert({
+      user_id: user.id, target_id: msgId, target_type: 'message', emoji
+    }).select().single();
+    if (!_msgState.msgReactions[msgId]) _msgState.msgReactions[msgId] = [];
+    if (data) _msgState.msgReactions[msgId].push(data);
+  }
+  renderMessageBubbles();
+}
 
 async function sendMessage() {
   const input = $('chat-input');
   const texte = input?.value.trim();
   if (!texte || !_msgState.activeConvId) return;
   input.value = ''; input.style.height = 'auto';
-  const { error } = await sb.from('messages').insert({
-    conversation_id: _msgState.activeConvId,
-    auteur_id: user.id,
-    texte
-  });
-  if (error) { toast('Erreur envoi', 'err'); return; }
-  // Notifs @mentions
-  if (_msgState.pendingMentions?.length) {
-    const conv = _msgState.conversations.find(c => c.id === _msgState.activeConvId);
-    const auteurNom = displayNameFromProfile(profile, user?.email);
-    for (const m of _msgState.pendingMentions) {
-      await sb.from('notifications').insert({
-        destinataire_id: m.userId,
-        sujet: `🏷 ${auteurNom} vous a mentionné dans ${conv?.titre || 'un message'}`,
-        corps: texte,
-        type: 'mention',
-        reference_id: _msgState.activeConvId,
-        lu: false
-      });
-    }
-    _msgState.pendingMentions = [];
-  }
-  // Optimistic UI — on ajoute localement sans attendre realtime
-  _msgState.messages.push({
-    id: 'tmp-' + Date.now(),
+
+  const payload = {
     conversation_id: _msgState.activeConvId,
     auteur_id: user.id,
     texte,
+    reply_to_id: _msgState.replyTo?.id || null,
+    reply_preview: _msgState.replyTo ? `${_msgState.replyTo.auteur} : ${_msgState.replyTo.texte}` : null,
+  };
+
+  clearReply();
+
+  const { error } = await sb.from('messages').insert(payload);
+  if (error) { toast('Erreur envoi', 'err'); return; }
+
+  // Optimistic
+  _msgState.messages.push({
+    ...payload, id: 'tmp-' + Date.now(),
     created_at: new Date().toISOString(),
-    profiles: { prenom: profile?.prenom, nom: profile?.nom }
+    profiles: { prenom: profile?.prenom, nom: profile?.nom },
+    reply: _msgState.replyTo ? { texte: _msgState.replyTo.texte, profiles: { prenom: _msgState.replyTo.auteur } } : null,
   });
-  renderMessages_bubbles();
+  renderMessageBubbles();
   markConvRead(_msgState.activeConvId);
 }
 
 async function markConvRead(convId) {
   await sb.from('conversation_membres').upsert({
-    conversation_id: convId,
-    user_id: user.id,
+    conversation_id: convId, user_id: user.id,
     lu_jusqu_a: new Date().toISOString()
   }, { onConflict: 'conversation_id,user_id' });
-  renderConvList();
 }
 
+// ── REALTIME MESSAGES ──
 function startMsgRealtime() {
   if (_msgState.channel) return;
   _msgState.channel = sb.channel('messages-global')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, payload => {
       const m = payload.new;
-      // Si c'est la conv active → ajoute la bulle
       if (m.conversation_id === _msgState.activeConvId && m.auteur_id !== user.id) {
-        // Charge le profil de l'auteur
         sb.from('profiles').select('nom,prenom').eq('id', m.auteur_id).single().then(({ data }) => {
-          // Enlève le message optimiste si même texte
           _msgState.messages = _msgState.messages.filter(x => !x.id.startsWith('tmp-'));
           _msgState.messages.push({ ...m, profiles: data });
-          renderMessages_bubbles();
+          renderMessageBubbles();
           markConvRead(m.conversation_id);
         });
       } else if (m.auteur_id !== user.id) {
-        // Notif pour autre conv
-        renderConvList();
+        renderSidebarGroups();
+        renderSidebarDMs();
         toast('💬 Nouveau message', 'ok');
-        pushNotif('Nouveau message', m.texte?.substring(0, 80) || '', 'commentaire', null);
       }
     })
     .subscribe();
 }
 
+// ── MENTIONS ──
 async function onChatInput(e) {
   const ta = e.target;
   const val = ta.value;
@@ -7272,28 +7917,10 @@ async function onChatInput(e) {
   const atMatch = before.match(/@(\w*)$/);
   const ml = $('chat-mention-list');
   if (!atMatch) { if (ml) ml.style.display = 'none'; return; }
-
   const query = atMatch[1].toLowerCase();
-  // Charge membres de la conv active
-  const { data: membres } = await sb.from('conversation_membres')
-    .select('user_id, profiles(id,nom,prenom,role)')
-    .eq('conversation_id', _msgState.activeConvId);
-
-  const matches = (membres||[])
-    .map(m => m.profiles)
-    .filter(p => p && p.id !== user.id && (
-      (p.prenom||'').toLowerCase().startsWith(query) ||
-      (p.nom||'').toLowerCase().startsWith(query)
-    )).slice(0, 5);
-
-  // Si pas de membres enregistrés → cherche dans profiles (groupes ouverts)
-  let list = matches;
-  if (!list.length && query.length >= 1) {
-    const { data: profs } = await sb.from('profiles').select('id,nom,prenom,role')
-      .or(`prenom.ilike.${query}%,nom.ilike.${query}%`).neq('id', user.id).limit(5);
-    list = profs || [];
-  }
-
+  const { data: profs } = await sb.from('profiles').select('id,nom,prenom,role')
+    .or(`prenom.ilike.${query}%,nom.ilike.${query}%`).neq('id', user.id).limit(5);
+  const list = profs || [];
   if (!ml || !list.length) { if (ml) ml.style.display = 'none'; return; }
   const roleL = { administrateur:'Admin', syndic:'Syndic', membre_cs:'CS', 'copropriétaire':'Copro' };
   ml.innerHTML = list.map(p => `
@@ -7313,48 +7940,87 @@ function insertChatMention(userId, prenom, nom) {
   if (!ta) return;
   const val = ta.value;
   const cursor = ta.selectionStart;
-  const before = val.substring(0, cursor);
-  const after = val.substring(cursor);
   const name = displayName(prenom, nom, null, prenom);
-  const newBefore = before.replace(/@\w*$/, `@${name} `);
-  ta.value = newBefore + after;
+  const newBefore = val.substring(0, cursor).replace(/@\w*$/, `@${name} `);
+  ta.value = newBefore + val.substring(cursor);
   ta.focus();
   if (ml) ml.style.display = 'none';
-  // Stocke mention pour notif à l'envoi
   if (!_msgState.pendingMentions) _msgState.pendingMentions = [];
   _msgState.pendingMentions.push({ userId, name });
 }
 
-// Filtre les conversations selon le rôle
+// ── DM PRIVÉ ──
+async function openNewDM() {
+  const { data: users } = await sb.from('profiles')
+    .select('id,nom,prenom,email').eq('actif', true).neq('id', user.id).order('prenom');
+  if (!users?.length) { toast('Aucun autre utilisateur', 'warn'); return; }
+
+  // Modale de sélection
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay open';
+  overlay.id = 'dm-modal';
+  overlay.innerHTML = `<div class="modal" style="max-width:400px;">
+    <div class="mh"><span class="mh-title">💬 Nouveau message privé</span>
+      <button class="mclose" onclick="$('dm-modal').remove()">×</button></div>
+    <div class="mb">
+      <input class="input" id="dm-search" placeholder="Rechercher un résident…"
+        oninput="filterDMList()" style="margin-bottom:12px;">
+      <div id="dm-user-list">
+        ${users.map(u => {
+          const nom = displayName(u.prenom, u.nom, u.email, 'Résident');
+          const color = avatarColor(nom);
+          return `<div class="msg-dm-item" style="padding:8px 4px;border-radius:8px;" onclick="startDM('${u.id}','${nom.replace(/'/g,"\\'")}')">
+            <div class="msg-dm-av" style="background:${color};width:36px;height:36px;font-size:14px;">${nom.charAt(0).toUpperCase()}</div>
+            <div>
+              <div style="font-weight:600;font-size:14px;">${escHtml(nom)}</div>
+              <div style="font-size:11px;color:var(--text-3);">${u.email}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+function filterDMList() {
+  const q = $('dm-search')?.value.toLowerCase() || '';
+  document.querySelectorAll('#dm-user-list .msg-dm-item').forEach(el => {
+    el.style.display = el.textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+async function startDM(targetId, targetNom) {
+  $('dm-modal')?.remove();
+  // Vérifie si un DM existe déjà
+  const existing = _msgState.conversations.find(c =>
+    c.type === 'prive' && (c.membre_a === targetId || c.membre_b === targetId)
+  );
+  if (existing) { openConv(existing.id); return; }
+
+  const titre = `🔒 ${targetNom}`;
+  const { data: conv } = await sb.from('conversations')
+    .insert({ titre, type: 'prive', created_by: user.id, membre_a: user.id, membre_b: targetId })
+    .select().single();
+  if (conv) {
+    await sb.from('conversation_membres').insert([
+      { conversation_id: conv.id, user_id: user.id },
+      { conversation_id: conv.id, user_id: targetId }
+    ]);
+    await loadConversations();
+    openConv(conv.id);
+  }
+}
+
 function filterConvsByRole(convs) {
   return convs.filter(c => {
-    if (c.titre.includes('Conseil Syndical')) {
+    if (c.titre?.includes('Conseil Syndical')) {
       return ['administrateur','syndic','membre_cs'].includes(profile?.role);
     }
     return true;
   });
 }
 
-async function newPrivateConv() {
-  // Charge la liste des utilisateurs
-  const { data: users } = await sb.from('profiles').select('id,nom,prenom,email').eq('actif', true).neq('id', user.id);
-  if (!users?.length) { toast('Aucun autre utilisateur', 'warn'); return; }
-  const list = users.map(u => `${displayName(u.prenom,u.nom,u.email)} <${u.email}>`).join('\n');
-  const choice = prompt(`Démarrer une conversation privée avec :\n(entrez l'email)\n\n${list}`);
-  if (!choice) return;
-  const target = users.find(u => u.email.toLowerCase().includes(choice.toLowerCase()) || [u.prenom,u.nom].join(' ').toLowerCase().includes(choice.toLowerCase()));
-  if (!target) { toast('Utilisateur non trouvé', 'err'); return; }
-  const titre = `🔒 ${displayName(target.prenom,target.nom,target.email)}`;
-  const { data: conv } = await sb.from('conversations').insert({ titre, type: 'prive', created_by: user.id }).select().single();
-  if (conv) {
-    await sb.from('conversation_membres').insert([
-      { conversation_id: conv.id, user_id: user.id },
-      { conversation_id: conv.id, user_id: target.id }
-    ]);
-    await loadConversations();
-    openConv(conv.id);
-  }
-}
 
 // ── INIT — Restaure la session si elle existe ──
 (async () => {
