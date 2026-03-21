@@ -2,7 +2,7 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#111827">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -116,16 +116,25 @@
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-html { -webkit-tap-highlight-color: transparent; }
+html {
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+  /* Empêche le zoom au double-tap sur iOS */
+  touch-action: manipulation;
+}
 
 body {
   font-family: var(--font-body);
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  min-height: 100dvh; /* dynamic viewport height iOS Safari */
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+  /* Évite le rebond iOS */
+  overscroll-behavior-y: none;
 }
 
 /* ── LAYOUT ── */
@@ -697,79 +706,145 @@ tbody tr:hover td { background: var(--bg); }
 }
 
 @media (max-width: 480px) {
-  /* ── Topbar mobile ── */
-  #topbar { padding: 0 12px; height: 52px; }
-  .topbar-title { font-size: 15px; }
 
-  /* ── Page padding ── */
-  #page { padding: 12px 12px 90px; }
+  /* ── BASE — empêche tout débordement ── */
+  #app, #main, #page, .card, .modal, .overlay { max-width: 100vw; overflow-x: hidden; }
 
-  /* ── Stats : 2 colonnes compactes ── */
-  .stats-row { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
-  .stat { padding: 12px 14px; border-radius: var(--r-md); }
-  .stat-num { font-size: 26px; }
+  /* ── TOPBAR ── */
+  #topbar {
+    padding: 0 10px;
+    height: 52px;
+    gap: 6px;
+  }
+  .topbar-title { font-size: 14px; }
+  /* Cache le bouton "Signaler" dans la topbar — il est dans la bottom nav */
+  #topbar .btn.btn-primary { display: none; }
+
+  /* ── PAGE ── */
+  #page { padding: 10px 10px 90px; }
+
+  /* ── PAGE HEADER ── */
+  .ph h1 { font-size: 20px; }
+  .ph { margin-bottom: 12px; }
+  .ph p { font-size: 12px; }
+
+  /* ── STATS : 2 colonnes compactes ── */
+  .stats-row { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .stat { padding: 12px 10px; border-radius: var(--r-md); }
+  .stat-num { font-size: 24px; }
   .stat-label { font-size: 11px; }
   .stat-sub { display: none; }
 
-  /* ── Cards ── */
+  /* ── CARDS ── */
   .card { border-radius: var(--r-md); }
-  .card-header { padding: 12px 14px; }
+  .card-header { padding: 10px 12px; gap: 6px; }
+  .card-body { padding: 12px; }
+  .card-title { font-size: 13px; }
 
-  /* ── TABLE → CARDS sur mobile ── */
+  /* ── GRILLES ── */
+  .g2, .g3, .fg-row, .fg-row-3 { grid-template-columns: 1fr !important; gap: 10px; }
+  .doc-grid { grid-template-columns: 1fr !important; }
+  .features-grid { grid-template-columns: 1fr !important; }
+
+  /* ── TABLEAUX → CARDS ── */
+  .tbl-wrap { overflow-x: hidden; }
+  .tbl-wrap table { min-width: unset; width: 100%; }
   .tbl-wrap table thead { display: none; }
   .tbl-wrap table, .tbl-wrap tbody, .tbl-wrap tr, .tbl-wrap td { display: block; width: 100%; }
   .tbl-wrap tr {
     border: 1px solid var(--border);
     border-radius: var(--r-md);
     margin-bottom: 8px;
-    padding: 12px;
+    padding: 10px 12px;
     background: var(--surface);
     position: relative;
   }
-  .tbl-wrap tr:last-child { margin-bottom: 0; }
-  .tbl-wrap td {
-    padding: 2px 0;
-    border: none;
-    font-size: 13px;
-  }
-  .tbl-wrap td:last-child { display: none; } /* cache bouton "Voir →" */
-  .tbl-wrap td:first-child div:first-child { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .tbl-wrap td { padding: 2px 0; border: none; font-size: 13px; }
+  .tbl-wrap td:last-child { display: none; }
+  .tbl-wrap td:first-child div:first-child { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
 
-  /* ── Filtres en colonne ── */
+  /* ── FILTRES ── */
   .fbar { flex-direction: column; gap: 8px; }
-  .fbar input, .fbar select { width: 100% !important; max-width: 100% !important; box-sizing: border-box; }
+  .fbar input, .fbar select { width: 100% !important; max-width: 100% !important; }
   .fbar .btn-primary { width: 100%; justify-content: center; }
 
-  /* ── Bottom nav bar ── */
+  /* ── FORMULAIRES ── */
+  .input, .select, .textarea { font-size: 16px !important; } /* 16px = pas de zoom auto iOS */
+
+  /* ── BOTTOM NAV ── */
   #bottom-nav {
     display: flex !important;
     position: fixed; bottom: 0; left: 0; right: 0;
     height: 60px; background: var(--surface);
     border-top: 1px solid var(--border);
-    z-index: 150; padding-bottom: env(safe-area-inset-bottom);
+    z-index: 150;
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-bottom: max(env(safe-area-inset-bottom), 0px);
   }
+  .bn-item { font-size: 10px; }
+  .bn-item svg { width: 20px; height: 20px; }
 
-  /* ── Modal plein écran sur mobile ── */
-  .modal-wrap { align-items: flex-end; padding: 0; }
+  /* ── MODALS → plein écran bas ── */
+  .overlay { align-items: flex-end; padding: 0; }
   .modal {
-    width: 100% !important; max-width: 100% !important;
+    width: 100vw !important;
+    max-width: 100vw !important;
     border-radius: var(--r-lg) var(--r-lg) 0 0 !important;
-    max-height: 92vh;
+    max-height: 92dvh;
+    overflow-y: auto;
   }
+  .mh { padding: 14px 16px; position: sticky; top: 0; background: var(--surface); z-index: 1; }
+  .mb { padding: 12px 16px; }
+  .mf { padding: 10px 16px; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
 
-  /* ── Formulaire ticket ── */
-  .cat-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; }
-  .cat-opt { padding: 10px 6px !important; font-size: 11px !important; }
+  /* ── BOUTONS : zone tactile minimum 44px ── */
+  .btn { min-height: 40px; }
+  .btn-sm { min-height: 34px; }
+  .mclose { width: 36px; height: 36px; font-size: 20px; }
 
-  /* ── Page header ── */
-  .ph h1 { font-size: 22px; }
-  .ph { margin-bottom: 14px; }
+  /* ── CATÉGORIES TICKETS ── */
+  .cat-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 6px !important; }
+  .cat-opt { padding: 10px 4px !important; font-size: 10px !important; }
 
-  /* ── Signalements récents dashboard ── */
-  .act-item { padding: 10px 12px !important; }
+  /* ── URGENCES ── */
+  .urgency-grid { grid-template-columns: 1fr 1fr 1fr; gap: 6px; }
+  .urgency-opt { padding: 10px 6px; font-size: 12px; }
 
-  /* ── Texte tronqué ── */
-  .act-txt { max-width: 180px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* ── DASHBOARD WIDGETS ── */
+  .act-item { padding: 8px 10px !important; }
+  .act-txt { max-width: calc(100vw - 130px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* ── META STRIP TICKETS ── */
+  .meta-strip { flex-wrap: wrap; gap: 6px; }
+  .meta-item { font-size: 12px; }
+
+  /* ── CONTACTS ── */
+  .contact-card { padding: 10px 12px; }
+  .contact-ico { width: 36px; height: 36px; font-size: 18px; }
+
+  /* ── VOTES ── */
+  .vote-card { padding: 14px; }
+  .vote-titre { font-size: 14px; }
+
+  /* ── PROFIL ── */
+  .fg-row { grid-template-columns: 1fr !important; }
+
+  /* ── ONBOARDING ── */
+  .onboarding-box { width: calc(100vw - 24px); max-height: 90dvh; overflow-y: auto; }
+  .onboarding-step { padding: 20px 16px; }
+  .onboarding-ico { font-size: 44px; }
+  .onboarding-title { font-size: 18px; }
+
+  /* ── SEARCH ── */
+  .search-box { width: calc(100vw - 32px) !important; max-width: 100% !important; }
+
+  /* ── RAPPORT ── */
+  .rapport-summary { padding: 14px; }
+
+  /* ── DOCUMENT CARDS ── */
+  .doc-card { padding: 12px 14px; }
+  .doc-cats { gap: 6px; }
+  .doc-cat-btn { padding: 6px 10px; font-size: 12px; }
 }
 
 @media print {
