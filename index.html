@@ -987,7 +987,210 @@ tbody tr:hover td { background: var(--bg); }
 }
 @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
 
-/* ── ROLE BADGE ── */
+/* ── DARK MODE — Overrides contraste ── */
+[data-theme="dark"] .btn-primary {
+  background: #e8e5df;
+  color: #1a1917;
+  border-color: #e8e5df;
+}
+[data-theme="dark"] .btn-primary:hover {
+  background: #f0ede8;
+  border-color: #f0ede8;
+}
+[data-theme="dark"] .btn-secondary {
+  background: #2a2825;
+  color: #e8e5df;
+  border-color: #3d3b37;
+}
+[data-theme="dark"] .btn-secondary:hover {
+  background: #333128;
+  border-color: #4a4840;
+}
+[data-theme="dark"] .btn-ghost {
+  color: #a8a49e;
+}
+[data-theme="dark"] .btn-ghost:hover {
+  color: #e8e5df;
+  background: #2a2825;
+}
+[data-theme="dark"] .btn-danger {
+  background: #2a1212;
+  color: #f87171;
+  border-color: #7f1d1d;
+}
+[data-theme="dark"] .input,
+[data-theme="dark"] .select,
+[data-theme="dark"] .textarea {
+  background: #1a1917;
+  border-color: #3d3b37;
+  color: #f0ede8;
+}
+[data-theme="dark"] .input:focus,
+[data-theme="dark"] .select:focus,
+[data-theme="dark"] .textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59,130,246,.15);
+}
+[data-theme="dark"] .input::placeholder,
+[data-theme="dark"] .textarea::placeholder {
+  color: #4a4840;
+}
+[data-theme="dark"] .card {
+  background: #1c1b19;
+  border-color: #2e2c29;
+}
+[data-theme="dark"] .card-header {
+  background: #1c1b19;
+  border-color: #2e2c29;
+}
+[data-theme="dark"] tbody tr:hover td {
+  background: #222120;
+}
+[data-theme="dark"] .stat {
+  background: #1c1b19;
+  border-color: #2e2c29;
+}
+/* Badges — assez contrastés en dark */
+[data-theme="dark"] .badge-nouveau {
+  background: #2d1f4a;
+  color: #c4b5fd;
+  border-color: #4c1d95;
+}
+[data-theme="dark"] .badge-clos {
+  background: #222120;
+  color: #6b6760;
+  border-color: #3d3b37;
+}
+/* Sidebar */
+[data-theme="dark"] #sidebar {
+  background: #161513;
+  border-color: #2e2c29;
+}
+[data-theme="dark"] .sidebar-brand {
+  border-color: #2e2c29;
+}
+[data-theme="dark"] .nav-item:hover,
+[data-theme="dark"] .nav-item.active {
+  background: #2a2825;
+}
+/* Topbar */
+[data-theme="dark"] #topbar {
+  background: #161513;
+  border-color: #2e2c29;
+}
+/* Bottom nav */
+[data-theme="dark"] #bottom-nav {
+  background: #161513;
+  border-color: #2e2c29;
+}
+/* Modal */
+[data-theme="dark"] .modal {
+  background: #1c1b19;
+}
+[data-theme="dark"] .mh {
+  background: #1c1b19;
+  border-color: #2e2c29;
+}
+[data-theme="dark"] .mf {
+  border-color: #2e2c29;
+  background: #1c1b19;
+}
+/* Notif panel */
+[data-theme="dark"] .notif-panel {
+  background: #1c1b19;
+  border-color: #2e2c29;
+}
+[data-theme="dark"] .notif-btn {
+  background: #222120;
+  border-color: #3d3b37;
+  color: #a8a49e;
+}
+/* Tables */
+[data-theme="dark"] table thead th {
+  background: #1a1917;
+  color: #6b6760;
+  border-color: #2e2c29;
+}
+[data-theme="dark"] table td {
+  border-color: #2e2c29;
+}
+/* Cat opts */
+[data-theme="dark"] .cat-opt {
+  background: #222120;
+  border-color: #3d3b37;
+  color: #a8a49e;
+}
+[data-theme="dark"] .cat-opt:hover {
+  background: #2a2825;
+  border-color: #4a4840;
+  color: #e8e5df;
+}
+[data-theme="dark"] .urgency-opt {
+  background: #222120;
+  border-color: #3d3b37;
+  color: #a8a49e;
+}
+/* Search */
+[data-theme="dark"] .search-box {
+  background: #1c1b19;
+  border-color: #3d3b37;
+}
+/* Rapport summary */
+[data-theme="dark"] .rapport-summary {
+  background: #1a1917;
+  border-color: #2e2c29;
+}
+/* Doc cards */
+[data-theme="dark"] .doc-card {
+  background: #1c1b19;
+  border-color: #2e2c29;
+}
+[data-theme="dark"] .doc-cat-btn {
+  background: #1c1b19;
+  border-color: #3d3b37;
+  color: #a8a49e;
+}
+[data-theme="dark"] .doc-cat-btn.active {
+  background: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
+}
+/* Vote cards */
+[data-theme="dark"] .vote-card {
+  background: #1c1b19;
+  border-color: #2e2c29;
+}
+[data-theme="dark"] .vote-option {
+  border-color: #3d3b37;
+}
+[data-theme="dark"] .vote-option:hover {
+  background: #172035;
+  border-color: #3b82f6;
+}
+/* Contact cards */
+[data-theme="dark"] .contact-card {
+  background: #1c1b19;
+  border-color: #2e2c29;
+}
+/* Onboarding */
+[data-theme="dark"] .onboarding-box {
+  background: #1c1b19;
+}
+[data-theme="dark"] .onboarding-step {
+  background: #1c1b19;
+}
+[data-theme="dark"] .onboarding-footer {
+  background: #1c1b19;
+  border-color: #2e2c29;
+}
+/* Login screen */
+[data-theme="dark"] #login-screen {
+  background: #111110;
+}
+[data-theme="dark"] .login-box {
+  background: #1c1b19;
+  border-color: #2e2c29;
+}
 .role-pill {
   display: inline-block; padding: 2px 8px; border-radius: 20px;
   font-size: 10.5px; font-weight: 700; text-transform: uppercase;
