@@ -84,34 +84,45 @@
 
 /* ── MODE SOMBRE ── */
 [data-theme="dark"] {
-  --bg: #0f0f0f;
-  --surface: #1a1a1a;
-  --surface-2: #222222;
-  --border: #2e2e2e;
-  --border-strong: #404040;
+  --bg: #111110;
+  --surface: #1c1b19;
+  --surface-2: #242320;
+  --border: #2e2c29;
+  --border-strong: #3d3b37;
 
   --text: #f0ede8;
   --text-2: #a8a49e;
   --text-3: #6b6760;
 
   --accent: #3b82f6;
-  --accent-light: #1e3a5f;
+  --accent-light: #172035;
   --accent-hover: #2563eb;
 
-  --red-light: #2d1515;
+  --red: #f87171;
+  --red-light: #2a1212;
   --red-border: #7f1d1d;
 
-  --orange-light: #2d1a0a;
+  --orange: #fb923c;
+  --orange-light: #2a1608;
   --orange-border: #7c2d12;
 
-  --green-light: #0d2d1a;
+  --green: #4ade80;
+  --green-light: #0d2a18;
   --green-border: #14532d;
 
-  --amber-light: #2d2200;
+  --amber: #fbbf24;
+  --amber-light: #2a1f00;
   --amber-border: #78350f;
 
-  --blue-light: #1e2d4a;
-  --blue-border: #1e40af;
+  --blue-light: #172035;
+  --blue-border: #1e3a5f;
+
+  --violet: #a78bfa;
+
+  /* Ombres dark */
+  --shadow: 0 1px 3px rgba(0,0,0,.4);
+  --shadow-md: 0 4px 16px rgba(0,0,0,.5);
+  --shadow-lg: 0 20px 40px rgba(0,0,0,.6);
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -549,6 +560,41 @@ tbody tr:hover td { background: var(--bg); }
 
 /* ── EMPTY STATE ── */
 .empty { text-align: center; padding: 48px 20px; }
+.empty-ico { font-size: 40px; opacity: .3; margin-bottom: 10px; }
+.empty-txt { font-size: 14px; color: var(--text-2); }
+
+/* ── TRANSITIONS DE PAGE ── */
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.page-enter { animation: pageIn .22s cubic-bezier(.4,0,.2,1) both; }
+
+/* ── ÉTATS VIDES AMÉLIORÉS ── */
+.empty-state {
+  display: flex; flex-direction: column; align-items: center;
+  justify-content: center; padding: 56px 24px; text-align: center;
+  gap: 12px;
+}
+.empty-state-ico {
+  width: 72px; height: 72px; border-radius: 50%;
+  background: var(--surface-2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; margin-bottom: 4px;
+}
+.empty-state-title {
+  font-family: var(--font-head); font-size: 17px; font-weight: 700;
+  color: var(--text); letter-spacing: -.2px;
+}
+.empty-state-desc {
+  font-size: 13px; color: var(--text-3); line-height: 1.6;
+  max-width: 260px;
+}
+.empty-state-action { margin-top: 6px; }
 
 /* ── SKELETON LOADER ── */
 @keyframes shimmer {
@@ -1026,30 +1072,70 @@ tbody tr:hover td { background: var(--bg); }
 
 /* ── ONBOARDING ── */
 .onboarding-overlay {
-  position: fixed; inset: 0; background: rgba(0,0,0,.6);
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.65);
   z-index: 3000; display: flex; align-items: center; justify-content: center;
-  padding: 20px; backdrop-filter: blur(6px);
+  padding: 20px; backdrop-filter: blur(8px);
+  animation: fadeIn .3s ease;
 }
 .onboarding-box {
-  background: var(--surface); border-radius: var(--r-lg);
-  width: 100%; max-width: 480px;
-  box-shadow: var(--shadow-lg); overflow: hidden;
+  background: var(--surface); border-radius: 24px;
+  width: 100%; max-width: 440px;
+  box-shadow: 0 32px 64px rgba(0,0,0,.2);
+  overflow: hidden;
+  animation: pageIn .3s cubic-bezier(.34,1.56,.64,1);
 }
-.onboarding-step { padding: 32px; text-align: center; }
-.onboarding-ico { font-size: 56px; margin-bottom: 16px; }
-.onboarding-title { font-family: var(--font-head); font-size: 22px; font-weight: 800; margin-bottom: 8px; }
-.onboarding-desc { font-size: 14px; color: var(--text-2); line-height: 1.6; margin-bottom: 24px; }
+
+/* Hero coloré en haut */
+.onboarding-hero {
+  background: linear-gradient(135deg, #1a1917 0%, #2d2b28 100%);
+  padding: 32px 32px 24px;
+  text-align: center;
+  position: relative; overflow: hidden;
+}
+.onboarding-hero::before {
+  content: ''; position: absolute;
+  top: -30px; right: -30px; width: 120px; height: 120px;
+  border-radius: 50%; background: rgba(255,255,255,.04);
+}
+.onboarding-ico {
+  font-size: 52px; margin-bottom: 14px; display: block;
+  animation: pageIn .4s .1s cubic-bezier(.34,1.56,.64,1) both;
+}
+.onboarding-title {
+  font-family: var(--font-head); font-size: 20px; font-weight: 800;
+  margin-bottom: 6px; color: #fff; letter-spacing: -.3px;
+}
+.onboarding-desc {
+  font-size: 13.5px; color: rgba(255,255,255,.6);
+  line-height: 1.6; margin: 0;
+}
+
+/* Corps */
+.onboarding-step { padding: 24px 28px; }
+.onboarding-step-desc {
+  font-size: 13.5px; color: var(--text-2); line-height: 1.6;
+  margin-bottom: 18px; text-align: center;
+}
+
+/* Progress dots */
 .onboarding-progress {
-  display: flex; gap: 6px; justify-content: center; margin-bottom: 24px;
+  display: flex; gap: 6px; justify-content: center;
+  padding: 14px 0 0;
 }
 .onboarding-dot {
-  width: 8px; height: 8px; border-radius: 50%; background: var(--border);
-  transition: background .2s;
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--border); transition: all .25s cubic-bezier(.34,1.56,.64,1);
 }
-.onboarding-dot.active { background: var(--accent); width: 24px; border-radius: 4px; }
+.onboarding-dot.active {
+  background: var(--accent); width: 20px; border-radius: 3px;
+}
+
+/* Footer */
 .onboarding-footer {
-  padding: 16px 32px; border-top: 1px solid var(--border);
+  padding: 14px 28px 20px;
   display: flex; align-items: center; justify-content: space-between;
+  gap: 8px;
 }
 
 /* ── DOCUMENTS ── */
@@ -2546,9 +2632,23 @@ document.addEventListener('keydown', e => {
   }
 });
 
+function emptyState(ico, title, desc, actionHtml = '') {
+  return `<div class="empty-state">
+    <div class="empty-state-ico">${ico}</div>
+    <div class="empty-state-title">${title}</div>
+    <div class="empty-state-desc">${desc}</div>
+    ${actionHtml ? `<div class="empty-state-action">${actionHtml}</div>` : ''}
+  </div>`;
+}
+
 // ── RENDER ──
 function renderPage(p) {
   const el = $('page');
+  // Animation de transition
+  el.style.animation = 'none';
+  el.offsetHeight; // reflow
+  el.style.animation = 'pageIn .22s cubic-bezier(.4,0,.2,1) both';
+
   if (p === 'dashboard') renderDashboard();
   else if (p === 'tickets') renderTickets();
   else if (p === 'map') { renderMapPage(); setTimeout(initMap, 100); }
@@ -2649,7 +2749,7 @@ async function renderDashboard() {
           <button class="btn btn-ghost btn-sm" onclick="nav('tickets')">Tout voir →</button>
         </div>
         <div style="padding:4px 0;">
-          ${recent.length === 0 ? '<div class="empty"><div class="empty-ico">📋</div><div class="empty-txt">Aucun signalement</div></div>' :
+          ${recent.length === 0 ? emptyState('📋', 'Tout va bien !', 'Aucun signalement en cours dans la résidence.', '<button class="btn btn-primary btn-sm" onclick="openNewTicket()">+ Signaler un problème</button>') :
             recent.map(t => `
               <div class="act-item" style="padding:10px 14px;cursor:pointer;" onclick="openDetail('${t.id}')">
                 <div class="act-ic" style="background:${t.urgence==='critique'?'var(--red-light)':t.urgence==='important'?'var(--orange-light)':'var(--blue-light)'};flex-shrink:0;">
@@ -3019,7 +3119,7 @@ function renderTickets() {
 }
 
 function renderTicketsRows(list) {
-  if (!list.length) return `<tr><td colspan="6"><div class="empty"><div class="empty-ico">📋</div><div class="empty-txt">Aucun signalement</div></div></td></tr>`;
+  if (!list.length) return `<tr><td colspan="6">${emptyState('🎉', 'Aucun signalement !', 'La résidence tourne bien. Signalez un problème si vous en constatez un.', '<button class="btn btn-primary btn-sm" onclick="openNewTicket()">+ Nouveau signalement</button>')}</td></tr>`;
   return list.map(t => `
     <tr onclick="openDetail('${t.id}')">
       <td>
@@ -3761,7 +3861,7 @@ function renderContrats() {
         <table>
           <thead><tr><th>Fournisseur</th><th>Type</th><th>Début</th><th>Échéance</th><th>Délai</th><th>Montant/an</th><th>Contact</th></tr></thead>
           <tbody>
-            ${cache.contrats.length === 0 ? '<tr><td colspan="7"><div class="empty"><div class="empty-ico">📄</div><div class="empty-txt">Aucun contrat enregistré</div></div></td></tr>' :
+            ${cache.contrats.length === 0 ? emptyState('📄', 'Aucun contrat', 'Ajoutez vos contrats fournisseurs pour suivre les échéances.').replace('<div class="empty-state">', '<tr><td colspan="7"><div class="empty-state">').replace('</div>', '</div></td></tr>') :
               cache.contrats.map(c => {
                 const days = daysUntil(c.date_echeance);
                 const cls = days < 0 ? 'expired' : days <= 90 ? 'expiring' : '';
@@ -3819,7 +3919,7 @@ function renderCles() {
       ${isManager() ? `<button class="btn btn-primary" onclick="openModal('m-cle')">+ Ajouter une clé</button>` : ''}
     </div>
     <div class="keys-grid">
-      ${cache.cles.length === 0 ? '<div class="empty"><div class="empty-ico">🔑</div><div class="empty-txt">Aucune clé enregistrée</div></div>' :
+      ${cache.cles.length === 0 ? emptyState('🔑', 'Aucune clé', 'Enregistrez les clés de la résidence pour suivre leurs mouvements.') :
         cache.cles.map(c => `
           <div class="key-card">
             <div class="key-ic">🔑</div>
@@ -3895,7 +3995,7 @@ function renderJournal() {
     <div class="ph"><h1>Journal d'activité</h1><p>Historique immuable de toutes les actions</p></div>
     <div class="card">
       <div class="card-body">
-        ${cache.journal.length === 0 ? '<div class="empty"><div class="empty-ico">📋</div><div class="empty-txt">Aucune entrée</div></div>' :
+        ${cache.journal.length === 0 ? emptyState('📋', 'Journal vide', 'Les actions effectuées dans l\'application apparaîtront ici.') :
           cache.journal.map(j => `
             <div class="journal-line">
               <div class="jdot" style="background:${j.action.includes('créé')||j.action.includes('ajouté')?'var(--green)':j.action.includes('supprimé')?'var(--red)':j.action.includes('modifié')||j.action.includes('Statut')?'var(--amber)':'var(--accent)'}"></div>
@@ -4075,7 +4175,7 @@ async function renderNotifications() {
   $('page').innerHTML = `
   <div style="padding:24px;">
     <div class="ph"><h1>Notifications</h1></div>
-    ${(data||[]).length === 0 ? '<div class="empty"><div class="empty-ico">🔔</div><div class="empty-txt">Aucune notification</div></div>' :
+    ${(data||[]).length === 0 ? emptyState('🔔', 'Aucune notification', 'Vous êtes à jour ! Les alertes importantes apparaîtront ici.') :
       `<div class="card"><div class="card-body">
         ${(data||[]).map(n => `
           <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);${!n.lu?'font-weight:500;':''}" onclick="markRead('${n.id}')">
@@ -4995,7 +5095,7 @@ async function loadAnnonces() {
   if (!el) return;
   const list = data || [];
   if (!list.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-ico">📢</div><div class="empty-txt">Aucune annonce pour l\'instant</div></div>';
+    el.innerHTML = emptyState('📢', 'Aucune annonce', 'Les annonces du conseil syndical et du syndic apparaîtront ici.');
     return;
   }
   el.innerHTML = list.map(a => {
@@ -5199,7 +5299,7 @@ function renderAgendaList() {
   const upcoming = _agendaEvents.filter(e => new Date(e.date_debut) >= now);
   const past = _agendaEvents.filter(e => new Date(e.date_debut) < now).reverse();
   if (!upcoming.length && !past.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-ico">📅</div><div class="empty-txt">Aucun événement</div></div>';
+    el.innerHTML = emptyState('📅', 'Agenda vide', 'Aucun événement programmé. Les AG, réunions et interventions apparaîtront ici.');
     return;
   }
   let html = '';
@@ -5606,7 +5706,7 @@ function renderContactsList() {
         </div>
       </div>`).join('');
   }
-  if (!html) html = '<div class="empty"><div class="empty-ico">📞</div><div class="empty-txt">Aucun contact enregistré</div></div>';
+  if (!html) html = emptyState('📞', 'Aucun contact', 'Ajoutez les contacts utiles de la résidence.');
   el.innerHTML = html;
 }
 
@@ -5807,19 +5907,21 @@ function renderOnboardingStep() {
   overlay.className = 'onboarding-overlay';
   overlay.id = 'onboarding-overlay';
   overlay.innerHTML = `<div class="onboarding-box">
-    <div class="onboarding-step">
-      <div class="onboarding-ico">${step.ico}</div>
-      <div class="onboarding-progress">${dots}</div>
+    <div class="onboarding-hero">
+      <span class="onboarding-ico">${step.ico}</span>
       <div class="onboarding-title">${step.title}</div>
-      <div class="onboarding-desc" style="margin-bottom:${actionHtml?'16px':'24px'};">${step.desc}</div>
-      ${actionHtml}
+      <div class="onboarding-desc">${step.desc}</div>
+    </div>
+    <div class="onboarding-step">
+      ${actionHtml || ''}
+      <div class="onboarding-progress">${dots}</div>
     </div>
     <div class="onboarding-footer">
-      ${isFirst ? `<button class="btn btn-ghost btn-sm" onclick="skipOnboarding()">Passer</button>` : '<div></div>'}
+      ${isFirst ? `<button class="btn btn-ghost btn-sm" style="color:var(--text-3);" onclick="skipOnboarding()">Passer</button>` : '<div></div>'}
       <div style="display:flex;gap:8px;">
         ${!isFirst && !isLast && step.action !== 'notif' ? `<button class="btn btn-secondary btn-sm" onclick="_onboardStep--;renderOnboardingStep();">← Retour</button>` : ''}
         ${step.action !== 'notif' ? `<button class="btn btn-primary" onclick="nextOnboardStep()">
-          ${isLast ? '🎉 C\'est parti !' : 'Suivant →'}
+          ${isLast ? '🎉 C\'est parti !' : 'Continuer →'}
         </button>` : ''}
       </div>
     </div>
@@ -5936,7 +6038,7 @@ function renderDocsList() {
   });
 
   if (!list.length) {
-    el.innerHTML = `<div class="empty"><div class="empty-ico">📁</div><div class="empty-txt">Aucun document${_docsCatActive !== 'tous' ? ' dans cette catégorie' : ''}</div></div>`;
+    el.innerHTML = `${emptyState('📁', _docsCatActive !== 'tous' ? 'Aucun document ici' : 'Bibliothèque vide', _docsCatActive !== 'tous' ? 'Aucun document dans cette catégorie pour l\'instant.' : 'Les documents de la résidence apparaîtront ici.')}`;
     return;
   }
 
@@ -6231,7 +6333,7 @@ function renderVotesList() {
   const el = $('votes-list');
   if (!el) return;
   if (!_votesCache.length) {
-    el.innerHTML = '<div class="empty"><div class="empty-ico">🗳️</div><div class="empty-txt">Aucun vote ou sondage pour l\'instant</div></div>';
+    el.innerHTML = emptyState('🗳️', 'Aucun vote en cours', 'Les votes officiels et sondages de la résidence apparaîtront ici.');
     return;
   }
   const ouverts = _votesCache.filter(v => v.statut === 'ouvert');
