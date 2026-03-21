@@ -7424,6 +7424,7 @@ async function loadFeed() {
     .limit(50);
 
   const { data: reactions } = await sb.from('reactions')
+    .select('*')
     .eq('target_type', 'post');
 
   // Groupe les réactions par post
@@ -7527,16 +7528,16 @@ async function publishFeedPost() {
   if (!contenu) return;
   input.value = ''; input.style.height = 'auto';
 
-  const { error } = await sb.from('feed_posts').insert({
-    auteur_id: user.id, contenu, type: 'post'
-  });
+  const { data: newPost, error } = await sb.from('feed_posts')
+    .insert({ auteur_id: user.id, contenu, type: 'post' })
+    .select('*, profiles(id,prenom,nom,email)')
+    .single();
+
   if (error) { toast('Erreur publication', 'err'); return; }
-  // Optimistic
-  _msgState.feed.unshift({
-    id: 'tmp-' + Date.now(), auteur_id: user.id,
-    contenu, type: 'post', created_at: new Date().toISOString(),
-    profiles: { prenom: profile?.prenom, nom: profile?.nom, email: user.email }
-  });
+  if (newPost) {
+    if (!newPost.profiles) newPost.profiles = { id: user.id, prenom: profile?.prenom, nom: profile?.nom, email: user.email };
+    _msgState.feed.unshift(newPost);
+  }
   renderFeed();
 }
 
@@ -7560,6 +7561,8 @@ async function toggleFeedReaction(postId, emoji) {
 }
 
 async function toggleFeedComments(postId) {
+  // Ignore les posts optimistes non sauvegardés
+  if (postId.startsWith('tmp-')) return;
   const el = $(`feed-comments-${postId}`);
   if (!el) return;
   const isOpen = el.style.display !== 'none';
@@ -7568,13 +7571,15 @@ async function toggleFeedComments(postId) {
 }
 
 async function loadFeedComments(postId) {
+  if (!postId || postId.startsWith('tmp-')) return;
   const listEl = $(`feed-comments-list-${postId}`);
   if (!listEl) return;
   const { data } = await sb.from('feed_posts')
     .select('*, profiles(id,prenom,nom,email)')
-    .eq('reference_id', postId).eq('type', 'comment')
+    .eq('reference_id', postId)
+    .eq('type', 'comment')
     .order('created_at', { ascending: true });
-  if (!data?.length) { listEl.innerHTML = '<div style="padding:4px 0 8px;font-size:12px;color:var(--text-3);">Aucun commentaire</div>'; return; }
+  if (!data?.length) { listEl.innerHTML = '<div style="padding:4px 0 8px;font-size:12px;color:var(--text-3);">Aucun commentaire — soyez le premier !</div>'; return; }
   listEl.innerHTML = data.map(c => {
     const auteur = c.profiles ? displayName(c.profiles.prenom, c.profiles.nom, c.profiles.email, 'Résident') : 'Résident';
     const color = avatarColor(auteur);
