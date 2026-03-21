@@ -3759,13 +3759,32 @@ async function changeTour(userId, tour) {
 async function renderUsers() {
   const { data: users } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
   const roleL = { administrateur:'Administrateur', syndic:'Syndic', membre_cs:'Conseil Syndical', 'copropriétaire':'Copropriétaire' };
+  const registerUrl = `${window.location.origin}${window.location.pathname}?register=1`;
 
   $('page').innerHTML = `
   <div style="padding:24px;">
     <div class="ph"><h1>Utilisateurs</h1><p>${(users||[]).length} compte(s) enregistré(s)</p></div>
-    <div style="display:flex;justify-content:flex-end;margin-bottom:14px;">
-      <button class="btn btn-primary" onclick="openModal('m-invite')">+ Inviter un utilisateur</button>
+
+    <!-- QR Code d'inscription -->
+    <div class="card" style="margin-bottom:18px;">
+      <div class="card-header">
+        <span class="card-title">📱 Inviter les résidents</span>
+        <button class="btn btn-ghost btn-sm" onclick="printQR()">🖨️ Imprimer</button>
+      </div>
+      <div style="padding:20px;display:flex;gap:24px;align-items:center;flex-wrap:wrap;">
+        <div id="qr-container" style="flex-shrink:0;"></div>
+        <div style="flex:1;min-width:200px;">
+          <div style="font-family:var(--font-head);font-weight:700;font-size:16px;margin-bottom:8px;">Lien d'inscription</div>
+          <div style="font-size:12px;color:var(--text-3);margin-bottom:12px;">Partagez ce QR code ou ce lien aux résidents pour qu'ils créent leur compte.</div>
+          <div style="background:var(--surface-2);border-radius:var(--r-sm);padding:8px 12px;font-size:11px;font-family:monospace;word-break:break-all;color:var(--text-2);margin-bottom:12px;">${registerUrl}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" onclick="navigator.clipboard.writeText('${registerUrl}').then(()=>toast('Lien copié ✓','ok'))">📋 Copier le lien</button>
+            <button class="btn btn-secondary btn-sm" onclick="printQR()">🖨️ Affiche PDF</button>
+          </div>
+        </div>
+      </div>
     </div>
+
     <div class="card">
       <div class="tbl-wrap">
         <table>
@@ -3808,6 +3827,9 @@ async function renderUsers() {
       </div>
     </div>
   </div>`;
+
+  // Génère le QR code
+  generateQR(registerUrl);
 }
 
 async function changeRole(userId, newRole) {
@@ -3987,7 +4009,280 @@ async function saveProfile() {
   toast('Profil mis à jour ✓', 'ok');
 }
 
-// ── RAPPORT ──
+// ── QR CODE & INSCRIPTION ──
+function generateQR(url) {
+  const container = $('qr-container');
+  if (!container) return;
+
+  // Charge qrcode.js depuis CDN
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+  script.onload = () => {
+    container.innerHTML = '';
+    new QRCode(container, {
+      text: url,
+      width: 160,
+      height: 160,
+      colorDark: '#1a1917',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+    // Ajoute logo au centre
+    setTimeout(() => {
+      const img = container.querySelector('img') || container.querySelector('canvas');
+      if (img) {
+        img.style.borderRadius = '12px';
+        img.style.border = '4px solid var(--border)';
+      }
+    }, 100);
+  };
+  document.head.appendChild(script);
+}
+
+function printQR() {
+  const registerUrl = `${window.location.origin}${window.location.pathname}?register=1`;
+  const win = window.open('', '_blank');
+  win.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+  <title>Affiche d'inscription — CoproSync</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    @page { size: A4; margin: 0; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #fff; }
+    .page { width: 210mm; min-height: 297mm; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20mm; }
+    .header { text-align: center; margin-bottom: 32px; }
+    .logo { font-size: 48px; margin-bottom: 12px; }
+    .title { font-size: 32px; font-weight: 800; letter-spacing: -1px; color: #1a1917; margin-bottom: 6px; }
+    .subtitle { font-size: 16px; color: #6b6860; }
+    .qr-box { background: #f9f8f6; border: 2px solid #e8e5df; border-radius: 24px; padding: 32px; text-align: center; margin: 24px 0; }
+    .qr-label { font-size: 14px; color: #9b9890; margin-bottom: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: .08em; }
+    #qr-print { display: flex; justify-content: center; margin-bottom: 20px; }
+    .url { font-size: 12px; color: #9b9890; font-family: monospace; word-break: break-all; margin-top: 12px; }
+    .steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin: 24px 0; width: 100%; }
+    .step { text-align: center; padding: 16px; background: #f9f8f6; border-radius: 12px; }
+    .step-num { width: 32px; height: 32px; border-radius: 50%; background: #1a1917; color: #fff; font-weight: 800; font-size: 14px; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+    .step-txt { font-size: 13px; color: #6b6860; line-height: 1.4; }
+    .footer { text-align: center; font-size: 12px; color: #9b9890; margin-top: 24px; }
+    @media print { button { display: none !important; } }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+  </head><body>
+  <div class="page">
+    <div class="header">
+      <div class="logo">🏢</div>
+      <div class="title">CoproSync</div>
+      <div class="subtitle">Résidence le Floréal · 13-19 Rue du Moucherotte, 38360 Sassenage</div>
+    </div>
+
+    <div class="qr-box">
+      <div class="qr-label">Scannez pour créer votre compte</div>
+      <div id="qr-print"></div>
+      <div class="url">${registerUrl}</div>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-txt">Scannez le QR code avec votre téléphone</div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-txt">Remplissez vos informations et votre numéro de lot</div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-txt">Confirmez votre email et accédez à l'application</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      Votre espace numérique de copropriété — Signalements · Messagerie · Documents · Votes
+    </div>
+  </div>
+  <script>
+    window.onload = () => {
+      new QRCode(document.getElementById('qr-print'), {
+        text: '${registerUrl}',
+        width: 200, height: 200,
+        colorDark: '#1a1917', colorLight: '#fff',
+        correctLevel: QRCode.CorrectLevel.H
+      });
+      setTimeout(() => window.print(), 800);
+    };
+  <\/script>
+  </body></html>`);
+  win.document.close();
+}
+
+// ── PAGE D'INSCRIPTION (accessible sans connexion) ──
+function checkRegisterMode() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('register') === '1') {
+    showRegisterPage();
+    return true;
+  }
+  return false;
+}
+
+function showRegisterPage() {
+  document.body.innerHTML = `
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: #f5f4f1; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 16px; }
+    .reg-box { background: #fff; border-radius: 20px; box-shadow: 0 8px 40px rgba(0,0,0,.10); max-width: 440px; width: 100%; overflow: hidden; }
+    .reg-hero { background: #1a1917; padding: 32px; text-align: center; }
+    .reg-ico { font-size: 40px; margin-bottom: 10px; }
+    .reg-title { color: #fff; font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+    .reg-sub { color: rgba(255,255,255,.5); font-size: 13px; }
+    .reg-body { padding: 28px; }
+    .fg { margin-bottom: 14px; }
+    .label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #9b9890; display: block; margin-bottom: 5px; }
+    .input { width: 100%; padding: 10px 12px; border: 1.5px solid #e8e5df; border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; }
+    .input:focus { border-color: #2563eb; }
+    .fg-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+    .btn { width: 100%; padding: 13px; background: #2563eb; color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; margin-top: 6px; }
+    .btn:hover { background: #1d4ed8; }
+    .btn:disabled { opacity: .6; cursor: not-allowed; }
+    .error { color: #dc2626; font-size: 12px; margin-bottom: 10px; display: none; }
+    .success { text-align: center; padding: 20px; }
+    .success-ico { font-size: 48px; margin-bottom: 12px; }
+    .success-title { font-size: 20px; font-weight: 800; margin-bottom: 8px; }
+    .success-txt { font-size: 14px; color: #6b6860; line-height: 1.6; }
+    select.input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%236b6860' stroke-width='2' fill='none'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+    .footer { text-align: center; padding: 16px; font-size: 11px; color: #9b9890; border-top: 1px solid #f0ede8; }
+    .login-link { color: #2563eb; text-decoration: none; font-weight: 600; }
+  </style>
+  <div class="reg-box">
+    <div class="reg-hero">
+      <div class="reg-ico">🏢</div>
+      <div class="reg-title">Rejoindre CoproSync</div>
+      <div class="reg-sub">Résidence le Floréal · Sassenage</div>
+    </div>
+    <div class="reg-body" id="reg-form-wrap">
+      <div class="error" id="reg-error"></div>
+      <div class="fg-row">
+        <div class="fg" style="margin:0;">
+          <label class="label">Prénom *</label>
+          <input type="text" id="reg-prenom" class="input" placeholder="Prénom">
+        </div>
+        <div class="fg" style="margin:0;">
+          <label class="label">Nom *</label>
+          <input type="text" id="reg-nom" class="input" placeholder="Nom">
+        </div>
+      </div>
+      <div class="fg">
+        <label class="label">Email *</label>
+        <input type="email" id="reg-email" class="input" placeholder="votre@email.com">
+      </div>
+      <div class="fg">
+        <label class="label">Mot de passe *</label>
+        <input type="password" id="reg-pass" class="input" placeholder="Minimum 8 caractères">
+      </div>
+      <div class="fg-row">
+        <div class="fg" style="margin:0;">
+          <label class="label">Ma tour *</label>
+          <select id="reg-tour" class="input">
+            <option value="">Choisir...</option>
+            <option>Tour 13</option>
+            <option>Tour 15</option>
+            <option>Tour 17</option>
+            <option>Tour 19</option>
+          </select>
+        </div>
+        <div class="fg" style="margin:0;">
+          <label class="label">Numéro de lot *</label>
+          <input type="text" id="reg-lot" class="input" placeholder="Ex: 148">
+        </div>
+      </div>
+      <button class="btn" id="reg-btn" onclick="submitRegister()">Créer mon compte →</button>
+    </div>
+    <div class="footer">
+      Déjà un compte ? <a href="${window.location.pathname}" class="login-link">Se connecter</a>
+    </div>
+  </div>`;
+}
+
+async function submitRegister() {
+  const prenom = document.getElementById('reg-prenom')?.value.trim();
+  const nom    = document.getElementById('reg-nom')?.value.trim();
+  const email  = document.getElementById('reg-email')?.value.trim();
+  const pass   = document.getElementById('reg-pass')?.value;
+  const tour   = document.getElementById('reg-tour')?.value;
+  const lot    = document.getElementById('reg-lot')?.value.trim();
+  const errEl  = document.getElementById('reg-error');
+  const btn    = document.getElementById('reg-btn');
+
+  errEl.style.display = 'none';
+  if (!prenom || !email || !pass || !tour || !lot) {
+    errEl.textContent = 'Tous les champs marqués * sont obligatoires.';
+    errEl.style.display = 'block'; return;
+  }
+  if (pass.length < 8) {
+    errEl.textContent = 'Le mot de passe doit contenir au moins 8 caractères.';
+    errEl.style.display = 'block'; return;
+  }
+
+  btn.disabled = true; btn.textContent = 'Création en cours…';
+
+  // Crée le compte Supabase
+  const SUPA_URL = 'https://sifjbqtnrfydxcemhsnz.supabase.co';
+  const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNpZmpicXRucmZ5ZHhjZW1oc256Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMzMzIyMjYsImV4cCI6MjA4ODkwODIyNn0.aRZUunTn1W5hLNHRXDSWjp7hKcBtxQlFKSM05MTQyVE';
+
+  const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+  const sb2 = createClient(SUPA_URL, SUPA_KEY);
+
+  const { data, error } = await sb2.auth.signUp({
+    email, password: pass,
+    options: { data: { prenom, nom, tour, lot, role: 'copropriétaire' } }
+  });
+
+  if (error) {
+    errEl.textContent = error.message === 'User already registered'
+      ? 'Cet email est déjà utilisé. Connectez-vous ou utilisez un autre email.'
+      : error.message;
+    errEl.style.display = 'block';
+    btn.disabled = false; btn.textContent = 'Créer mon compte →';
+    return;
+  }
+
+  // Met à jour le profil avec toutes les infos
+  if (data.user) {
+    await sb2.from('profiles').upsert({
+      id: data.user.id, email, prenom, nom: nom||null,
+      tour, lot, role: 'copropriétaire', actif: true
+    }, { onConflict: 'id' });
+
+    // Notif email au syndic
+    await fetch('https://sifjbqtnrfydxcemhsnz.supabase.co/functions/v1/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPA_KEY}` },
+      body: JSON.stringify({
+        type: 'nouvelle_annonce',
+        to: null,
+        data: {
+          titre: `👤 Nouveau résident inscrit : ${prenom} ${nom||''}`,
+          type: 'important',
+          contenu: `${prenom} ${nom||''} vient de créer son compte. Tour : ${tour} · Lot : ${lot} · Email : ${email}`
+        }
+      })
+    }).catch(()=>{});
+  }
+
+  // Remplace le formulaire par un message de succès
+  document.getElementById('reg-form-wrap').innerHTML = `
+    <div class="success">
+      <div class="success-ico">🎉</div>
+      <div class="success-title">Compte créé !</div>
+      <div class="success-txt">
+        Bienvenue ${prenom} !<br><br>
+        Un email de confirmation vous a été envoyé à <strong>${email}</strong>.<br>
+        Cliquez sur le lien pour activer votre compte puis connectez-vous.
+      </div>
+      <br>
+      <a href="${window.location.pathname}" style="display:inline-block;padding:12px 24px;background:#2563eb;color:#fff;border-radius:10px;text-decoration:none;font-weight:700;margin-top:8px;">
+        Aller à la connexion →
+      </a>
+    </div>`;
+}
 function renderRapport() {
   const t = cache.tickets;
   const today = new Date().toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' });
@@ -6435,9 +6730,10 @@ async function newPrivateConv() {
 }
 
 // ── NETTOYAGE SESSION AU DÉMARRAGE ──
-// Purge TOUJOURS la session au chargement — évite les reconnexions auto avec mauvais rôle.
-// On active le listener SEULEMENT après que le signOut est terminé.
 (async () => {
+  // Mode inscription via QR code → affiche le formulaire sans auth
+  if (checkRegisterMode()) return;
+
   console.log('[init] signOut initial...');
   await sb.auth.signOut();
   _initDone = true;
