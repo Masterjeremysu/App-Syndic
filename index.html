@@ -2164,7 +2164,12 @@ function initUI() {
 
 async function loadAll() {
   try {
-    const tasks = [loadTickets()];
+    // Charge les tickets en priorité → dashboard s'affiche immédiatement
+    await loadTickets();
+    if (currentPage === 'dashboard') renderDashboard();
+
+    // Charge le reste en parallèle en arrière-plan
+    const tasks = [];
     if (isManager()) tasks.push(loadContrats());
     tasks.push(loadCles());
     tasks.push(loadAnnonceCache());
@@ -2174,7 +2179,7 @@ async function loadAll() {
     if (isManager()) await loadJournal();
     updateBadges();
     checkNotifications();
-    // Re-render le dashboard maintenant que les données sont chargées
+    // Re-render dashboard complet avec tous les widgets
     if (currentPage === 'dashboard') renderDashboard();
   } catch(e) {
     console.error('loadAll error:', e);
@@ -6897,10 +6902,17 @@ async function newPrivateConv() {
   // Mode inscription via QR code → affiche le formulaire sans auth
   if (checkRegisterMode()) return;
 
+  // Désactive le bouton pendant l'init — évite les clics fantômes
+  const authBtn = $('auth-btn');
+  const authBtnText = $('auth-btn-text');
+  if (authBtn) { authBtn.disabled = true; authBtnText.textContent = 'Chargement…'; }
+
   console.log('[init] signOut initial...');
   await sb.auth.signOut();
   _initDone = true;
   console.log('[init] prêt — en attente de connexion manuelle');
+
+  if (authBtn) { authBtn.disabled = false; authBtnText.textContent = 'Se connecter'; }
   $('login-screen').style.display = 'flex';
 })();
 </script>
