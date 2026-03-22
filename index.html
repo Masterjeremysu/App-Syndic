@@ -2853,13 +2853,17 @@ function daysUntil(d) {
   return Math.ceil((new Date(d) - new Date()) / 864e5);
 }
 function isManager() {
-  return profile && ['administrateur','syndic','membre_cs'].includes(profile.role);
+  // Le syndic externe n'est PAS un manager — il a un accès très restreint
+  return profile && ['administrateur', 'membre_cs'].includes(profile.role);
 }
 function isAdmin() {
   return profile && profile.role === 'administrateur';
 }
+function isSyndicExterne() {
+  return profile && profile.role === 'syndic';
+}
 function isSyndicOrAdmin() {
-  return profile && ['administrateur','syndic'].includes(profile.role);
+  return profile && ['administrateur', 'syndic'].includes(profile.role);
 }
 
 function toast(msg, type='ok') {
@@ -3088,8 +3092,18 @@ function initUI() {
   const roleLabels = { administrateur:'Administrateur', syndic:'Syndic', membre_cs:'Conseil Syndical', 'copropriétaire':'Copropriétaire' };
   $('nav-role').textContent = roleLabels[profile.role] || profile.role;
 
-  // Hide manager-only items for copropriétaires
-  if (!isManager()) {
+  // Visibilité du menu selon le rôle
+  if (isSyndicExterne()) {
+    // Syndic externe : uniquement le Rapport syndic
+    document.querySelectorAll('.nav-item, .nav-section').forEach(el => {
+      const page = el.getAttribute('data-page');
+      if (page !== 'rapport' && !el.classList.contains('nav-brand')) {
+        el.style.display = 'none';
+      }
+    });
+    // Affiche le rapport immédiatement
+    setTimeout(() => nav('rapport'), 100);
+  } else if (!isManager()) {
     document.querySelectorAll('.nav-manager-only').forEach(el => el.style.display = 'none');
     document.querySelectorAll('.nav-admin-only').forEach(el => el.style.display = 'none');
   } else if (!isAdmin()) {
@@ -3099,6 +3113,14 @@ function initUI() {
 
 async function loadAll() {
   try {
+    // Syndic externe → charge uniquement tickets et contrats pour le rapport
+    if (isSyndicExterne()) {
+      await Promise.all([loadTickets(), loadContrats()]);
+      updateBadges();
+      if (currentPage === 'rapport') renderRapport();
+      return;
+    }
+
     // Charge les tickets en priorité → dashboard s'affiche immédiatement
     await loadTickets();
     if (currentPage === 'dashboard') renderDashboard();
@@ -3481,9 +3503,16 @@ function emptyState(ico, title, desc, actionHtml = '') {
 // ── RENDER ──
 function renderPage(p) {
   const el = $('page');
+
+  // Syndic externe → uniquement le rapport
+  if (isSyndicExterne() && p !== 'rapport') {
+    p = 'rapport';
+    currentPage = 'rapport';
+  }
+
   // Animation de transition
   el.style.animation = 'none';
-  el.offsetHeight; // reflow
+  el.offsetHeight;
   el.style.animation = 'pageIn .22s cubic-bezier(.4,0,.2,1) both';
 
   if (p === 'dashboard') renderDashboard();
@@ -8582,7 +8611,14 @@ async function publishFeedEvent(type, contenu) {
 
 // ── CANAUX DE DISCUSSION ──
 async function loadConversations() {
-  const { data, error } = await sb.from('conversations').select('*').order('created_at');
+  // Charge uniquement les conversations dont l'utilisateur est membre
+  const { data: memberships } = await sb.from('conversation_membres')
+    .select('conversation_id').eq('user_id', user.id);
+  const ids = (memberships || []).map(m => m.conversation_id);
+  if (!ids.length) { _msgState.conversations = []; renderSidebarGroups(); renderSidebarDMs(); return; }
+
+  const { data, error } = await sb.from('conversations')
+    .select('*').in('id', ids).order('created_at');
   if (error) { console.warn('[msg] loadConversations:', error.message); return; }
   _msgState.conversations = data || [];
   renderSidebarGroups();
