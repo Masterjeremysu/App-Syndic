@@ -7668,7 +7668,7 @@ async function saveDoc(id) {
       corps: `Un nouveau document a été publié : ${titre}`,
       lu: false
     }));
-    if (notifs.length) await sb.from('notifications').insert(notifs).then(({error:e})=>{ if(e) console.warn('[notif doc]',e.message); });
+    if (notifs.length) { const {error:e} = await sb.from('notifications').insert(notifs); if(e) console.warn('[notif doc]',e.message); }
     // Email syndic — nouveau document
     await sendEmailDirect('nouvelle_annonce', null, {
       titre, type: 'info',
@@ -8093,7 +8093,7 @@ async function saveVote(statut) {
       corps: `Nouveau ${voteType==='officiel'?'vote':'sondage'} disponible : ${titre}`,
       lu: false
     }));
-    if (notifs.length) await sb.from('notifications').insert(notifs).then(({error:e})=>{ if(e) console.warn('[notif vote]',e.message); });
+    if (notifs.length) { const {error:e} = await sb.from('notifications').insert(notifs); if(e) console.warn('[notif vote]',e.message); }
     // Email syndic — vote publié
     await sendEmailDirect('nouvelle_annonce', null, {
       titre: `${voteType==='officiel'?'🗳️ Vote officiel':'📊 Sondage'} : ${titre}`,
@@ -8604,9 +8604,9 @@ function startFeedRealtime() {
 
 // Publie dans le feed depuis l'app (tickets, votes, membres)
 async function publishFeedEvent(type, contenu) {
-  await sb.from('feed_posts').insert({
-    auteur_id: user.id, contenu, type
-  }).catch(() => {});
+  try {
+    await sb.from('feed_posts').insert({ auteur_id: user.id, contenu, type });
+  } catch(e) { console.warn('[feed]', e.message); }
 }
 
 // ── CANAUX DE DISCUSSION ──
