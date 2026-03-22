@@ -5327,8 +5327,24 @@ function renderProfile() {
       </div>
     </div>
 
-    <!-- DÉCONNEXION -->
-    <div style="text-align:center;padding:8px 0 4px;">
+    <!-- ACTIONS -->
+    <div style="text-align:center;padding:8px 0 4px;display:flex;flex-direction:column;gap:8px;align-items:center;">
+
+      <!-- Visite guidée -->
+      <button style="
+        background:none;border:1px solid var(--border);
+        color:var(--text-2);font-size:13px;font-weight:600;
+        padding:10px 20px;border-radius:10px;cursor:pointer;
+        transition:all .15s;font-family:var(--font-body);
+        display:inline-flex;align-items:center;gap:8px;
+      "
+      onmouseover="this.style.background='var(--surface-2)';this.style.borderColor='var(--border-strong)'"
+      onmouseout="this.style.background='none';this.style.borderColor='var(--border)'"
+      onclick="localStorage.removeItem('coprosync-feature-tour');showFeatureTour();">
+        🎯 Revoir la visite guidée
+      </button>
+
+      <!-- Déconnexion -->
       <button style="
         background:none;border:1px solid var(--border);
         color:var(--red);font-size:13px;font-weight:600;
