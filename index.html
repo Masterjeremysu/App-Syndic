@@ -2262,6 +2262,38 @@ tbody tr:hover td { background: var(--bg); }
           <label class="label">Mot de passe</label>
           <input type="password" id="auth-pass" class="input" placeholder="••••••••" autocomplete="new-password" data-lpignore="true" data-form-type="other">
         </div>
+
+        <!-- Champs supplémentaires visibles uniquement en mode inscription -->
+        <div id="auth-extra-fields" style="display:none;">
+          <div style="display:flex;gap:8px;margin-bottom:0;">
+            <div class="fg" style="flex:1;">
+              <label class="label">Prénom *</label>
+              <input type="text" id="auth-prenom" class="input" placeholder="Jérémy">
+            </div>
+            <div class="fg" style="flex:1;">
+              <label class="label">Nom</label>
+              <input type="text" id="auth-nom" class="input" placeholder="Dupont">
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;">
+            <div class="fg" style="flex:1;">
+              <label class="label">Ma tour</label>
+              <select id="auth-tour" class="input" style="appearance:none;">
+                <option value="">Choisir…</option>
+                <option>Tour 13</option><option>Tour 15</option>
+                <option>Tour 17</option><option>Tour 19</option>
+              </select>
+            </div>
+            <div class="fg" style="flex:1;">
+              <label class="label">N° de lot</label>
+              <input type="text" id="auth-lot" class="input" placeholder="Ex : 148">
+            </div>
+          </div>
+          <div style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.2);border-radius:8px;padding:8px 12px;margin-bottom:14px;font-size:11.5px;color:rgba(180,200,255,.7);line-height:1.5;">
+            💡 Votre numéro de lot figure sur votre titre de propriété, votre avis de charges ou votre boîte aux lettres.
+          </div>
+        </div>
+
         <div id="auth-error" style="color:#f87171;font-size:12px;margin-bottom:12px;display:none;background:rgba(248,113,113,.1);padding:8px 12px;border-radius:8px;border:1px solid rgba(248,113,113,.2);"></div>
         <button class="btn btn-primary" style="width:100%;justify-content:center;" id="auth-btn" onclick="doAuth()">
           <span id="auth-btn-text">Se connecter</span>
@@ -2859,8 +2891,20 @@ let _authMode = 'login';
 function toggleAuthMode(e) {
   e.preventDefault();
   _authMode = _authMode === 'login' ? 'signup' : 'login';
-  $('auth-btn-text').textContent = _authMode === 'login' ? 'Se connecter' : 'Créer mon compte';
-  $('auth-toggle-link').textContent = _authMode === 'login' ? 'Pas encore de compte ? Créer un compte' : 'Déjà un compte ? Se connecter';
+  const isSignup = _authMode === 'signup';
+
+  // Titre et bouton
+  $('auth-btn-text').textContent = isSignup ? 'Créer mon compte' : 'Se connecter';
+
+  // Lien toggle avec innerHTML pour le span coloré
+  $('auth-toggle-link').innerHTML = isSignup
+    ? `Déjà un compte ? <span style="color:rgba(59,130,246,.8);text-decoration:underline;">Se connecter</span>`
+    : `Pas encore de compte ? <span style="color:rgba(59,130,246,.8);text-decoration:underline;">Créer un compte</span>`;
+
+  // Affiche/cache les champs supplémentaires d'inscription
+  const extraFields = $('auth-extra-fields');
+  if (extraFields) extraFields.style.display = isSignup ? 'block' : 'none';
+
   $('auth-error').style.display = 'none';
 }
 
@@ -2888,11 +2932,30 @@ async function doAuth() {
     // Succès → onAuthStateChange prend le relais automatiquement
 
   } else {
-    const { error } = await sb.auth.signUp({ email, password: pass });
+    const prenom = $('auth-prenom')?.value.trim() || null;
+    const nom    = $('auth-nom')?.value.trim() || null;
+    const tour   = $('auth-tour')?.value || null;
+    const lot    = $('auth-lot')?.value.trim() || null;
+
+    const { data, error } = await sb.auth.signUp({
+      email, password: pass,
+      options: { data: { prenom, nom, tour, lot, role: 'copropriétaire' } }
+    });
     $('auth-btn').disabled = false;
     $('auth-btn-text').textContent = 'Créer mon compte';
     if (error) { showAuthError(error.message); return; }
-    $('auth-error').style.color = '#16a34a';
+
+    // Sauvegarde le profil immédiatement si l'user est créé
+    if (data?.user) {
+      await sb.from('profiles').upsert({
+        id: data.user.id, email,
+        prenom: prenom || null, nom: nom || null,
+        tour: tour || null, lot: lot || null,
+        role: 'copropriétaire', actif: true
+      }, { onConflict: 'id' });
+    }
+
+    $('auth-error').style.color = '#4ade80';
     showAuthError('✅ Compte créé ! Vérifiez votre email puis connectez-vous.');
   }
 }
@@ -7013,8 +7076,71 @@ async function deleteContact(id) {
 function checkOnboarding() {
   if (localStorage.getItem('coprosync-onboarded')) return;
   if (!user || !profile) return;
-  if (profile.tour && profile.prenom) { localStorage.setItem('coprosync-onboarded', '1'); return; }
+  // Si tout est déjà renseigné → juste le tour des fonctionnalités
+  if (profile.tour && profile.prenom && profile.lot) {
+    // Lance directement le tour des fonctionnalités si jamais vu
+    if (!localStorage.getItem('coprosync-feature-tour')) {
+      showFeatureTour();
+    } else {
+      localStorage.setItem('coprosync-onboarded', '1');
+    }
+    return;
+  }
   showOnboarding();
+}
+
+// ── TOUR DES FONCTIONNALITÉS ──
+const FEATURE_TOUR_STEPS = [
+  { ico: '🔧', title: 'Signalez en 30 secondes', desc: 'Appuyez sur le bouton + Signaler pour déclarer un problème dans les parties communes. Ajoutez des photos, choisissez la zone et l\'urgence.', color: '#ea580c' },
+  { ico: '💬', title: 'Chattez avec vos voisins', desc: 'Dans Messages, rejoignez le canal de votre tour ou démarrez une conversation privée. Réagissez aux messages avec des emojis.', color: '#2563eb' },
+  { ico: '🏠', title: 'Le fil d\'actualité', desc: 'La page Fil d\'actualité dans Messages regroupe toute la vie de la résidence — posts, événements automatiques, tickets résolus.', color: '#7c3aed' },
+  { ico: '🗳️', title: 'Votez & donnez votre avis', desc: 'Participez aux votes officiels et sondages depuis l\'onglet Votes & Sondages. Vos voix comptent pour la résidence.', color: '#16a34a' },
+  { ico: '🎉', title: 'Vous êtes prêt !', desc: 'Bienvenue parmi les résidents connectés du Floréal. L\'app est disponible 24h/24 depuis votre téléphone.', color: '#2563eb' },
+];
+let _featureTourStep = 0;
+
+function showFeatureTour() {
+  _featureTourStep = 0;
+  renderFeatureTourStep();
+}
+
+function renderFeatureTourStep() {
+  document.getElementById('feature-tour-overlay')?.remove();
+  const step = FEATURE_TOUR_STEPS[_featureTourStep];
+  const isLast = _featureTourStep === FEATURE_TOUR_STEPS.length - 1;
+  const dots = FEATURE_TOUR_STEPS.map((_, i) =>
+    `<div class="onboarding-dot${i === _featureTourStep ? ' active' : ''}"></div>`
+  ).join('');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'onboarding-overlay';
+  overlay.id = 'feature-tour-overlay';
+  overlay.innerHTML = `<div class="onboarding-box">
+    <div class="onboarding-hero" style="background:linear-gradient(135deg,${step.color}dd,${step.color}99);">
+      <span class="onboarding-ico">${step.ico}</span>
+      <div class="onboarding-title">${step.title}</div>
+      <div class="onboarding-desc">${step.desc}</div>
+    </div>
+    <div class="onboarding-step">
+      <div class="onboarding-progress">${dots}</div>
+    </div>
+    <div class="onboarding-footer">
+      <button class="btn btn-ghost btn-sm" style="color:var(--text-3);" onclick="skipFeatureTour()">Passer</button>
+      <div style="display:flex;gap:8px;">
+        ${_featureTourStep > 0 ? `<button class="btn btn-secondary btn-sm" onclick="_featureTourStep--;renderFeatureTourStep()">← Retour</button>` : ''}
+        <button class="btn btn-primary" onclick="${isLast ? 'skipFeatureTour()' : '_featureTourStep++;renderFeatureTourStep()'}">
+          ${isLast ? '🚀 C\'est parti !' : 'Suivant →'}
+        </button>
+      </div>
+    </div>
+  </div>`;
+  document.body.appendChild(overlay);
+}
+
+function skipFeatureTour() {
+  localStorage.setItem('coprosync-feature-tour', '1');
+  localStorage.setItem('coprosync-onboarded', '1');
+  document.getElementById('feature-tour-overlay')?.remove();
 }
 
 let _onboardStep = 0;
@@ -7053,7 +7179,18 @@ const ONBOARD_STEPS = [
 
 function showOnboarding() {
   if ($('onboarding-overlay')) return;
+  // Détermine le premier step non complété
   _onboardStep = 0;
+  if (profile.prenom) {
+    // Identité déjà renseignée → skip étape 1
+    const identiteIdx = ONBOARD_STEPS.findIndex(s => s.action === 'identite');
+    if (identiteIdx >= 0 && _onboardStep <= identiteIdx) _onboardStep = identiteIdx + 1;
+  }
+  if (profile.tour && profile.lot) {
+    // Tour/lot déjà renseignés → skip étape tour
+    const tourIdx = ONBOARD_STEPS.findIndex(s => s.action === 'tour');
+    if (tourIdx >= 0 && _onboardStep <= tourIdx) _onboardStep = tourIdx + 1;
+  }
   renderOnboardingStep();
 }
 
@@ -7082,7 +7219,10 @@ function renderOnboardingStep() {
         <option value="">— Sélectionner ma tour —</option>
         ${COPRO.tours.map(t => `<option value="${t}" ${profile?.tour===t?'selected':''}>${t}</option>`).join('')}
       </select>
-      <input type="text" id="ob-lot" class="input" placeholder="Numéro de lot (ex: 148)" value="${escHtml(profile?.lot||'')}" style="width:100%;">`;
+      <input type="text" id="ob-lot" class="input" placeholder="Numéro de lot (ex: 148)" value="${escHtml(profile?.lot||'')}" style="width:100%;margin-bottom:8px;">
+      <div style="background:var(--blue-light);border:1px solid var(--blue-border);border-radius:8px;padding:8px 12px;font-size:11.5px;color:var(--accent);line-height:1.6;">
+        💡 Votre numéro de lot figure sur votre <strong>titre de propriété</strong>, votre <strong>avis de charges</strong> ou votre <strong>boîte aux lettres</strong>.
+      </div>`;
   } else if (step.action === 'notif') {
     actionHtml = `
       <button class="btn btn-primary" style="width:100%;margin-bottom:8px;" onclick="askNotifPermission().then(()=>{_onboardStep++;renderOnboardingStep();})">
@@ -7167,6 +7307,10 @@ async function nextOnboardStep() {
 function skipOnboarding() {
   localStorage.setItem('coprosync-onboarded', '1');
   $('onboarding-overlay')?.remove();
+  // Lance le tour des fonctionnalités si pas encore vu
+  if (!localStorage.getItem('coprosync-feature-tour')) {
+    setTimeout(showFeatureTour, 400);
+  }
 }
 
 // ══════════════════════════════════════════════
