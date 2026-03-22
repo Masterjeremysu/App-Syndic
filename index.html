@@ -289,43 +289,97 @@ body {
 .card-title { font-family: var(--font-head); font-size: 14px; font-weight: 700; }
 
 /* ── STATS ── */
-.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; margin-bottom: 22px; }
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+/* ── STAT CARDS — Editorial style ── */
 .stat {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-  padding: 18px 20px;
+  border-radius: 16px;
+  padding: 20px 18px 16px;
   cursor: pointer;
-  transition: all .2s cubic-bezier(.4,0,.2,1);
+  transition: all .25s cubic-bezier(.4,0,.2,1);
   position: relative; overflow: hidden;
+  display: flex; flex-direction: column;
 }
+
+/* Accent diagonal background */
+.stat::after {
+  content: '';
+  position: absolute;
+  bottom: -20px; right: -20px;
+  width: 80px; height: 80px;
+  border-radius: 50%;
+  opacity: .06;
+  transition: all .3s ease;
+}
+.stat:hover::after { transform: scale(1.8); opacity: .1; }
+.stat.red::after   { background: var(--red); }
+.stat.orange::after { background: var(--orange); }
+.stat.green::after  { background: var(--green); }
+.stat.blue::after   { background: var(--accent); }
+
+.stat:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0,0,0,.08);
+  border-color: var(--border-strong);
+}
+
+/* Top accent line */
 .stat::before {
   content: '';
-  position: absolute; top: 0; left: 0; right: 0; height: 3px;
-  border-radius: 0 0 2px 2px;
-  opacity: 0; transition: opacity .2s;
+  position: absolute; top: 0; left: 0; right: 0;
+  height: 2px; border-radius: 0;
+  transform: scaleX(0); transform-origin: left;
+  transition: transform .3s cubic-bezier(.4,0,.2,1);
 }
-.stat:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); }
-.stat:hover::before { opacity: 1; }
-.stat.red::before { background: var(--red); }
-.stat.orange::before { background: var(--orange); }
-.stat.green::before { background: var(--green); }
-.stat.blue::before { background: var(--accent); }
+.stat:hover::before { transform: scaleX(1); }
+.stat.red::before    { background: linear-gradient(90deg, var(--red), transparent); }
+.stat.orange::before { background: linear-gradient(90deg, var(--orange), transparent); }
+.stat.green::before  { background: linear-gradient(90deg, var(--green), transparent); }
+.stat.blue::before   { background: linear-gradient(90deg, var(--accent), transparent); }
+
 .stat-icon {
-  font-size: 22px; margin-bottom: 10px; display: block;
-  filter: grayscale(.3);
+  font-size: 20px; margin-bottom: 12px;
+  width: 38px; height: 38px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 10px; background: var(--surface-2);
+  border: 1px solid var(--border);
+  flex-shrink: 0;
 }
 .stat-num {
-  font-family: var(--font-head); font-size: 36px; font-weight: 800;
-  line-height: 1; margin-bottom: 4px;
-  background: linear-gradient(135deg, currentColor, currentColor);
+  font-family: var(--font-head);
+  font-size: 40px; font-weight: 800;
+  line-height: 1; margin-bottom: 6px;
+  letter-spacing: -2px;
+  animation: countIn .4s cubic-bezier(.34,1.56,.64,1) both;
 }
-.stat-label { font-size: 12px; color: var(--text-2); font-weight: 600; letter-spacing: .01em; }
+@keyframes countIn {
+  from { opacity: 0; transform: translateY(8px) scale(.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+/* Stagger */
+.stats-row .stat:nth-child(1) .stat-num { animation-delay: .05s; }
+.stats-row .stat:nth-child(2) .stat-num { animation-delay: .10s; }
+.stats-row .stat:nth-child(3) .stat-num { animation-delay: .15s; }
+.stats-row .stat:nth-child(4) .stat-num { animation-delay: .20s; }
+
+.stat-label { font-size: 13px; color: var(--text); font-weight: 700; letter-spacing: -.1px; }
 .stat-sub { font-size: 11px; color: var(--text-3); margin-top: 3px; }
-.stat.red .stat-num { color: var(--red); }
+
+.stat.red .stat-num    { color: var(--red); }
 .stat.orange .stat-num { color: var(--orange); }
-.stat.green .stat-num { color: var(--green); }
-.stat.blue .stat-num { color: var(--accent); }
+.stat.green .stat-num  { color: var(--green); }
+.stat.blue .stat-num   { color: var(--accent); }
+.stat.red .stat-icon   { background: var(--red-light); border-color: var(--red-border); }
+.stat.orange .stat-icon { background: var(--orange-light); border-color: var(--orange-border); }
+.stat.green .stat-icon  { background: var(--green-light); border-color: var(--green-border); }
+.stat.blue .stat-icon   { background: var(--blue-light); border-color: var(--blue-border); }
 
 /* ── BADGES ── */
 .badge {
@@ -572,11 +626,20 @@ tbody tr:hover td { background: var(--bg); }
 .fbar .select { width: auto; }
 
 /* ── ACTIVITY ── */
-.act-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.act-item {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 12px 0; border-bottom: 1px solid var(--border);
+  transition: background .12s; cursor: pointer;
+}
 .act-item:last-child { border-bottom: none; }
-.act-ic { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; margin-top: 1px; }
-.act-txt { font-size: 13px; line-height: 1.4; }
-.act-sub { font-size: 11.5px; color: var(--text-2); margin-top: 2px; }
+.act-item:hover { background: var(--surface-2); margin: 0 -14px; padding: 12px 14px; border-radius: 8px; border-bottom-color: transparent; }
+.act-ic {
+  width: 32px; height: 32px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0; margin-top: 1px;
+}
+.act-txt { font-size: 13.5px; line-height: 1.4; font-weight: 600; color: var(--text); }
+.act-sub { font-size: 11.5px; color: var(--text-3); margin-top: 2px; }
 .act-time { font-size: 11px; color: var(--text-3); }
 
 /* ── EMPTY STATE ── */
@@ -3333,85 +3396,88 @@ async function renderDashboard() {
   el.innerHTML = `
   <div style="padding:16px;max-width:100%;box-sizing:border-box;" id="dash-content">
 
-    <!-- HERO -->
-    <div style="margin-bottom:20px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+    <!-- HERO ÉDITORIAL -->
+    <div style="margin-bottom:24px;padding-bottom:20px;border-bottom:2px solid var(--border);position:relative;">
+      <!-- Fil de date -->
+      <div style="font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+        <span style="display:inline-block;width:20px;height:1px;background:var(--border-strong);"></span>
+        ${new Date().toLocaleDateString('fr-FR', {weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+        <span style="display:inline-block;width:20px;height:1px;background:var(--border-strong);"></span>
+      </div>
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;flex-wrap:wrap;gap:12px;">
         <div>
-          <h1 style="font-family:var(--font-head);font-size:clamp(22px,4vw,32px);font-weight:800;letter-spacing:-.5px;line-height:1.1;margin-bottom:3px;">
+          <h1 style="font-family:var(--font-head);font-size:clamp(26px,4vw,44px);font-weight:800;letter-spacing:-1.5px;line-height:1;margin-bottom:6px;">
             Bonjour, ${displayName(profile?.prenom, profile?.nom, user?.email, 'bienvenue').split(' ')[0]} 👋
           </h1>
-          <p style="font-size:13px;color:var(--text-3);">
-            ${new Date().toLocaleDateString('fr-FR', {weekday:'long',day:'numeric',month:'long',year:'numeric'})}
-            ${ouverts.length > 0 ? ` · <span style="color:var(--orange);font-weight:600;">${ouverts.length} signalement${ouverts.length>1?'s':''} ouvert${ouverts.length>1?'s':''}</span>` : ' · <span style="color:var(--green);font-weight:600;">Tout va bien 🎉</span>'}
-          </p>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            ${critiques.length > 0
+              ? `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--red-light);border:1px solid var(--red-border);color:var(--red);font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;">🔴 ${critiques.length} critique${critiques.length>1?'s':''}</span>`
+              : `<span style="display:inline-flex;align-items:center;gap:5px;background:var(--green-light);border:1px solid var(--green-border);color:var(--green);font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;">✅ Tout va bien</span>`
+            }
+            ${ouverts.length > 0 ? `<span style="font-size:12px;color:var(--text-3);">${ouverts.length} signalement${ouverts.length>1?'s':''} en cours</span>` : ''}
+          </div>
         </div>
-        <button class="btn btn-primary btn-sm" onclick="openNewTicket()" style="flex-shrink:0;">
-          + Signaler
+        <button class="btn btn-primary" onclick="openNewTicket()" style="flex-shrink:0;gap:6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Signaler
         </button>
       </div>
     </div>
 
     <div class="stats-row">
-      <div class="stat orange" onclick="nav('tickets')">
-        <span class="stat-icon">🔧</span>
+      <div class="stat orange" onclick="nav('tickets')" style="animation:pageIn .3s .05s both;">
+        <div class="stat-icon">🔧</div>
         <div class="stat-num">${ouverts.length}</div>
         <div class="stat-label">Ouverts</div>
         <div class="stat-sub">Signalements actifs</div>
       </div>
-      <div class="stat red" onclick="nav('tickets')">
-        <span class="stat-icon">🚨</span>
+      <div class="stat red" onclick="nav('tickets')" style="animation:pageIn .3s .10s both;">
+        <div class="stat-icon">🚨</div>
         <div class="stat-num">${critiques.length}</div>
         <div class="stat-label">Critiques</div>
         <div class="stat-sub">Action requise</div>
       </div>
       ${isManager() ? `
-      <div class="stat blue">
-        <span class="stat-icon">📤</span>
+      <div class="stat blue" style="animation:pageIn .3s .15s both;">
+        <div class="stat-icon">📤</div>
         <div class="stat-num">${syndic.length}</div>
         <div class="stat-label">Transmis</div>
         <div class="stat-sub">En attente</div>
       </div>` : `
-      <div class="stat blue" onclick="nav('tickets')">
-        <span class="stat-icon">📋</span>
+      <div class="stat blue" onclick="nav('tickets')" style="animation:pageIn .3s .15s both;">
+        <div class="stat-icon">📋</div>
         <div class="stat-num">${t.filter(x=>x.auteur_id===user.id).length}</div>
         <div class="stat-label">Les miens</div>
         <div class="stat-sub">Créés par moi</div>
       </div>`}
-      <div class="stat green">
-        <span class="stat-icon">✅</span>
+      <div class="stat green" style="animation:pageIn .3s .20s both;">
+        <div class="stat-icon">✅</div>
         <div class="stat-num">${resolus.length}</div>
         <div class="stat-label">Résolus</div>
         <div class="stat-sub">Total traités</div>
       </div>
     </div>
 
-    ${critiques.length > 0 ? `
-    <div style="background:var(--red-light);border:1px solid var(--red-border);border-radius:var(--r-lg);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;gap:10px;overflow:hidden;">
-      <span style="font-size:18px;flex-shrink:0;">🚨</span>
-      <div style="flex:1;min-width:0;">
-        <div style="font-weight:700;color:var(--red);font-size:13px;">${critiques.length} signalement(s) critique(s)</div>
-        <div style="font-size:11px;color:var(--red);opacity:.8;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${critiques.map(c=>c.titre).join(' · ')}</div>
-      </div>
-      <button class="btn btn-danger btn-sm" style="flex-shrink:0;" onclick="nav('tickets')">Voir</button>
-    </div>` : ''}
-
     <div class="g2">
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Signalements récents</span>
-          <button class="btn btn-ghost btn-sm" onclick="nav('tickets')">Tout voir →</button>
+      <!-- SIGNALEMENTS RÉCENTS -->
+      <div class="card" style="animation:pageIn .3s .25s both;">
+        <div class="card-header" style="padding:14px 16px;">
+          <div>
+            <span class="card-title" style="font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:700;">Signalements récents</span>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="nav('tickets')" style="font-size:12px;">Tout voir →</button>
         </div>
-        <div style="padding:4px 0;">
+        <div style="padding:0 16px 8px;">
           ${recent.length === 0 ? emptyState('📋', 'Tout va bien !', 'Aucun signalement en cours dans la résidence.', '<button class="btn btn-primary btn-sm" onclick="openNewTicket()">+ Signaler un problème</button>') :
             recent.map(t => `
-              <div class="act-item" style="padding:10px 14px;cursor:pointer;" onclick="openDetail('${t.id}')">
-                <div class="act-ic" style="background:${t.urgence==='critique'?'var(--red-light)':t.urgence==='important'?'var(--orange-light)':'var(--blue-light)'};flex-shrink:0;">
+              <div class="act-item" onclick="openDetail('${t.id}')">
+                <div class="act-ic" style="background:${t.urgence==='critique'?'var(--red-light)':t.urgence==='important'?'var(--orange-light)':'var(--blue-light)'};border:1px solid ${t.urgence==='critique'?'var(--red-border)':t.urgence==='important'?'var(--orange-border)':'var(--blue-border)'};">
                   ${t.urgence==='critique'?'🔴':t.urgence==='important'?'🟠':'🔵'}
                 </div>
                 <div style="flex:1;min-width:0;overflow:hidden;">
-                  <div class="act-txt" style="font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">${escHtml(t.titre)}</div>
+                  <div class="act-txt" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;">${escHtml(t.titre)}</div>
                   <div class="act-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escHtml(t.batiment||'')}${t.zone?' · '+escHtml(t.zone):''}</div>
-                  <div style="display:flex;align-items:center;gap:6px;margin-top:3px;">
+                  <div style="display:flex;align-items:center;gap:6px;margin-top:4px;">
                     ${badgeStatut(t.statut)}
                     <span style="font-size:10px;color:var(--text-3);">⏱ ${depuisJours(t.created_at)}</span>
                   </div>
@@ -3421,33 +3487,36 @@ async function renderDashboard() {
       </div>
 
       <div style="display:flex;flex-direction:column;gap:14px;">
-        <!-- Widget stats mensuelles -->
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">📈 Activité (6 mois)</span>
+        <!-- GRAPHIQUE -->
+        <div class="card" style="animation:pageIn .3s .30s both;">
+          <div class="card-header" style="padding:14px 16px;">
+            <span class="card-title" style="font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:700;">Activité · 6 mois</span>
           </div>
-          <div style="padding:12px 14px;">
-            <canvas id="dash-chart" height="120"></canvas>
+          <div style="padding:8px 16px 16px;">
+            <canvas id="dash-chart" height="110"></canvas>
           </div>
         </div>
 
-        <div class="card">
-          <div class="card-header">
-            <span class="card-title">Par bâtiment</span>
+        <!-- PAR BÂTIMENT -->
+        <div class="card" style="animation:pageIn .3s .35s both;">
+          <div class="card-header" style="padding:14px 16px;">
+            <span class="card-title" style="font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3);font-weight:700;">Par bâtiment</span>
           </div>
-          <div style="padding:12px 14px;">
+          <div style="padding:8px 16px 14px;">
             ${[...COPRO.tours, 'Parking visiteurs','Parking privé','Garages','Aire de jeux','Portails / portillons','Extérieur général'].map(zone => {
               const cnt = ouverts.filter(t => t.batiment === zone).length;
               if (cnt === 0) return '';
               const isTour = zone.startsWith('Tour');
-              return `<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;min-width:0;">
-                <div style="font-size:12px;flex-shrink:0;width:80px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${isTour ? '🏢 '+zone : '📍 '+zone}</div>
-                <div style="background:var(--bg);border-radius:4px;height:8px;flex:1;overflow:hidden;">
-                  <div style="background:var(--accent);height:100%;width:${Math.min(100,cnt*25)}%;border-radius:4px;transition:width .4s;"></div>
+              const pct = Math.min(100, cnt * 25);
+              const barColor = cnt >= 3 ? 'var(--red)' : cnt >= 2 ? 'var(--orange)' : 'var(--accent)';
+              return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;min-width:0;">
+                <div style="font-size:12px;font-weight:600;flex-shrink:0;width:72px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-2);">${isTour ? zone : zone.split(' ')[0]}</div>
+                <div style="background:var(--surface-2);border-radius:3px;height:6px;flex:1;overflow:hidden;">
+                  <div style="background:${barColor};height:100%;width:${pct}%;border-radius:3px;transition:width .6s cubic-bezier(.4,0,.2,1);"></div>
                 </div>
-                <div style="font-size:12px;font-weight:700;color:var(--accent);flex-shrink:0;min-width:16px;text-align:right;">${cnt}</div>
+                <div style="font-size:12px;font-weight:800;color:${barColor};flex-shrink:0;min-width:14px;text-align:right;">${cnt}</div>
               </div>`;
-            }).join('') || '<div style="font-size:13px;color:var(--text-3);">Aucun problème ouvert 🎉</div>'}
+            }).join('') || '<div style="font-size:13px;color:var(--text-3);text-align:center;padding:8px 0;">Aucun problème ouvert 🎉</div>'}
           </div>
         </div>
 
