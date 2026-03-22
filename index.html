@@ -2278,10 +2278,12 @@ tbody tr:hover td { background: var(--bg); }
           <div style="display:flex;gap:8px;">
             <div class="fg" style="flex:1;">
               <label class="label">Ma tour</label>
-              <select id="auth-tour" class="input" style="appearance:none;">
-                <option value="">Choisir…</option>
-                <option>Tour 13</option><option>Tour 15</option>
-                <option>Tour 17</option><option>Tour 19</option>
+              <select id="auth-tour" class="input" style="appearance:none;background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22%3E%3Cpath d=%22M6 9l6 6 6-6%22 stroke=%22rgba(255,255,255,.4)%22 stroke-width=%222%22 fill=%22none%22/%3E%3C/svg%3E');background-repeat:no-repeat;background-position:right 12px center;color:rgba(255,255,255,.8);">
+                <option value="" style="background:#1c1b19;color:#f0ede8;">Choisir…</option>
+                <option style="background:#1c1b19;color:#f0ede8;">Tour 13</option>
+                <option style="background:#1c1b19;color:#f0ede8;">Tour 15</option>
+                <option style="background:#1c1b19;color:#f0ede8;">Tour 17</option>
+                <option style="background:#1c1b19;color:#f0ede8;">Tour 19</option>
               </select>
             </div>
             <div class="fg" style="flex:1;">
@@ -7074,19 +7076,27 @@ async function deleteContact(id) {
 
 // ── ONBOARDING — Nouveaux résidents ──
 function checkOnboarding() {
-  if (localStorage.getItem('coprosync-onboarded')) return;
   if (!user || !profile) return;
-  // Si tout est déjà renseigné → juste le tour des fonctionnalités
-  if (profile.tour && profile.prenom && profile.lot) {
-    // Lance directement le tour des fonctionnalités si jamais vu
-    if (!localStorage.getItem('coprosync-feature-tour')) {
-      showFeatureTour();
-    } else {
+
+  const onboarded = localStorage.getItem('coprosync-onboarded');
+  const featureSeen = localStorage.getItem('coprosync-feature-tour');
+
+  // Si pas encore onboardé → lance l'onboarding (qui lancera le feature tour à la fin)
+  if (!onboarded) {
+    // Si tout est déjà renseigné → skip onboarding, va direct au feature tour
+    if (profile.tour && profile.prenom && profile.lot) {
       localStorage.setItem('coprosync-onboarded', '1');
+      if (!featureSeen) showFeatureTour();
+    } else {
+      showOnboarding();
     }
     return;
   }
-  showOnboarding();
+
+  // Déjà onboardé mais feature tour pas encore vu → le montrer
+  if (!featureSeen) {
+    setTimeout(showFeatureTour, 800);
+  }
 }
 
 // ── TOUR DES FONCTIONNALITÉS ──
