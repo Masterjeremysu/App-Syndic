@@ -5945,7 +5945,8 @@ function renderRapport() {
     <div class="ph"><h1>Rapport syndic</h1><p>Document de synthèse à transmettre</p></div>
     <div style="display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
       <button class="btn btn-primary" onclick="exportRapportPDF()">🖨️ Exporter en PDF</button>
-      <button class="btn btn-secondary" onclick="exportCSV()">📊 Export CSV</button>
+      <button class="btn btn-secondary" onclick="exportXLSX()">📊 Export Excel</button>
+      <button class="btn btn-ghost btn-sm" onclick="exportCSV()">CSV</button>
       <span style="margin-left:auto;font-size:12px;color:var(--text-3);">Généré le ${today}</span>
     </div>
 
@@ -6227,6 +6228,127 @@ function exportCSV() {
   a.download = `coprosync_${new Date().toISOString().split('T')[0]}.csv`;
   a.click();
   toast('Export CSV téléchargé', 'ok');
+}
+
+async function exportXLSX() {
+  toast('Génération Excel en cours…', 'ok');
+  try {
+    // Charge SheetJS depuis CDN
+    if (!window.XLSX) {
+      await new Promise((res, rej) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+        s.onload = res; s.onerror = rej;
+        document.head.appendChild(s);
+      });
+    }
+
+    const today = new Date().toLocaleDateString('fr-FR');
+    const wb = XLSX.utils.book_new();
+
+    // ── ONGLET 1 — SIGNALEMENTS ──
+    const statLabels = { nouveau:'Nouveau', en_cours:'En cours', transmis_syndic:'Transmis syndic', attente_intervention:'En attente', résolu:'Résolu', clos:'Clos' };
+    const urgLabels  = { critique:'Critique', important:'Important', normal:'Normal' };
+    const catLabels  = { ascenseur:'Ascenseur', fuite:'Fuite / eau', electricite:'Électricité', securite:'Sécurité', proprete:'Propreté', espaces_verts:'Espaces verts', serrurerie:'Serrurerie', parking:'Parking', autre:'Autre' };
+
+    const ticketData = [
+      ['N° Réf.','Titre','Bâtiment','Zone','Urgence','Statut','Catégorie','Auteur','Lot auteur','Date signalement','Jours ouverts'],
+      ...cache.tickets.map(t => {
+        const jours = Math.floor((new Date() - new Date(t.created_at)) / 86400000);
+        return [
+          (t.reference || t.id.substring(0,8)).toUpperCase(),
+          t.titre || '',
+          t.batiment || '',
+          t.zone || '',
+          urgLabels[t.urgence] || t.urgence || '',
+          statLabels[t.statut] || t.statut || '',
+          catLabels[t.categorie] || t.categorie || '',
+          displayName(t.auteur_prenom, t.auteur_nom, t.auteur_email, ''),
+          t.auteur_lot || '',
+          fmtD(t.created_at),
+          jours,
+        ];
+      })
+    ];
+    const ws1 = XLSX.utils.aoa_to_sheet(ticketData);
+    ws1['!cols'] = [10,40,14,22,12,18,16,22,10,16,12].map(w => ({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws1, '🎫 Signalements');
+
+    // ── ONGLET 2 — RÉSIDENTS ──
+    const { data: residents } = await sb.from('profiles').select('*').order('created_at', { ascending: false });
+    const roleLabels = { administrateur:'Administrateur', syndic:'Syndic', membre_cs:'Conseil Syndical', 'copropriétaire':'Copropriétaire' };
+    const resData = [
+      ['Nom','Prénom','Tour','N° Lot','Email','Téléphone','Rôle','Statut','Inscrit le'],
+      ...(residents||[]).map(u => [
+        u.nom || '',
+        u.prenom || '',
+        u.tour || '',
+        u.lot || '',
+        u.email || '',
+        u.telephone || '',
+        roleLabels[u.role] || u.role || '',
+        u.actif === false ? 'Suspendu' : 'Actif',
+        fmtD(u.created_at),
+      ])
+    ];
+    const ws2 = XLSX.utils.aoa_to_sheet(resData);
+    ws2['!cols'] = [18,16,12,10,30,16,18,12,16].map(w => ({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws2, '👥 Résidents');
+
+    // ── ONGLET 3 — CONTRATS ──
+    const contratsData = [
+      ['Fournisseur','Type','Date début','Date échéance','Montant/an (€)','Contact','Délai (jours)'],
+      ...(cache.contrats||[]).map(c => [
+        c.fournisseur || '',
+        c.type_contrat || '',
+        fmtD(c.date_debut),
+        fmtD(c.date_echeance),
+        c.montant_annuel || '',
+        c.contact_nom || '',
+        daysUntil(c.date_echeance) ?? '',
+      ])
+    ];
+    const ws3 = XLSX.utils.aoa_to_sheet(contratsData);
+    ws3['!cols'] = [28,24,14,16,16,20,14].map(w => ({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws3, '📄 Contrats');
+
+    // ── ONGLET 4 — STATISTIQUES ──
+    const t = cache.tickets;
+    const ouverts = t.filter(x => x.statut !== 'résolu' && x.statut !== 'clos');
+    const resolus = t.filter(x => x.statut === 'résolu' || x.statut === 'clos');
+    const taux = t.length ? Math.round(resolus.length/t.length*100) : 0;
+    const statsData = [
+      ['Indicateur', 'Valeur'],
+      ['Total signalements', t.length],
+      ['Signalements ouverts', ouverts.length],
+      ['Signalements résolus', resolus.length],
+      ['Critiques actifs', ouverts.filter(x=>x.urgence==='critique').length],
+      ['Transmis au syndic', ouverts.filter(x=>x.statut==='transmis_syndic').length],
+      ['Taux de résolution (%)', taux],
+      ['Résidents inscrits', (residents||[]).length],
+      ['Contrats actifs', (cache.contrats||[]).length],
+      ['', ''],
+      ['Répartition par bâtiment', ''],
+      ...['Tour 13','Tour 15','Tour 17','Tour 19'].map(tour => [
+        tour, ouverts.filter(x=>x.batiment===tour).length
+      ]),
+      ['', ''],
+      ['Export généré le', today],
+      ['Par', displayNameFromProfile(profile, user?.email)],
+    ];
+    const ws4 = XLSX.utils.aoa_to_sheet(statsData);
+    ws4['!cols'] = [{wch:35},{wch:20}];
+    XLSX.utils.book_append_sheet(wb, ws4, '📊 Statistiques');
+
+    // Téléchargement
+    const filename = `CoproSync_Floreal_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, filename);
+    toast('✅ Export Excel téléchargé !', 'ok');
+
+  } catch(e) {
+    console.error('[exportXLSX]', e);
+    toast('Erreur export Excel : ' + e.message, 'err');
+  }
 }
 
 // ── PWA / SERVICE WORKER ──
