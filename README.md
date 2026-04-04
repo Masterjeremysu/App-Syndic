@@ -91,5 +91,5 @@ Un espace structuré pour en finir avec le chaos des fils de discussion informel
   <b>Propulsé par la passion du code au service du Floréal.</b><br />
   <sub>Sassenage, France • 2026</sub>
   <br />
-  <img src="https://capsule-render.vercel.app/render?type=rect&color=111827&height=30&section=footer" width="100%" />
+  <img src="[https://capsule-render.vercel.app](https://github.com/Masterjeremysu/App-Syndic/blob/main/icon-512.png)/render?type=rect&color=111827&height=30&section=footer" width="100%" />
 </div>
