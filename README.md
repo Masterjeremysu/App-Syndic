@@ -1,71 +1,67 @@
-# App-Syndic
+🏢 CoproSync - Résidence le Floréal
 
-Application web de gestion de copropriete (CoproSync).
+CoproSync est une plateforme moderne de gestion opérationnelle pour la copropriété du 13-19 rue du Moucherotte, Sassenage. Elle centralise les incidents, les échanges entre voisins, les votes et le suivi en temps réel pour simplifier la vie en communauté.
 
-## Arborescence
+🚀 Les Nouveautés (Dernière Mise à Jour)
 
-```text
-App-Syndic-main/
-  index.html
-  manifest.json
-  sw.js
-  vercel.json
-  supabase_schema.sql
-  assets/
-    css/
-      app.css
-    js/
-      core/
-        config.js
-        state.js
-        helpers.js
-        app-start.js
-        bootstrap-session.js
-      services/
-        data-loaders.js
-        realtime-notifications.js
-        logging.js
-        email.js
-        pwa.js
-      features/
-        auth/auth.js
-        navigation/navigation.js
-        ui/modal.js
-        ui/render-router.js
-        dashboard/dashboard.js
-        tickets/ticket-detail.js
-        tickets/ticket-form.js
-        tickets/ticket-map.js
-        assets/contrats.js
-        assets/cles.js
-        assets/journal.js
-        users/users.js
-        notifications/notifications-page.js
-        profile/profile.js
-        register/qr-and-register-link.js
-        register/register-page.js
-        reports/rapport.js
-        mobile/mobile-interactions.js
-        annonces/annonces.js
-        agenda/agenda.js
-        theme/theme.js
-        search/search.js
-        contacts/contacts.js
-        onboarding/onboarding.js
-        documents/documents.js
-        votes/votes.js
-        messages/messages.js
-```
+Après un sprint de développement intensif de 4 jours, la version actuelle apporte des changements majeurs :
 
-## Decoupage applique
+Sécurité Master : Refonte complète des protocoles d'accès et homogénéisation du code pour une protection accrue des données.
 
-- `index.html`: structure de page, metas SEO/PWA, import des librairies externes.
-- `assets/css/app.css`: tout le style de l'application.
-- `assets/js/core/*`: configuration, etat global, helpers, demarrage, bootstrap session.
-- `assets/js/services/*`: services transverses (data, realtime, logs, email, pwa).
-- `assets/js/features/*`: fonctionnalites metier decouplees par domaine.
+Gouvernance par Rôles : -   Conseil Syndical : Tous les membres disposent désormais d'un rôle spécifique avec des outils de gestion dédiés.
 
-## Chargement des modules
+Syndic : Interface restreinte à des actions ultra-spécifiques et limitées pour un contrôle maîtrisé.
 
-Les scripts sont charges dans `index.html` dans un ordre volontaire pour conserver les dependances globales entre modules.
-Chaque fichier peut etre modifie de maniere isolee tant que les API globales qu'il expose restent stables.
+Copropriétaires : Nouvelles options de personnalisation et de suivi de leurs lots.
+
+Mur des Voisins : Lancement d'un espace social structuré par catégories :
+
+Panneau Officiel, Entraide, Petites annonces, Vie du quartier, Événements, Infos pratiques, Vie de la copro.
+
+Optimisation UI/UX : -   Refonte de la carte interactive avec un nouveau système de filtres pour une meilleure lisibilité.
+
+Navigation simplifiée dans les rapports grâce à de nombreux filtres dynamiques.
+
+Accessibilité : La FAQ est désormais consultable sans compte (idéal pour les nouveaux arrivants).
+
+🛠️ Stack Technique
+
+Frontend : HTML5, CSS3 (Custom Properties, Syne & Instrument Sans fonts).
+
+Backend & Auth : Supabase (Gestion des données et authentification).
+
+Cartographie : Leaflet.js pour la visualisation spatiale de la résidence.
+
+Mobile First : Application conçue comme une PWA (Progressive Web App) pour une installation sur smartphone.
+
+📋 Fonctionnalités Clés
+
+Gestion d'Incidents : Signalez un problème en quelques clics et suivez sa résolution.
+
+Documents : Accès centralisé aux PV d'assemblée, règlements et FAQ.
+
+Votes & Sondages : Participez aux décisions de la copropriété à distance.
+
+Notifications Centralisées : Une boîte mail dédiée regroupe désormais tous les flux importants (nouveaux signalements, demandes d'ajouts de comptes, notifications système).
+
+🛡️ Installation & Contribution
+
+Le projet est structuré pour être léger et rapide à charger :
+
+Cloner le repo.
+
+Configurer les clés Supabase dans assets/js/app.js.
+
+Lancer index.html via un serveur local.
+
+Note aux testeurs : N'hésitez pas à faire remonter les bugs ou les incohérences de parcours utilisateur via les canaux de communication officiels.
+
+📧 Contact & Support
+
+Pour toute question relative à l'accès ou à l'utilisation :
+
+Support : Via la boîte mail dédiée aux notifications de l'application.
+
+FAQ : Disponible directement sur la page de connexion.
+
+Développé avec ❤️ pour la Résidence le Floréal.
