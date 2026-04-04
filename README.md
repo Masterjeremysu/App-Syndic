@@ -1,67 +1,67 @@
-🏢 CoproSync - Résidence le Floréal
+L'OS de la Résidence le Floréal. Transformez la gestion de votre copropriété en une expérience fluide, sécurisée et collaborative.
 
-CoproSync est une plateforme moderne de gestion opérationnelle pour la copropriété du 13-19 rue du Moucherotte, Sassenage. Elle centralise les incidents, les échanges entre voisins, les votes et le suivi en temps réel pour simplifier la vie en communauté.
+⚡️ La Révolution de la v2.0
+Après 4 jours de "Deep Work" et de refonte architecturale.
 
-🚀 Les Nouveautés (Dernière Mise à Jour)
+🛡️ Sécurité & Gouvernance "Hardened"
+On ne rigole plus avec les accès. Le système a été blindé pour garantir une étanchéité totale des données :
 
-Après un sprint de développement intensif de 4 jours, la version actuelle apporte des changements majeurs :
+Protocoles Master : Homogénéisation complète des couches de sécurité.
 
-Sécurité Master : Refonte complète des protocoles d'accès et homogénéisation du code pour une protection accrue des données.
+Conseil Syndical 2.0 : Chaque membre possède désormais un rôle granulaire et des outils de pilotage spécifiques.
 
-Gouvernance par Rôles : -   Conseil Syndical : Tous les membres disposent désormais d'un rôle spécifique avec des outils de gestion dédiés.
+Interface Syndic "Sandboxed" : Le syndic dispose de son propre dashboard, volontairement restreint à des actions ultra-ciblées pour une transparence totale.
 
-Syndic : Interface restreinte à des actions ultra-spécifiques et limitées pour un contrôle maîtrisé.
+🗺️ Data Visualization & Navigation
+Cartographie Interactive : Refonte visuelle de la carte (Leaflet) avec système de filtres multicouches.
 
-Copropriétaires : Nouvelles options de personnalisation et de suivi de leurs lots.
+Filtres Avancés : Navigation ultra-rapide dans les rapports et les archives. Trouvez ce que vous cherchez en 2 clics.
 
-Mur des Voisins : Lancement d'un espace social structuré par catégories :
+Accessibilité : FAQ disponible en mode "Public" (sans login) pour accompagner les nouveaux arrivants dès le premier jour.
 
-Panneau Officiel, Entraide, Petites annonces, Vie du quartier, Événements, Infos pratiques, Vie de la copro.
+💬 Le "Mur des Voisins" (Social Hub)
+L'immense nouveauté de cette version. Un espace d'échange structuré pour éviter le chaos des messageries classiques :
+| 📢 Officiel | 🤝 Entraide | 🏷️ Annonces |
+| :--- | :--- | :--- |
+| 📍 Quartier | 🎉 Évènements | 🛠️ Vie Copro |
 
-Optimisation UI/UX : -   Refonte de la carte interactive avec un nouveau système de filtres pour une meilleure lisibilité.
+🏗️ Architecture Technique
+Extrait de code
+graph TD
+    A[Utilisateur] -->|Auth Supabase| B{CoproSync Core}
+    B --> C[Mur des Voisins]
+    B --> D[Gestion Incidents]
+    B --> E[Cartographie Filtres]
+    D --> F[Notifications Centralisées]
+    F --> G[Boîte Mail Master]
+Engine: HTML5 / CSS3 (Design System basé sur Syne & Instrument Sans).
 
-Navigation simplifiée dans les rapports grâce à de nombreux filtres dynamiques.
+Backend: Supabase Realtime Database & Auth.
 
-Accessibilité : La FAQ est désormais consultable sans compte (idéal pour les nouveaux arrivants).
+Maps: Leaflet.js Engine.
 
-🛠️ Stack Technique
+Automation: Système de routage des notifications vers une boîte mail de concentration (Tour de Contrôle).
 
-Frontend : HTML5, CSS3 (Custom Properties, Syne & Instrument Sans fonts).
+🛠 Installation pour les Devs
+Bash
+# Cloner le projet
+git clone https://github.com/Masterjeremysu/App-Syndic.git
 
-Backend & Auth : Supabase (Gestion des données et authentification).
+# Lancer en local
+# Pas de build lourd, juste du pur JS moderne.
+# N'oubliez pas de configurer vos variables Supabase dans app.js
+🚩 Beta-test & Feedback
+Le projet est en constante évolution. Si vous repérez un bug ou une incohérence dans l'UI :
 
-Cartographie : Leaflet.js pour la visualisation spatiale de la résidence.
+Ouvrez une Issue sur ce repo.
 
-Mobile First : Application conçue comme une PWA (Progressive Web App) pour une installation sur smartphone.
+Ou envoyez un signalement via la nouvelle Boîte Mail Centralisée.
 
-📋 Fonctionnalités Clés
+<p align="center">
 
-Gestion d'Incidents : Signalez un problème en quelques clics et suivez sa résolution.
 
-Documents : Accès centralisé aux PV d'assemblée, règlements et FAQ.
+<b>Propulsé par la passion du code au service du 13-19 rue du Moucherotte.</b>
 
-Votes & Sondages : Participez aux décisions de la copropriété à distance.
 
-Notifications Centralisées : Une boîte mail dédiée regroupe désormais tous les flux importants (nouveaux signalements, demandes d'ajouts de comptes, notifications système).
-
-🛡️ Installation & Contribution
-
-Le projet est structuré pour être léger et rapide à charger :
-
-Cloner le repo.
-
-Configurer les clés Supabase dans assets/js/app.js.
-
-Lancer index.html via un serveur local.
-
-Note aux testeurs : N'hésitez pas à faire remonter les bugs ou les incohérences de parcours utilisateur via les canaux de communication officiels.
-
-📧 Contact & Support
-
-Pour toute question relative à l'accès ou à l'utilisation :
-
-Support : Via la boîte mail dédiée aux notifications de l'application.
-
-FAQ : Disponible directement sur la page de connexion.
-
-Développé avec ❤️ pour la Résidence le Floréal.
+<sub>Sassenage, France.</sub>
+</p>
