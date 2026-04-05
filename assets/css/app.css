@@ -3415,3 +3415,223 @@ tbody tr:hover td { background: var(--bg); }
   .feed-pin-btn .feed-pin-lbl { display: none; }
   .feed-board-section { margin: 0 8px 12px; }
 }
+/* ═══════════════════════════════════════════════════════════
+   PATCH NAVIGATION MOBILE — à intégrer dans app.css
+   Remplace / complète les sections : #topbar, #bottom-nav,
+   .bn-item, et @media (max-width: 480px) correspondants.
+═══════════════════════════════════════════════════════════ */
+
+/* ── TOPBAR — titre + sous-titre ──────────────────────────────
+   Remplace la règle existante :
+     .topbar-title { min-width: 0; white-space: ... }
+   Par le bloc ci-dessous.
+────────────────────────────────────────────────────────────── */
+.topbar-title-block {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.topbar-title {
+  font-family: var(--font-head);
+  font-size: 17px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+}
+
+/* Sous-titre — visible uniquement sur mobile */
+.topbar-subtitle {
+  display: none;
+  font-size: 11px;
+  color: var(--text-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+/* Bouton Signaler dans la topbar — masqué sur mobile (le FAB le remplace) */
+.topbar-signaler-btn {
+  /* visible par défaut (desktop) */
+}
+
+/* ── BOTTOM NAV — règles générales ───────────────────────────
+   Remplace le bloc #bottom-nav et .bn-item existants.
+────────────────────────────────────────────────────────────── */
+#bottom-nav {
+  display: none; /* affiché via @media mobile */
+  align-items: stretch;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  /* Hauteur augmentée : 62 → 68px pour zones tactiles 44px min */
+  height: 68px;
+  padding: 0 4px;
+  padding-bottom: max(6px, env(safe-area-inset-bottom, 0px));
+}
+
+.bn-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 5px;
+  gap: 2px;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--text-3);
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  transition: color .2s;
+  position: relative;
+  -webkit-tap-highlight-color: transparent;
+  font-family: var(--font-body);
+}
+
+/* Conteneur icône — remplace le cercle/trait précédent */
+.bn-icon-wrap {
+  width: 44px;
+  height: 30px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .2s cubic-bezier(.4,0,.2,1);
+}
+
+.bn-item svg {
+  width: 22px;
+  height: 22px;
+  stroke-width: 1.8;
+  transition: transform .2s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* État actif — pilule colorée sur l'icône, pas de trait ::before */
+.bn-item::before { display: none; } /* supprime l'ancien trait haut */
+
+.bn-item.active {
+  color: var(--accent);
+}
+
+.bn-item.active .bn-icon-wrap {
+  background: rgba(37, 99, 235, .12);
+}
+
+.bn-item.active svg {
+  transform: scale(1.1);
+}
+
+/* ── FAB central — Signaler ───────────────────────────────── */
+.bn-signaler {
+  flex: 1;
+  color: var(--accent) !important;
+  font-weight: 600;
+}
+
+.bn-signaler-ico {
+  background: var(--accent) !important;
+  box-shadow: 0 3px 12px rgba(37, 99, 235, .35);
+  transition: transform .15s, box-shadow .15s, background .15s !important;
+}
+
+.bn-signaler:active .bn-signaler-ico {
+  transform: scale(.92);
+  box-shadow: 0 1px 6px rgba(37, 99, 235, .25);
+}
+
+/* Badge sur les items de la bottom nav */
+.bn-badge {
+  position: absolute;
+  top: 4px;
+  right: calc(50% - 22px);
+  background: var(--red);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--surface);
+  animation: popIn .2s cubic-bezier(.34,1.56,.64,1);
+}
+
+/* ── @media 480px — mobile ────────────────────────────────── */
+@media (max-width: 480px) {
+
+  /* Topbar */
+  #topbar {
+    padding: 0 10px;
+    height: 52px;
+    gap: 6px;
+  }
+
+  /* Affiche le sous-titre uniquement sur mobile */
+  .topbar-subtitle {
+    display: block;
+  }
+
+  /* Masque le bouton Signaler de la topbar sur mobile */
+  .topbar-signaler-btn {
+    display: none !important;
+  }
+
+  /* Bottom nav — affichée sur mobile */
+  #bottom-nav {
+    display: flex !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 150;
+  }
+
+  /* Labels un peu plus petits sur très petits écrans */
+  .bn-item {
+    font-size: 9px;
+    padding-bottom: 4px;
+  }
+
+  .bn-icon-wrap {
+    width: 40px;
+    height: 28px;
+  }
+
+  .bn-item svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Page — padding bottom pour laisser place à la nav */
+  #page {
+    padding: 10px 10px 90px;
+  }
+
+  /* Connexion banner — remonte légèrement */
+  .connection-banner {
+    top: 8px;
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+}
+
+/* ── Dark mode overrides bottom nav ─────────────────────────── */
+[data-theme="dark"] #bottom-nav {
+  background: #161513;
+  border-color: #2e2c29;
+}
+
+[data-theme="dark"] .bn-item.active .bn-icon-wrap {
+  background: rgba(59, 130, 246, .18);
+}
