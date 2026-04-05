@@ -271,7 +271,11 @@
       <button id="menu-btn" onclick="toggleSidebar()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
       </button>
-      <span class="topbar-title" id="topbar-title">Vue d'ensemble</span>
+      <!-- Bloc titre + sous-titre -->
+      <div class="topbar-title-block">
+        <span class="topbar-title" id="topbar-title">Vue d'ensemble</span>
+        <span class="topbar-subtitle" id="topbar-subtitle">Résidence le Floréal</span>
+      </div>
       <div style="display:flex;align-items:center;gap:8px;">
         <button class="notif-btn" onclick="openSearch()" title="Rechercher (Ctrl+K)">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -286,7 +290,8 @@
           </button>
           <div class="notif-panel" id="notif-panel" style="display:none;"></div>
         </div>
-        <button class="btn btn-primary btn-sm" onclick="openNewTicket()">
+        <!-- Bouton Signaler masqué sur mobile via CSS — le FAB central le remplace -->
+        <button class="btn btn-primary btn-sm topbar-signaler-btn" onclick="openNewTicket()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           Signaler
         </button>
@@ -296,29 +301,38 @@
   </div>
 </div>
 
-<!-- BOTTOM NAV MOBILE -->
+<!-- BOTTOM NAV MOBILE — améliorée -->
 <nav id="bottom-nav">
   <button class="bn-item active" id="bn-dashboard" onclick="nav('dashboard')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    <div class="bn-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    </div>
     Accueil
   </button>
   <button class="bn-item" id="bn-tickets" onclick="nav('tickets')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-    Signalements
+    <div class="bn-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    </div>
+    Tickets
     <span class="bn-badge" id="bn-badge-tickets" style="display:none"></span>
   </button>
+  <!-- FAB central — Signaler -->
   <button class="bn-item bn-signaler" onclick="openNewTicket()">
-    <div class="bn-signaler-ico">
-      <svg viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <div class="bn-icon-wrap bn-signaler-ico">
+      <svg viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19" stroke="white" stroke-width="2.5"/><line x1="5" y1="12" x2="19" y2="12" stroke="white" stroke-width="2.5"/></svg>
     </div>
     Signaler
   </button>
   <button class="bn-item" id="bn-map" onclick="nav('map')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="3,6 9,3 15,6 21,3 21,18 15,21 9,18 3,21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+    <div class="bn-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="3,6 9,3 15,6 21,3 21,18 15,21 9,18 3,21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+    </div>
     Carte
   </button>
   <button class="bn-item" id="bn-messages" onclick="nav('messages')">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    <div class="bn-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    </div>
     Messages
     <span class="bn-badge" id="bn-badge-messages" style="display:none"></span>
   </button>
@@ -344,7 +358,7 @@
         <div id="urgence-hint" style="font-size:11px;color:var(--text-3);margin-top:4px;display:none;">Le niveau Critique est réservé aux gestionnaires de la résidence.</div>
       </div>
 
-      <!-- CATÉGORIE — déclenche les options de zone dynamiques -->
+      <!-- CATÉGORIE -->
       <div class="fg">
         <label class="label">Catégorie *</label>
         <div id="cat-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:7px;">
@@ -360,7 +374,7 @@
         </div>
       </div>
 
-      <!-- LOCALISATION contextuelle -->
+      <!-- LOCALISATION -->
       <div class="fg" id="loc-bloc">
         <label class="label">Localisation *</label>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;" id="loc-selects">
@@ -448,9 +462,7 @@
   </div>
 </div>
 
-<!-- MODAL CONTRAT — avec sélecteur de document bucket -->
-<!-- Remplace l'ancien bloc <div class="overlay" id="m-contrat"> dans index.html -->
-
+<!-- MODAL CONTRAT -->
 <div class="overlay" id="m-contrat">
   <div class="modal" style="max-width:580px;">
     <div class="mh">
@@ -458,8 +470,6 @@
       <button class="mclose" onclick="closeModal('m-contrat'); window._editingContratId=null;">×</button>
     </div>
     <div class="mb">
-
-      <!-- Fournisseur + Type -->
       <div class="fg-row">
         <div class="fg" style="margin:0;">
           <label class="label">Fournisseur *</label>
@@ -486,82 +496,42 @@
           </select>
         </div>
       </div>
-
-      <!-- Dates + Alerte -->
       <div class="fg-row" style="margin-top:14px;">
-        <div class="fg" style="margin:0;">
-          <label class="label">Date de début</label>
-          <input type="date" id="c-deb" class="input">
-        </div>
-        <div class="fg" style="margin:0;">
-          <label class="label">Échéance *</label>
-          <input type="date" id="c-ech" class="input">
-        </div>
-        <div class="fg" style="margin:0;">
-          <label class="label">Alerte avant (jours)</label>
-          <input type="number" id="c-alerte" class="input" value="90" min="0">
-        </div>
+        <div class="fg" style="margin:0;"><label class="label">Date de début</label><input type="date" id="c-deb" class="input"></div>
+        <div class="fg" style="margin:0;"><label class="label">Échéance *</label><input type="date" id="c-ech" class="input"></div>
+        <div class="fg" style="margin:0;"><label class="label">Alerte avant (jours)</label><input type="number" id="c-alerte" class="input" value="90" min="0"></div>
       </div>
-
-      <!-- Montant + Actif -->
       <div class="fg-row" style="margin-top:14px;align-items:flex-end;">
-        <div class="fg" style="margin:0;">
-          <label class="label">Montant annuel (€)</label>
-          <input type="number" id="c-mont" class="input" placeholder="0">
-        </div>
+        <div class="fg" style="margin:0;"><label class="label">Montant annuel (€)</label><input type="number" id="c-mont" class="input" placeholder="0"></div>
         <div class="fg" style="margin:0;display:flex;align-items:center;gap:8px;padding-bottom:4px;">
-          <input type="checkbox" id="c-actif" checked
-            style="width:16px;height:16px;cursor:pointer;accent-color:var(--primary,#6366f1);">
+          <input type="checkbox" id="c-actif" checked style="width:16px;height:16px;cursor:pointer;accent-color:var(--primary,#6366f1);">
           <label for="c-actif" class="label" style="margin:0;cursor:pointer;">Contrat actif</label>
         </div>
       </div>
-
-      <!-- Contact -->
       <fieldset style="border:1px solid var(--border,#e2e8f0);border-radius:10px;padding:14px;margin-top:16px;">
-        <legend style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
-                       color:var(--text-3,#94a3b8);padding:0 6px;">Contact fournisseur</legend>
+        <legend style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3,#94a3b8);padding:0 6px;">Contact fournisseur</legend>
         <div class="fg-row">
-          <div class="fg" style="margin:0;">
-            <label class="label">Nom</label>
-            <input type="text" id="c-cont-nom" class="input" placeholder="Jean Dupont">
-          </div>
-          <div class="fg" style="margin:0;">
-            <label class="label">Téléphone</label>
-            <input type="tel" id="c-cont-tel" class="input" placeholder="06 …">
-          </div>
-          <div class="fg" style="margin:0;">
-            <label class="label">Email</label>
-            <input type="email" id="c-cont-email" class="input" placeholder="contact@…">
-          </div>
+          <div class="fg" style="margin:0;"><label class="label">Nom</label><input type="text" id="c-cont-nom" class="input" placeholder="Jean Dupont"></div>
+          <div class="fg" style="margin:0;"><label class="label">Téléphone</label><input type="tel" id="c-cont-tel" class="input" placeholder="06 …"></div>
+          <div class="fg" style="margin:0;"><label class="label">Email</label><input type="email" id="c-cont-email" class="input" placeholder="contact@…"></div>
         </div>
       </fieldset>
-
-      <!-- Document PDF — sélecteur bucket -->
       <div class="fg" style="margin-top:16px;">
         <label class="label">Document lié <span style="color:var(--text-3);font-weight:400;">(optionnel)</span></label>
         <div class="doc-url-wrap">
           <input type="url" id="c-doc-url" class="input" placeholder="Sélectionnez un fichier depuis vos documents…" readonly>
-          <button type="button" id="btn-browse-docs" class="btn btn-secondary btn-sm" onclick="openDocPicker()">
-            📁 Parcourir
-          </button>
+          <button type="button" id="btn-browse-docs" class="btn btn-secondary btn-sm" onclick="openDocPicker()">📁 Parcourir</button>
         </div>
-        <!-- Preview du fichier sélectionné -->
         <div id="doc-url-preview" style="display:none;margin-top:6px;align-items:center;gap:8px;font-size:12px;color:var(--text-2);">
           <span>📄</span>
           <a id="doc-url-preview-link" href="#" target="_blank" rel="noopener"></a>
-          <button type="button" onclick="clearDocUrl()"
-            style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:14px;padding:0;line-height:1;"
-            title="Retirer le document">×</button>
+          <button type="button" onclick="clearDocUrl()" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:14px;padding:0;line-height:1;" title="Retirer le document">×</button>
         </div>
       </div>
-
-      <!-- Notes -->
       <div class="fg" style="margin-top:14px;">
         <label class="label">Notes</label>
-        <textarea id="c-notes" class="textarea" rows="3"
-          placeholder="Conditions, numéro de contrat, prestations incluses…"></textarea>
+        <textarea id="c-notes" class="textarea" rows="3" placeholder="Conditions, numéro de contrat, prestations incluses…"></textarea>
       </div>
-
     </div>
     <div class="mf">
       <button class="btn btn-secondary" onclick="closeModal('m-contrat'); window._editingContratId=null;">Annuler</button>
