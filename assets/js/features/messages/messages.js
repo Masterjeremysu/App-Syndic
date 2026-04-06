@@ -88,8 +88,7 @@ async function insertFeedPostRowSimple(row) {
 let _msgState = {
   conversations: [], messages: [],
   activeConvId: null,
-  activeChanType: 'feed', // 'feed' | 'chan' | 'dm'
-  // FIX 3 : onglet actif mobile ('feed' | 'channels' | 'dms')
+  activeChanType: 'feed',
   activeMobileTab: 'feed',
   channel: null, feedChannel: null,
   replyTo: null,
@@ -183,14 +182,81 @@ function restoreCurrentDraft() {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-//  RENDER MESSAGES PAGE — avec tab bar mobile (FIX 3)
+//  RENDER MESSAGES PAGE
 // ═══════════════════════════════════════════════════════════════════════
 async function renderMessages() {
   const page = $('page');
   loadMsgDrafts();
 
+  // FIX SCROLL: la page doit être full-height avec flex column pour que msg-layout
+  // puisse occuper tout l'espace restant et que les zones de scroll internes fonctionnent.
+  // On injecte un style global une seule fois si pas déjà présent.
+  if (!document.getElementById('coprosync-msg-styles')) {
+    const st = document.createElement('style');
+    st.id = 'coprosync-msg-styles';
+    st.textContent = `
+      /* FIX SCROLL MOBILE — conteneurs full-height */
+      #page { display: flex; flex-direction: column; height: 100%; overflow: hidden; }
+      .msg-inner-tabs { flex-shrink: 0; }
+      .msg-layout { flex: 1 1 0; min-height: 0; display: flex; overflow: hidden; }
+      .msg-sidebar { display: flex; flex-direction: column; overflow: hidden; }
+      .msg-sidebar-scroll { flex: 1 1 0; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+      .msg-main { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+
+      /* Feed layout */
+      .feed-split { flex: 1 1 0; min-height: 0; display: flex; overflow: hidden; position: relative; }
+      .feed-left-pane { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+      .feed-scroll { flex: 1 1 0; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+      /* Thread pane */
+      .feed-thread-pane { display: flex; flex-direction: column; overflow: hidden; }
+      .feed-thread-wrap { flex: 1 1 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+      .feed-thread-scroll { flex: 1 1 0; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+      /* Chat messages */
+      .chat-messages { flex: 1 1 0; min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+      /* Mobile: sidebar en overlay, main prend tout */
+      @media (max-width: 768px) {
+        .msg-layout { position: relative; }
+        .msg-sidebar {
+          position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+          z-index: 10; width: 100% !important;
+          background: var(--color-background-primary, #fff);
+          transform: translateX(0);
+          transition: transform .2s ease;
+        }
+        .msg-sidebar.hidden {
+          transform: translateX(-100%);
+          pointer-events: none;
+        }
+        .msg-main {
+          position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+          transform: translateX(100%);
+          transition: transform .2s ease;
+          background: var(--color-background-primary, #fff);
+        }
+        .msg-main.visible {
+          transform: translateX(0);
+        }
+        /* Sur mobile, feed-split en colonne pour le thread */
+        .feed-split { flex-direction: column; }
+        .feed-thread-pane { position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 5;
+          background: var(--color-background-primary, #fff);
+          transform: translateX(100%); transition: transform .25s ease; }
+        .feed-split.thread-active .feed-thread-pane { transform: translateX(0); }
+        .feed-split.thread-active .feed-left-pane { pointer-events: none; }
+      }
+
+      /* Empêche le bounce iOS sur les zones non-scrollables */
+      .msg-chan-header, .feed-categories-bar, .feed-compose-bar,
+      .feed-thread-header, .feed-thread-composer, .chat-input-bar,
+      .msg-reply-bar, .chat-typing { flex-shrink: 0; }
+    `;
+    document.head.appendChild(st);
+  }
+
   page.innerHTML = `
-    <!-- FIX 3 : Tab bar mobile sticky -->
     <div class="msg-inner-tabs" id="msg-inner-tabs">
       <button class="msg-inner-tab ${_msgState.activeMobileTab === 'feed' ? 'active' : ''}"
         onclick="switchMobileTab('feed')">
@@ -212,14 +278,12 @@ async function renderMessages() {
     </div>
 
     <div class="msg-layout" id="msg-layout">
-
-      <!-- SIDEBAR GAUCHE -->
       <div class="msg-sidebar" id="msg-sidebar">
         <div class="msg-sidebar-header">
           <span>CoproSync</span>
           <button class="btn btn-ghost btn-sm" onclick="openNewDM()" title="Message privé" style="padding:4px 6px;font-size:16px;">✏️</button>
         </div>
-        <div style="padding:8px 12px 4px;">
+        <div style="padding:8px 12px 4px;flex-shrink:0;">
           <input class="input" id="msg-search-conv" placeholder="Rechercher..."
             oninput="onMsgConvSearchInput(event)" style="height:34px;font-size:13px;">
         </div>
@@ -236,7 +300,6 @@ async function renderMessages() {
         </div>
       </div>
 
-      <!-- ZONE PRINCIPALE -->
       <div class="msg-main" id="msg-main">
         <div class="chat-empty" id="msg-welcome">
           <div style="font-size:48px;margin-bottom:12px;">🏢</div>
@@ -253,7 +316,6 @@ async function renderMessages() {
   startFeedRealtime();
   _updateMobileTabBadges();
 
-  // Ouvre la vue par défaut
   if (_msgState.activeMobileTab === 'feed' || _msgState.activeChanType === 'feed') {
     openFeed();
   } else if (_msgState.activeConvId) {
@@ -263,11 +325,10 @@ async function renderMessages() {
   }
 }
 
-// ─── FIX 3 : Gestion des onglets mobiles ─────────────────────────────────────
+// ─── Gestion des onglets mobiles ─────────────────────────────────────────────
 function switchMobileTab(tab) {
   _msgState.activeMobileTab = tab;
 
-  // Update tab indicators
   document.querySelectorAll('.msg-inner-tab').forEach((t, i) => {
     const tabs = ['feed', 'channels', 'dms'];
     t.classList.toggle('active', tabs[i] === tab);
@@ -275,32 +336,33 @@ function switchMobileTab(tab) {
 
   if (tab === 'feed') {
     openFeed();
-  } else if (tab === 'channels') {
-    _showMobileSidebarFiltered('groupe');
-  } else if (tab === 'dms') {
-    _showMobileSidebarFiltered('prive');
+  } else {
+    // FIX SCROLL: on affiche la sidebar sans écraser les styles via inline
+    // (les styles mobiles viennent du CSS injecté, pas de style inline)
+    mobileShowSidebar();
   }
 }
 
-function _showMobileSidebarFiltered(type) {
-  // Sur mobile : affiche la sidebar en plein écran avec filtre
+// FIX SCROLL: mobileShowMain / mobileShowSidebar utilisent uniquement les classes CSS,
+// jamais de styles inline width/position/zIndex qui cassent le layout flex.
+function mobileShowMain() {
   const sidebar = $('msg-sidebar');
   const main = $('msg-main');
-
   if (window.innerWidth <= 768) {
-    if (sidebar) {
-      sidebar.classList.remove('hidden');
-      sidebar.style.display = 'flex';
-      sidebar.style.width = '100%';
-      sidebar.style.position = 'absolute';
-      sidebar.style.zIndex = '10';
-    }
-    if (main) main.classList.remove('visible');
+    sidebar?.classList.add('hidden');
+    main?.classList.add('visible');
   }
+}
+
+function mobileShowSidebar() {
+  const sidebar = $('msg-sidebar');
+  const main = $('msg-main');
+  sidebar?.classList.remove('hidden');
+  main?.classList.remove('visible');
+  // Ne pas réinitialiser activeConvId ici pour garder l'état si on revient
 }
 
 function _updateMobileTabBadges() {
-  // Badge canaux
   const chanUnread = _msgState.conversations
     .filter(c => c.type !== 'prive')
     .reduce((sum, c) => sum + (_msgState.unreadByConv[c.id] || 0), 0);
@@ -310,7 +372,6 @@ function _updateMobileTabBadges() {
     chanBadge.style.display = chanUnread > 0 ? 'flex' : 'none';
   }
 
-  // Badge DMs
   const dmUnread = _msgState.conversations
     .filter(c => c.type === 'prive')
     .reduce((sum, c) => sum + (_msgState.unreadByConv[c.id] || 0), 0);
@@ -330,7 +391,6 @@ function renderSidebarGroups() {
     .filter(c => !c.type || c.type === 'groupe')
     .filter(c => !q || (c.titre || '').toLowerCase().includes(q));
 
-  // FIX : Tour de l'utilisateur en premier
   const userTour = profile?.tour;
   const sorted = [...convs].sort((a, b) => {
     const aIsTour = userTour && (a.titre || '').includes(userTour);
@@ -400,7 +460,7 @@ function avatarColor(name) {
 }
 
 // ═══════════════════════════════════════════════════════════════════════
-//  FEED COMMUNAUTAIRE — avec FIX 1 (scroll fade) + FIX 4 (compose collapsé)
+//  FEED COMMUNAUTAIRE
 // ═══════════════════════════════════════════════════════════════════════
 function setFeedFilter(cat) {
   _msgState.feedFilter = cat;
@@ -416,17 +476,14 @@ function setFeedComposeCategory(cat) {
   if (!ok) return;
   _msgState.feedComposeCategory = cat;
   try { localStorage.setItem(FEED_COMPOSE_CAT_KEY, cat); } catch { }
-  // Update dans la modale si ouverte
   document.querySelectorAll('.feed-modal-cat').forEach(el => {
     el.classList.toggle('active', el.dataset.cat === cat);
   });
-  // Affiche/cache le champ titre panneau
   const tr = $('feed-titre-panneau-row-modal');
   const inp = $('feed-titre-panneau-modal');
   const showTitre = cat === 'panneau';
   if (tr) tr.style.display = showTitre ? '' : 'none';
   if (inp && !showTitre) inp.value = '';
-  // Placeholder contextuel
   const ph = $('feed-compose-modal-input');
   if (ph) {
     const hints = {
@@ -441,9 +498,8 @@ function setFeedComposeCategory(cat) {
   }
 }
 
-// ─── Ouvre la modale de composition (FIX 4) ──────────────────────────────────
+// ─── Modale de composition ────────────────────────────────────────────────────
 function openFeedComposeModal() {
-  // Ferme si déjà ouverte
   $('feed-compose-modal-overlay')?.remove();
 
   const cat = _msgState.feedComposeCategory || readStoredFeedComposeCat();
@@ -466,19 +522,14 @@ function openFeedComposeModal() {
         <button class="feed-compose-modal-close" onclick="closeFeedComposeModal()">×</button>
       </div>
       <div class="feed-compose-modal-body">
-        <!-- Catégories -->
         <div style="margin-bottom:12px;">
           <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-3);margin-bottom:7px;">Rubrique</div>
           <div class="feed-modal-cats">${composeCatHtml}</div>
         </div>
-
-        <!-- Titre panneau (conditionnel) -->
         <div id="feed-titre-panneau-row-modal" style="display:${cat === 'panneau' ? '' : 'none'};margin-bottom:10px;">
           <input type="text" class="input" id="feed-titre-panneau-modal" maxlength="120"
             placeholder="Titre de l'affiche (ex: Travaux ascenseur Tour 17)">
         </div>
-
-        <!-- Textarea principal -->
         <div style="display:flex;gap:10px;align-items:flex-start;">
           <div class="feed-compose-av" style="background:${avColor};flex-shrink:0;">${initial}</div>
           <textarea class="input" id="feed-compose-modal-input"
@@ -488,7 +539,6 @@ function openFeedComposeModal() {
             oninput="saveCurrentDraft()"
             onkeydown="if(event.key==='Enter'&&(event.ctrlKey||event.metaKey)){event.preventDefault();publishFeedPost();}"></textarea>
         </div>
-
         <div style="font-size:11px;color:var(--text-3);margin-top:6px;text-align:right;">
           Ctrl+Entrée pour publier
         </div>
@@ -501,15 +551,16 @@ function openFeedComposeModal() {
 
   document.body.appendChild(overlay);
 
-  // Fermer en cliquant dehors
   overlay.addEventListener('click', e => {
     if (e.target === overlay) closeFeedComposeModal();
   });
 
-  // Focus sur le textarea
-  setTimeout(() => $('feed-compose-modal-input')?.focus(), 80);
+  // FIX UX: focus avec délai légèrement plus long sur iOS pour éviter le zoom auto
+  setTimeout(() => {
+    const ta = $('feed-compose-modal-input');
+    if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); }
+  }, 100);
 
-  // Restaurer le brouillon si existant
   const draft = (_msgState.drafts || {})['feed'];
   if (draft) {
     const ta = $('feed-compose-modal-input');
@@ -532,15 +583,14 @@ async function openFeed() {
   _msgState.activeMobileTab = 'feed';
   _msgState.feedComposeCategory = readStoredFeedComposeCat();
 
-  // Update sidebar active
   document.querySelectorAll('.msg-chan-item,.msg-dm-item').forEach(el => el.classList.remove('active'));
   $('chan-feed')?.classList.add('active');
 
-  // Update tab bar mobile
   document.querySelectorAll('.msg-inner-tab').forEach((t, i) => {
     t.classList.toggle('active', i === 0);
   });
 
+  // FIX SCROLL: mobileShowMain gère les classes correctement
   mobileShowMain();
 
   const main = $('msg-main');
@@ -549,7 +599,6 @@ async function openFeed() {
   const split = $('feed-split');
   if (split) split.classList.remove('thread-active');
 
-  // Chips de filtre — labels courts pour mobile (FIX 1)
   const chipHtml = FEED_COMMUNITY_CATS.map(c => {
     const active = _msgState.feedFilter === c.id;
     const cnt = feedCountForFilter(c.id);
@@ -564,8 +613,10 @@ async function openFeed() {
   const initial = (profile?.prenom || profile?.nom || user?.email || '?').charAt(0).toUpperCase();
   const avColor = avatarColor(displayNameFromProfile(profile, user?.email));
 
+  // FIX SCROLL: msg-main est flex-column via CSS injecté, les éléments ici
+  // doivent laisser feed-split prendre tout l'espace restant (flex:1).
   main.innerHTML = `
-    <div class="msg-chan-header feed-header-compact">
+    <div class="msg-chan-header feed-header-compact" style="flex-shrink:0;">
       <button class="msg-back-btn" onclick="mobileShowSidebar()">←</button>
       <div style="font-size:20px;margin-right:2px;">🏘️</div>
       <div>
@@ -574,13 +625,11 @@ async function openFeed() {
       </div>
     </div>
 
-    <!-- FIX 1 + FIX 4 : Barre compose compacte + chips avec fade -->
-    <div class="feed-categories-bar">
+    <div class="feed-categories-bar" style="flex-shrink:0;">
       <div class="feed-cat-chips-scroll" id="feed-cat-chips">${chipHtml}</div>
     </div>
 
-    <!-- FIX 4 : Composer collapsé -->
-    <div class="feed-compose-bar">
+    <div class="feed-compose-bar" style="flex-shrink:0;">
       <div class="feed-compose-av" style="background:${avColor};">${initial}</div>
       <button class="feed-compose-trigger" onclick="openFeedComposeModal()">
         Partager avec vos voisins…
@@ -590,15 +639,13 @@ async function openFeed() {
       </button>
     </div>
 
-    <!-- FIX 2 : Split avec thread en slide -->
-    <div class="feed-split" id="feed-split">
+    <div class="feed-split" id="feed-split" style="flex:1 1 0;min-height:0;">
       <div class="feed-left-pane" id="feed-left-pane">
         <div class="feed-scroll feed-scroll--community" id="feed-left-scroll">
           <div style="text-align:center;padding:32px;color:var(--text-3);">Chargement du fil…</div>
         </div>
       </div>
 
-      <!-- FIX 2 : Thread pane — translateX au lieu de display:none -->
       <div class="feed-thread-pane" id="feed-thread-pane">
         <div class="feed-thread-empty" id="feed-thread-empty">
           <div style="font-size:42px;margin-bottom:10px;">💬</div>
@@ -783,13 +830,12 @@ function renderFeedPost(p) {
   </div>`;
 }
 
-// ─── FIX 2 : Thread avec slide natif ─────────────────────────────────────────
+// ─── Thread ───────────────────────────────────────────────────────────────────
 function closeFeedThread() {
   _msgState.activeFeedThreadPostId = null;
   _msgState.feedThreadState = { loaded: false, oldestLoadedAt: null, hasMore: false };
   _msgState.feedThreadRenderedCommentIds = new Set();
   const split = $('feed-split');
-  // FIX 2 : retire la classe au lieu de masquer brutalement
   if (split) split.classList.remove('thread-active');
   const pane = $('feed-thread-pane');
   if (!pane) return;
@@ -811,7 +857,6 @@ function renderFeedThreadPostHeader(p) {
   const cmeta = feedCatMeta(cat);
   const accent = feedCatAccent(cat);
   const badge = `<span class="feed-post-cat-badge" style="--feed-cat:${accent}">${cmeta.emoji} ${escHtml(cmeta.label)}</span>`;
-
   const affiche = p.epingle && p.type === 'post';
   const titreBloc = p.type === 'post' && p.titre_panneau
     ? `<div class="feed-post-affiche-titre" style="margin-bottom:10px;">${escHtml(p.titre_panneau)}</div>`
@@ -825,11 +870,10 @@ function renderFeedThreadPostHeader(p) {
     ? `<button type="button" class="btn btn-ghost btn-sm" style="padding:4px 8px;" onclick="deleteFeedPost('${p.id}')">✕ Supprimer</button>`
     : '';
 
-  // FIX 2 : bouton retour qui utilise closeFeedThread (avec slide)
   const backBtn = `<button class="msg-back-btn feed-thread-back-btn" onclick="closeFeedThread()" title="Retour" style="display:flex;">←</button>`;
 
   return `
-    <div class="feed-thread-header">
+    <div class="feed-thread-header" style="flex-shrink:0;">
       ${backBtn}
       <div class="feed-thread-head-left">
         <div class="feed-post-av" style="background:${avatarColor(auteur)}; width:42px; height:42px; font-size:18px;">${initiale}</div>
@@ -843,7 +887,7 @@ function renderFeedThreadPostHeader(p) {
         ${delBtn}
       </div>
     </div>
-    <div class="feed-thread-post-body ${affiche ? 'feed-post--affiche' : ''}">
+    <div class="feed-thread-post-body ${affiche ? 'feed-post--affiche' : ''}" style="flex-shrink:0;overflow-y:auto;max-height:35%;">
       ${titreBloc}
       ${p.type === 'post'
         ? `<div class="feed-post-body" style="margin:0;">${escHtml(p.contenu)}</div>`
@@ -924,6 +968,8 @@ async function loadFeedThreadComments(postId, { older = false } = {}) {
 
   if (!older) {
     listEl.innerHTML = commentsAsc.map(renderFeedCommentLine).join('');
+    // FIX SCROLL: scroll en bas après chargement initial
+    requestAnimationFrame(() => { scrollEl.scrollTop = scrollEl.scrollHeight; });
     return;
   }
 
@@ -954,7 +1000,6 @@ async function appendFeedThreadComment(c) {
   if (ub) ub.style.display = 'none';
 }
 
-// ─── FIX 2 : openFeedThread utilise la transition slide ──────────────────────
 async function openFeedThread(postId) {
   const sid = String(postId);
   _msgState.activeFeedThreadPostId = sid;
@@ -962,7 +1007,6 @@ async function openFeedThread(postId) {
   _msgState.feedThreadState = { loaded: false, oldestLoadedAt: null, hasMore: false };
   _msgState.feedCommentUnreadByPost[sid] = 0;
 
-  // FIX 2 : active le slide en ajoutant la classe
   const split = $('feed-split');
   if (split) split.classList.add('thread-active');
 
@@ -981,18 +1025,20 @@ async function openFeedThread(postId) {
   const threadPane = $('feed-thread-pane');
   if (!threadPane) return;
 
+  // FIX SCROLL: feed-thread-wrap est flex-column, feed-thread-scroll prend tout l'espace
+  // via la classe CSS injectée (flex:1 1 0; min-height:0; overflow-y:auto)
   threadPane.innerHTML = `
-    <div class="feed-thread-wrap">
+    <div class="feed-thread-wrap" style="flex:1 1 0;min-height:0;display:flex;flex-direction:column;overflow:hidden;">
       ${renderFeedThreadPostHeader(post)}
-      <div class="feed-thread-scroll" id="feed-thread-scroll">
-        <div class="feed-thread-comments">
-          <div id="feed-thread-comments-list"></div>
-          <div style="padding:10px 0;text-align:center;">
-            <button class="btn btn-secondary btn-sm" id="feed-thread-load-more-btn" onclick="loadFeedThreadOlder()">Charger plus</button>
+      <div class="feed-thread-scroll" id="feed-thread-scroll" style="flex:1 1 0;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;">
+        <div class="feed-thread-comments" style="padding:8px 0;">
+          <div style="padding:6px 0;text-align:center;">
+            <button class="btn btn-secondary btn-sm" id="feed-thread-load-more-btn" onclick="loadFeedThreadOlder()" style="display:none;">Charger plus</button>
           </div>
+          <div id="feed-thread-comments-list"></div>
         </div>
       </div>
-      <div class="feed-thread-composer">
+      <div class="feed-thread-composer" style="flex-shrink:0;">
         <div class="feed-thread-composer-box">
           <textarea class="feed-compose-input" id="feed-thread-comment-input"
             placeholder="Écrire un commentaire…"
@@ -1036,9 +1082,8 @@ async function sendFeedThreadComment() {
   await appendFeedThreadComment(withRef);
 }
 
-// ─── FIX 4 : publishFeedPost — lit depuis la modale ──────────────────────────
+// ─── publishFeedPost ──────────────────────────────────────────────────────────
 async function publishFeedPost() {
-  // Lire depuis la modale en priorité, sinon depuis l'ancien champ
   const modalInput = $('feed-compose-modal-input');
   const legacyInput = $('feed-input');
   const input = modalInput || legacyInput;
@@ -1059,7 +1104,6 @@ async function publishFeedPost() {
   if (input.style) input.style.height = 'auto';
   saveCurrentDraft();
 
-  // Ferme la modale
   closeFeedComposeModal();
 
   const row = { auteur_id: user.id, contenu, type: 'post', categorie: cat };
@@ -1317,7 +1361,6 @@ async function openConv(convId) {
   $(`chan-feed`)?.classList.remove('active');
   $(`chan-${convId}`)?.classList.add('active');
 
-  // Update tab bar mobile
   document.querySelectorAll('.msg-inner-tab').forEach((t, i) => {
     const tabs = ['feed', 'channels', 'dms'];
     t.classList.toggle('active', tabs[i] === _msgState.activeMobileTab);
@@ -1333,8 +1376,11 @@ async function openConv(convId) {
 
   const main = $('msg-main');
   if (!main) return;
+
+  // FIX SCROLL: msg-main est flex-column, chat-messages doit avoir flex:1 via CSS injecté.
+  // On s'assure que la structure interne est correcte.
   main.innerHTML = `
-    <div class="msg-chan-header">
+    <div class="msg-chan-header" style="flex-shrink:0;">
       <button class="msg-back-btn" onclick="mobileBackToChannelList()">←</button>
       <div style="font-size:20px;margin-right:2px;">${emoji}</div>
       <div class="chat-header-info">
@@ -1342,16 +1388,16 @@ async function openConv(convId) {
         <div class="msg-chan-desc" id="chat-members-count">${isPrive ? '🔒 Conversation privée' : 'Canal'}</div>
       </div>
     </div>
-    <div class="chat-messages" id="chat-messages">
+    <div class="chat-messages" id="chat-messages" style="flex:1 1 0;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;">
       <div style="text-align:center;padding:24px;color:var(--text-3);font-size:13px;">Chargement…</div>
     </div>
-    <div class="msg-reply-bar" id="msg-reply-bar" style="display:none;">
+    <div class="msg-reply-bar" id="msg-reply-bar" style="display:none;flex-shrink:0;">
       <span style="color:var(--text-3);">↩️ Répondre à</span>
       <div class="msg-reply-bar-content" id="msg-reply-bar-content"></div>
       <button class="msg-reply-bar-close" onclick="clearReply()">✕</button>
     </div>
-    <div class="chat-typing" id="chat-typing"></div>
-    <div class="chat-input-bar">
+    <div class="chat-typing" id="chat-typing" style="flex-shrink:0;"></div>
+    <div class="chat-input-bar" style="flex-shrink:0;">
       <div class="chat-input-wrap">
         <textarea class="chat-input" id="chat-input" placeholder="Message…" rows="1"
           oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,120)+'px';onChatInput(event);saveCurrentDraft();"
@@ -1372,42 +1418,9 @@ async function openConv(convId) {
   markConvRead(convId);
 }
 
-// Retour vers la liste des canaux sur mobile
 function mobileBackToChannelList() {
-  if (window.innerWidth <= 768) {
-    _showMobileSidebarFiltered(_msgState.activeChanType === 'dm' ? 'prive' : 'groupe');
-  } else {
-    mobileShowSidebar();
-  }
-}
-
-function mobileShowMain() {
-  const sidebar = $('msg-sidebar');
-  const main = $('msg-main');
-  if (window.innerWidth <= 768) {
-    if (sidebar) {
-      sidebar.classList.add('hidden');
-      sidebar.style.display = '';
-      sidebar.style.width = '';
-      sidebar.style.position = '';
-      sidebar.style.zIndex = '';
-    }
-    if (main) main.classList.add('visible');
-  }
-}
-
-function mobileShowSidebar() {
-  const sidebar = $('msg-sidebar');
-  const main = $('msg-main');
-  if (sidebar) {
-    sidebar.classList.remove('hidden');
-    sidebar.style.display = '';
-    sidebar.style.width = '';
-    sidebar.style.position = '';
-    sidebar.style.zIndex = '';
-  }
-  if (main) main.classList.remove('visible');
-  _msgState.activeConvId = null;
+  // FIX SCROLL: on utilise mobileShowSidebar qui gère uniquement les classes
+  mobileShowSidebar();
 }
 
 // ─── MESSAGES ─────────────────────────────────────────────────────────────────
@@ -1707,7 +1720,6 @@ function filterConvsByRole(convs) {
   });
 }
 
-// Emoji picker pour le feed (compat)
 function pickFeedEmoji(e) {
   const btn = e.target.closest('button');
   const existing = document.querySelector('.emoji-picker');
