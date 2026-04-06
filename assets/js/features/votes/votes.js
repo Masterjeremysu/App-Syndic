@@ -154,7 +154,11 @@ function renderVoteResults(v, maReponse) {
   const opts = Array.isArray(v.options) ? v.options
     : (typeof v.options === 'string' ? JSON.parse(v.options||'[]') : []);
   if (!opts.length) return '<div style="color:var(--text-3);font-size:13px;">Aucune option définie</div>';
-  const myChosen = maReponse ? JSON.parse(maReponse.options_choisies||'[]') : [];
+  const myChosen = maReponse
+  ? (Array.isArray(maReponse.options_choisies)
+      ? maReponse.options_choisies
+      : JSON.parse(maReponse.options_choisies || '[]'))
+  : [];
   return opts.map(opt => {
     const count = allRep.filter(r => {
       const chosen = typeof r.options_choisies === 'string'
