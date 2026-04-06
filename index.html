@@ -276,9 +276,24 @@
         <button class="notif-btn" onclick="openSearch()" title="Rechercher (Ctrl+K)">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         </button>
-        <button class="notif-btn" id="theme-btn" onclick="toggleTheme()" title="Mode sombre">
-          <span id="theme-ico">🌙</span>
-        </button>
+        <button class="notif-btn" id="theme-btn" onclick="toggleTheme()" title="Changer le thème" aria-label="Changer le thème">
+  <span id="theme-ico" aria-hidden="true">
+    <svg class="theme-sun" width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round">
+      <circle cx="10" cy="10" r="3.5"/>
+      <line x1="10" y1="1.5" x2="10" y2="3.5"/>
+      <line x1="10" y1="16.5" x2="10" y2="18.5"/>
+      <line x1="1.5" y1="10" x2="3.5" y2="10"/>
+      <line x1="16.5" y1="10" x2="18.5" y2="10"/>
+      <line x1="4.04" y1="4.04" x2="5.46" y2="5.46"/>
+      <line x1="14.54" y1="14.54" x2="15.96" y2="15.96"/>
+      <line x1="14.54" y1="5.46" x2="15.96" y2="4.04"/>
+      <line x1="4.04" y1="15.96" x2="5.46" y2="14.54"/>
+    </svg>
+    <svg class="theme-moon" width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M17.5 11.5A7.5 7.5 0 1 1 8.5 2.5a5.5 5.5 0 0 0 9 9z"/>
+    </svg>
+  </span>
+</button>
         <div style="position:relative;" id="notif-wrap">
           <button class="notif-btn" id="notif-btn" onclick="toggleNotifPanel()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
