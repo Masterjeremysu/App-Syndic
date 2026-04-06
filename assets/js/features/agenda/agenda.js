@@ -307,11 +307,13 @@ function _openEventModal(ev) {
     .map(([k,v]) => `<option value="${k}"${ev?.type===k?' selected':''}>${v.label} — ${_typeDesc(k)}</option>`)
     .join('');
 
+  // Supprime une éventuelle modal résiduelle
   const existing = $('m-agenda');
   if (existing) existing.remove();
 
+  // ── FIX : classe "open" ajoutée dès la création ──
   document.body.insertAdjacentHTML('beforeend', `
-    <div class="overlay" id="m-agenda" onclick="if(event.target===this)closeModal('m-agenda')" style="z-index:900;">
+    <div class="overlay open" id="m-agenda" onclick="if(event.target===this)closeModal('m-agenda')" style="z-index:900;">
       <div class="modal" style="max-width:520px;">
         <div class="mh">
           <span class="mh-title">${isEdit ? '✏️ Modifier l\'événement' : '📅 Nouvel événement'}</span>
@@ -406,7 +408,7 @@ async function submitEvent(id) {
     description: $('ev-desc')?.value.trim()  || null,
     created_by:  id ? undefined : (window.currentUser?.id ?? null),
   };
-  if (id) delete payload.created_by; // pas besoin en update
+  if (id) delete payload.created_by;
 
   try {
     const { error } = id
