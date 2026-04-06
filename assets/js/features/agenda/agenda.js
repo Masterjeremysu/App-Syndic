@@ -43,52 +43,46 @@ async function renderAgenda() {
     .cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
     .cal-title  { font-family:var(--font-head); font-weight:800; font-size:18px; color:var(--text-1); }
 
-    .cal-grid   { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
-    .cal-dow    { text-align:center; font-size:11px; font-weight:600; color:var(--text-3);
-                  text-transform:uppercase; letter-spacing:.06em; padding:6px 0 10px; }
+    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+    .cal-dow  { text-align:center; font-size:11px; font-weight:600; color:var(--text-3);
+                text-transform:uppercase; letter-spacing:.06em; padding:6px 0 10px; }
 
-    .cal-day    { position:relative; aspect-ratio:1; display:flex; flex-direction:column;
-                  align-items:center; justify-content:flex-start; padding-top:6px;
-                  border-radius:10px; cursor:pointer; transition:background .15s;
-                  font-size:13px; color:var(--text-2); user-select:none; }
-    .cal-day:hover   { background:var(--surface-2,rgba(0,0,0,.04)); }
-    .cal-day-empty   { cursor:default; pointer-events:none; }
-    .cal-day-num     { font-weight:500; line-height:1; }
+    .cal-day  { position:relative; aspect-ratio:1; display:flex; flex-direction:column;
+                align-items:center; justify-content:flex-start; padding-top:6px;
+                border-radius:10px; cursor:pointer; transition:background .15s;
+                font-size:13px; color:var(--text-2); user-select:none; }
+    .cal-day:hover     { background:var(--surface-2,rgba(0,0,0,.04)); }
+    .cal-day-empty     { cursor:default; pointer-events:none; }
+    .cal-day-num       { font-weight:500; line-height:1; }
     .cal-today .cal-day-num {
       background:var(--accent); color:#fff; width:26px; height:26px;
       border-radius:50%; display:flex; align-items:center; justify-content:center;
-      font-weight:700; font-size:13px;
+      font-weight:700;
     }
-    .cal-selected    { background:var(--surface-2,rgba(0,0,0,.04)); outline:2px solid var(--accent); outline-offset:-2px; }
-    .cal-has-ev      { color:var(--text-1); font-weight:600; }
-
-    .cal-dots   { display:flex; gap:3px; margin-top:3px; align-items:center; justify-content:center; }
-    .cal-dot    { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+    .cal-selected { background:var(--surface-2,rgba(0,0,0,.04)); outline:2px solid var(--accent); outline-offset:-2px; }
+    .cal-has-ev   { color:var(--text-1); font-weight:600; }
+    .cal-dots     { display:flex; gap:3px; margin-top:3px; align-items:center; justify-content:center; }
+    .cal-dot      { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
     .cal-dot-more { font-size:9px; color:var(--text-3); line-height:1; }
 
-    .ev-card {
-      display:flex; align-items:stretch;
-      background:var(--surface-1); border:1px solid var(--border);
-      border-radius:12px; overflow:hidden; margin-bottom:8px;
-      transition:box-shadow .15s, transform .15s;
-    }
-    .ev-card:hover { box-shadow:0 4px 16px rgba(0,0,0,.07); transform:translateY(-1px); }
-    .ev-card-stripe { width:4px; flex-shrink:0; }
-    .ev-card-body   { flex:1; padding:12px 14px; min-width:0; }
-    .ev-card-head   { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:5px; }
-    .ev-card-title  { font-weight:700; font-size:14px; color:var(--text-1); line-height:1.3; }
-    .ev-card-badge  { flex-shrink:0; font-size:10px; font-weight:700; padding:2px 8px;
-                      border-radius:20px; letter-spacing:.04em; white-space:nowrap; }
-    .ev-card-meta   { font-size:12px; color:var(--text-3); display:flex; flex-direction:column; gap:3px; }
+    .ev-card { display:flex; align-items:stretch; background:var(--surface-1);
+               border:1px solid var(--border); border-radius:12px; overflow:hidden;
+               margin-bottom:8px; transition:box-shadow .15s, transform .15s; }
+    .ev-card:hover     { box-shadow:0 4px 16px rgba(0,0,0,.07); transform:translateY(-1px); }
+    .ev-card-stripe    { width:4px; flex-shrink:0; }
+    .ev-card-body      { flex:1; padding:12px 14px; min-width:0; }
+    .ev-card-head      { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:5px; }
+    .ev-card-title     { font-weight:700; font-size:14px; color:var(--text-1); line-height:1.3; }
+    .ev-card-badge     { flex-shrink:0; font-size:10px; font-weight:700; padding:2px 8px;
+                         border-radius:20px; letter-spacing:.04em; white-space:nowrap; }
+    .ev-card-meta      { font-size:12px; color:var(--text-3); display:flex; flex-direction:column; gap:3px; }
     .ev-card-meta span { display:flex; align-items:center; gap:5px; }
 
-    .ag-section-title {
-      font-family:var(--font-head); font-weight:700; font-size:11px;
-      color:var(--text-3); text-transform:uppercase; letter-spacing:.08em;
-      margin:20px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border);
-    }
+    .ag-section-title { font-family:var(--font-head); font-weight:700; font-size:11px;
+                        color:var(--text-3); text-transform:uppercase; letter-spacing:.08em;
+                        margin:20px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
 
-    .view-toggle { display:flex; border:1px solid var(--border); border-radius:var(--r-sm); overflow:hidden; }
+    .view-toggle        { display:flex; border:1px solid var(--border); border-radius:var(--r-sm); overflow:hidden; }
     .view-toggle button { border:none; border-radius:0; padding:6px 14px; font-size:13px;
                           cursor:pointer; transition:background .15s, color .15s;
                           background:transparent; color:var(--text-2); font-family:inherit; }
@@ -121,7 +115,9 @@ async function renderAgenda() {
         </div>
         <div class="agenda-sidebar-panel">
           <div class="card" style="padding:16px;">
-            <div style="font-family:var(--font-head);font-weight:700;font-size:14px;margin-bottom:14px;" id="agenda-side-title">Prochains événements</div>
+            <div style="font-family:var(--font-head);font-weight:700;font-size:14px;margin-bottom:14px;" id="agenda-side-title">
+              Prochains événements
+            </div>
             <div id="agenda-side-list">
               <div style="text-align:center;padding:30px 0;color:var(--text-3);font-size:13px;">Chargement…</div>
             </div>
@@ -135,8 +131,6 @@ async function renderAgenda() {
     </div>
   </div>`;
 
-  // ✅ FIX : on appelle loadEvenementsCache() (définie dans data-loaders.js)
-  //          et non loadEvents() qui n'existe pas
   await loadEvenementsCache();
   _agendaView  = 'cal';
   _selectedDay = null;
@@ -151,7 +145,6 @@ function renderCal() {
 
   const y = _agendaDate.getFullYear();
   const m = _agendaDate.getMonth();
-
   titleEl.textContent = _agendaDate.toLocaleDateString('fr-FR', { month:'long', year:'numeric' });
 
   const jours = ['LU','MA','ME','JE','VE','SA','DI'];
@@ -177,16 +170,14 @@ function renderCal() {
     const isSelected = ds === _selectedDay;
 
     const dots = evs.length ? `<div class="cal-dots">${
-      evs.slice(0, 3).map(e => {
-        const col = (EVENT_TYPES[e.type] || EVENT_TYPES.autre).color;
-        return `<span class="cal-dot" style="background:${col}"></span>`;
-      }).join('') + (evs.length > 3 ? `<span class="cal-dot-more">+${evs.length-3}</span>` : '')
+      evs.slice(0, 3).map(e => `<span class="cal-dot" style="background:${(EVENT_TYPES[e.type]||EVENT_TYPES.autre).color}"></span>`).join('')
+      + (evs.length > 3 ? `<span class="cal-dot-more">+${evs.length-3}</span>` : '')
     }</div>` : '';
 
     html += `<div
-      class="cal-day${isToday ? ' cal-today' : ''}${isSelected ? ' cal-selected' : ''}${evs.length ? ' cal-has-ev' : ''}"
+      class="cal-day${isToday?' cal-today':''}${isSelected?' cal-selected':''}${evs.length?' cal-has-ev':''}"
       onclick="agendaSelectDay('${ds}')"
-      title="${evs.length ? evs.length + ' événement(s)' : ''}"
+      title="${evs.length ? evs.length+' événement(s)' : ''}"
     ><span class="cal-day-num">${d}</span>${dots}</div>`;
   }
 
@@ -215,7 +206,6 @@ function renderSidePanel() {
     const evs = _agendaEvents().filter(e => e.date_debut?.slice(0,10) === _selectedDay);
     const label = new Date(_selectedDay + 'T12:00').toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
     titleEl.textContent = label.charAt(0).toUpperCase() + label.slice(1);
-
     listEl.innerHTML = evs.length
       ? evs.map(e => renderEventCard(e)).join('')
       : `<div style="text-align:center;padding:30px 0;color:var(--text-3);font-size:13px;">Aucun événement ce jour.</div>`;
@@ -224,10 +214,7 @@ function renderSidePanel() {
 
   titleEl.textContent = 'Prochains événements';
   const now = new Date();
-  const upcoming = _agendaEvents()
-    .filter(e => e.date_debut && new Date(e.date_debut) >= now)
-    .slice(0, 7);
-
+  const upcoming = _agendaEvents().filter(e => e.date_debut && new Date(e.date_debut) >= now).slice(0, 7);
   listEl.innerHTML = upcoming.length
     ? upcoming.map(e => renderEventCard(e)).join('')
     : `<div style="text-align:center;padding:30px 0;color:var(--text-3);font-size:13px;">Aucun événement à venir.</div>`;
@@ -239,35 +226,29 @@ function setAgendaView(v) {
   const calView  = $('agenda-cal-view');
   const listView = $('agenda-list-view');
   if (!calView || !listView) return;
-
   calView.style.display  = v === 'cal'  ? '' : 'none';
   listView.style.display = v === 'list' ? '' : 'none';
-
   $('view-cal-btn')?.classList.toggle('active',  v === 'cal');
   $('view-list-btn')?.classList.toggle('active', v === 'list');
-
   if (v === 'list') renderAgendaList();
 }
 
 function renderAgendaList() {
   const el = $('agenda-full-list');
   if (!el) return;
-  const now = new Date();
+  const now      = new Date();
   const upcoming = _agendaEvents().filter(e => e.date_debut && new Date(e.date_debut) >= now);
   const past     = _agendaEvents().filter(e => e.date_debut && new Date(e.date_debut) < now).reverse();
-
   if (!upcoming.length && !past.length) {
-    el.innerHTML = emptyState('📅', 'Agenda vide', 'Aucun événement programmé. Les AG, réunions et interventions apparaîtront ici.');
+    el.innerHTML = emptyState('📅', 'Agenda vide', 'Aucun événement programmé.');
     return;
   }
   let html = '';
   if (upcoming.length) {
-    html += `<div class="ag-section-title">À venir</div>`;
-    html += upcoming.map(e => renderEventCard(e, true)).join('');
+    html += `<div class="ag-section-title">À venir</div>` + upcoming.map(e => renderEventCard(e, true)).join('');
   }
   if (past.length) {
-    html += `<div class="ag-section-title">Passés</div>`;
-    html += `<div style="opacity:.55;">${past.slice(0, 12).map(e => renderEventCard(e, true)).join('')}</div>`;
+    html += `<div class="ag-section-title">Passés</div><div style="opacity:.55;">` + past.slice(0,12).map(e => renderEventCard(e, true)).join('') + `</div>`;
   }
   el.innerHTML = html;
 }
@@ -276,17 +257,17 @@ function renderAgendaList() {
 function renderEventCard(e, withEditBtn = false) {
   const type  = EVENT_TYPES[e.type] || EVENT_TYPES.autre;
   const heure = _fmtHeure(e.date_debut);
-
+  const fin   = e.date_fin ? ` → ${_fmtHeure(e.date_fin)}` : '';
   return `<div class="ev-card">
     <div class="ev-card-stripe" style="background:${type.color};"></div>
     <div class="ev-card-body">
       <div class="ev-card-head">
-        <div class="ev-card-title">${_esc(e.titre || 'Sans titre')}</div>
+        <div class="ev-card-title">${_esc(e.titre||'Sans titre')}</div>
         <span class="ev-card-badge" style="background:${type.bg};color:${type.color};">${type.label}</span>
       </div>
       <div class="ev-card-meta">
-        <span>📅 ${_fmtDate(e.date_debut)}${heure ? ' · ' + heure : ''}</span>
-        ${e.lieu ? `<span>📍 ${_esc(e.lieu)}</span>` : ''}
+        <span>📅 ${_fmtDate(e.date_debut)}${heure ? ' · '+heure+fin : ''}</span>
+        ${e.lieu        ? `<span>📍 ${_esc(e.lieu)}</span>` : ''}
         ${e.description ? `<span style="margin-top:2px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${_esc(e.description)}</span>` : ''}
       </div>
     </div>
@@ -307,57 +288,91 @@ function openEditEvent(id) {
 
 function _openEventModal(ev) {
   const isEdit = !!ev;
-  const typeOptions = Object.entries(EVENT_TYPES)
-    .map(([k, v]) => `<option value="${k}"${ev?.type === k ? ' selected' : ''}>${v.label}</option>`)
-    .join('');
 
-  const defDebut = ev?.date_debut
-    ? new Date(ev.date_debut).toISOString().slice(0, 16)
-    : (() => { const d = new Date(); d.setDate(d.getDate()+1); d.setHours(10,0,0,0); return d.toISOString().slice(0,16); })();
+  // Construit la date/heure locale pour l'input datetime-local
+  function toLocalInput(iso) {
+    if (!iso) return '';
+    const d = new Date(iso);
+    const pad = n => String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  const defDebut = ev?.date_debut ? toLocalInput(ev.date_debut) : (() => {
+    const d = new Date(); d.setDate(d.getDate()+1); d.setHours(10,0,0,0);
+    const pad = n => String(n).padStart(2,'0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T10:00`;
+  })();
+
+  const typeOptions = Object.entries(EVENT_TYPES)
+    .map(([k,v]) => `<option value="${k}"${ev?.type===k?' selected':''}>${v.label} — ${_typeDesc(k)}</option>`)
+    .join('');
 
   const existing = $('m-agenda');
   if (existing) existing.remove();
 
   document.body.insertAdjacentHTML('beforeend', `
-    <div class="overlay" id="m-agenda" onclick="if(event.target===this)closeModal('m-agenda')">
-      <div class="modal">
+    <div class="overlay" id="m-agenda" onclick="if(event.target===this)closeModal('m-agenda')" style="z-index:900;">
+      <div class="modal" style="max-width:520px;">
         <div class="mh">
-          <span class="mh-title">${isEdit ? 'Modifier l\'événement' : 'Nouvel événement'}</span>
+          <span class="mh-title">${isEdit ? '✏️ Modifier l\'événement' : '📅 Nouvel événement'}</span>
           <button class="mclose" onclick="closeModal('m-agenda')">×</button>
         </div>
         <div class="mb" style="display:flex;flex-direction:column;gap:14px;">
+
+          <!-- Titre -->
           <div class="fg" style="margin:0;">
             <label class="label">Titre *</label>
-            <input type="text" id="ev-titre" class="input" placeholder="Ex : AG annuelle" value="${_esc(ev?.titre||'')}">
+            <input type="text" id="ev-titre" class="input"
+              placeholder="Ex : Assemblée Générale annuelle"
+              value="${_esc(ev?.titre||'')}">
           </div>
+
+          <!-- Type -->
           <div class="fg" style="margin:0;">
-            <label class="label">Type</label>
+            <label class="label">Type d'événement</label>
             <select id="ev-type" class="select">${typeOptions}</select>
           </div>
+
+          <!-- Dates -->
           <div style="display:flex;gap:10px;">
             <div class="fg" style="margin:0;flex:1;">
               <label class="label">Début *</label>
               <input type="datetime-local" id="ev-debut" class="input" value="${defDebut}">
             </div>
             <div class="fg" style="margin:0;flex:1;">
-              <label class="label">Fin</label>
-              <input type="datetime-local" id="ev-fin" class="input" value="${ev?.date_fin ? new Date(ev.date_fin).toISOString().slice(0,16) : ''}">
+              <label class="label">Fin <span style="color:var(--text-3);font-weight:400;">(optionnel)</span></label>
+              <input type="datetime-local" id="ev-fin" class="input" value="${toLocalInput(ev?.date_fin)}">
             </div>
           </div>
+
+          <!-- Lieu -->
           <div class="fg" style="margin:0;">
             <label class="label">Lieu</label>
-            <input type="text" id="ev-lieu" class="input" placeholder="Salle de réunion, sous-sol…" value="${_esc(ev?.lieu||'')}">
+            <input type="text" id="ev-lieu" class="input"
+              placeholder="Ex : Salle de réunion Tour 15, sous-sol…"
+              value="${_esc(ev?.lieu||'')}">
           </div>
+
+          <!-- Description / ordre du jour -->
           <div class="fg" style="margin:0;">
-            <label class="label">Description</label>
-            <textarea id="ev-desc" class="textarea" rows="3" placeholder="Ordre du jour, informations…">${_esc(ev?.description||'')}</textarea>
+            <label class="label">Description / ordre du jour</label>
+            <textarea id="ev-desc" class="textarea" rows="3"
+              placeholder="Points abordés, informations pratiques, documents joints…">${_esc(ev?.description||'')}</textarea>
           </div>
+
+          <!-- Rappel info -->
+          <div style="background:var(--blue-light,rgba(59,130,246,.06));border:1px solid var(--blue-border,rgba(59,130,246,.15));border-radius:8px;padding:10px 14px;font-size:12px;color:var(--text-3);line-height:1.5;">
+            💡 L'événement sera visible par tous les résidents connectés dès l'enregistrement.
+          </div>
+
         </div>
-        <div class="mf" style="justify-content:${isEdit ? 'space-between' : 'flex-end'};">
-          ${isEdit ? `<button class="btn btn-danger btn-sm" onclick="deleteEvent('${ev.id}')">Supprimer</button>` : ''}
+        <div class="mf" style="justify-content:${isEdit?'space-between':'flex-end'};">
+          ${isEdit ? `<button class="btn btn-danger btn-sm" onclick="deleteEvent('${ev.id}')">🗑 Supprimer</button>` : ''}
           <div style="display:flex;gap:8px;">
             <button class="btn btn-secondary" onclick="closeModal('m-agenda')">Annuler</button>
-            <button class="btn btn-primary" onclick="submitEvent(${isEdit ? `'${ev.id}'` : 'null'})">Enregistrer</button>
+            <button class="btn btn-primary" id="ev-submit-btn" onclick="submitEvent(${isEdit?`'${ev.id}'`:'null'})">
+              ${isEdit ? 'Enregistrer les modifications' : 'Ajouter à l\'agenda'}
+            </button>
           </div>
         </div>
       </div>
@@ -366,39 +381,54 @@ function _openEventModal(ev) {
   setTimeout(() => $('ev-titre')?.focus(), 60);
 }
 
+function _typeDesc(k) {
+  const map = { ag:'Assemblée générale', reunion_cs:'Conseil syndical', artisan:'Passage artisan', controle:'Contrôle technique', autre:'Autre' };
+  return map[k] || '';
+}
+
+// ── SUBMIT ────────────────────────────────────────────────────────
 async function submitEvent(id) {
   const titre = $('ev-titre')?.value.trim();
   if (!titre) { toast('Le titre est obligatoire.', 'error'); return; }
   const debut = $('ev-debut')?.value;
   if (!debut) { toast('La date de début est obligatoire.', 'error'); return; }
 
+  // Désactive le bouton pendant l'envoi
+  const btn = $('ev-submit-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Enregistrement…'; }
+
   const payload = {
     titre,
     type:        $('ev-type')?.value || 'autre',
     date_debut:  new Date(debut).toISOString(),
     date_fin:    $('ev-fin')?.value ? new Date($('ev-fin').value).toISOString() : null,
-    lieu:        $('ev-lieu')?.value.trim() || null,
-    description: $('ev-desc')?.value.trim() || null,
+    lieu:        $('ev-lieu')?.value.trim()  || null,
+    description: $('ev-desc')?.value.trim()  || null,
+    created_by:  id ? undefined : (window.currentUser?.id ?? null),
   };
+  if (id) delete payload.created_by; // pas besoin en update
 
   try {
     const { error } = id
       ? await sb.from('evenements').update(payload).eq('id', id)
       : await sb.from('evenements').insert(payload);
     if (error) throw error;
-    toast(id ? 'Événement modifié.' : 'Événement ajouté.', 'success');
+
+    toast(id ? 'Événement modifié ✓' : 'Événement ajouté ✓', 'success');
     closeModal('m-agenda');
     await loadEvenementsCache();
     renderCal();
     if (_agendaView === 'list') renderAgendaList();
   } catch (err) {
     console.error('[agenda] submitEvent', err);
-    toast('Erreur lors de l\'enregistrement.', 'error');
+    toast('Erreur : ' + (err.message || 'impossible d\'enregistrer.'), 'error');
+    if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer'; }
   }
 }
 
+// ── DELETE ────────────────────────────────────────────────────────
 async function deleteEvent(id) {
-  if (!confirm('Supprimer cet événement ?')) return;
+  if (!confirm('Supprimer définitivement cet événement ?')) return;
   try {
     const { error } = await sb.from('evenements').delete().eq('id', id);
     if (error) throw error;
@@ -409,7 +439,7 @@ async function deleteEvent(id) {
     if (_agendaView === 'list') renderAgendaList();
   } catch (err) {
     console.error('[agenda] deleteEvent', err);
-    toast('Erreur lors de la suppression.', 'error');
+    toast('Erreur : ' + (err.message || 'impossible de supprimer.'), 'error');
   }
 }
 
