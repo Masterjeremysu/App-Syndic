@@ -1070,16 +1070,27 @@ async function sendFeedThreadComment() {
   if (!contenu) return;
   input.value = '';
   input.style.height = 'auto';
-
+ 
   const { data: newC, error } = await sb.from('feed_posts')
     .insert({ auteur_id: user.id, contenu, type: 'comment', reference_id: sid })
     .select('*, profiles(id,prenom,nom,email)')
     .single();
-
+ 
   if (error) { toast('Erreur commentaire', 'err'); return; }
-
+ 
   const withRef = { ...newC, reference_id: sid };
   await appendFeedThreadComment(withRef);
+ 
+  // ✅ Notif à l'auteur du post + mentions
+  const post = (_msgState.feed || []).find(p => String(p.id) === String(sid));
+  if (post && post.auteur_id) {
+    await notifFeedCommentaire(String(sid), post.auteur_id, contenu);
+  } else {
+    // Si post pas en cache, vérifier quand même les mentions
+    if (contenu.includes('@')) {
+      await _notifMentions(contenu, String(sid));
+    }
+  }
 }
 
 // ─── publishFeedPost ──────────────────────────────────────────────────────────
