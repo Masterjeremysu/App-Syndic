@@ -1549,25 +1549,27 @@ async function sendMessage() {
   const texte = input?.value.trim();
   if (!texte || !_msgState.activeConvId) return;
   const replyState = _msgState.replyTo ? { ..._msgState.replyTo } : null;
-  input.value = ''; input.style.height = 'auto';
+  input.value = '';
+  input.style.height = 'auto';
   saveCurrentDraft();
-
+ 
   const payload = {
     conversation_id: _msgState.activeConvId,
-    auteur_id: user.id,
+    auteur_id:       user.id,
     texte,
-    reply_to_id: replyState?.id || null,
-    reply_preview: replyState ? `${replyState.auteur} : ${replyState.texte}` : null,
+    reply_to_id:     replyState?.id   || null,
+    reply_preview:   replyState ? `${replyState.auteur} : ${replyState.texte}` : null,
   };
-
+ 
   clearReply();
-
+ 
   const { data: inserted, error } = await sb.from('messages')
     .insert(payload)
     .select('*, profiles(nom, prenom), reply:reply_to_id(texte, profiles(prenom,nom))')
     .single();
+ 
   if (error) { toast('Erreur envoi', 'err'); return; }
-
+ 
   _msgState.messages.push(inserted || {
     ...payload, id: 'tmp-' + Date.now(),
     created_at: new Date().toISOString(),
@@ -1576,6 +1578,19 @@ async function sendMessage() {
   });
   renderMessageBubbles();
   markConvRead(_msgState.activeConvId);
+ 
+  // ✅ Notif in-app au(x) destinataire(s)
+  const conv = (_msgState.conversations || []).find(c => c.id === _msgState.activeConvId);
+  if (conv) {
+    if (conv.type === 'prive') {
+      // DM → notif au destinataire
+      const autreId = conv.membre_a === user.id ? conv.membre_b : conv.membre_a;
+      if (autreId) await notifMessagePrive(_msgState.activeConvId, autreId, texte);
+    } else {
+      // Canal → notif aux membres (seulement si message non vide)
+      await notifMessageCanal(_msgState.activeConvId, texte);
+    }
+  }
 }
 
 async function markConvRead(convId) {
