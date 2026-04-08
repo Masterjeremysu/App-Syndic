@@ -22,7 +22,7 @@ let _annSearch     = '';
 let _annRawData    = [];      
 let _annDebounce   = null;    
 
-// ── CSS PREMIUM (Adaptatif Light/Dark) ───────────────────────────────────────
+// ── CSS PREMIUM (Adaptatif Light/Dark & Mobile) ──────────────────────────────
 (function injectAnnoncesCSS() {
   if (document.getElementById('saas-annonces-css')) return;
   const s = document.createElement('style');
@@ -30,39 +30,44 @@ let _annDebounce   = null;
   s.textContent = `
     .anc-container { padding: 32px 40px; max-width: 1000px; margin: 0 auto; animation: fade-in 0.3s ease; }
     
-    .anc-page-title { font-family: var(--font-head); font-size: 32px; font-weight: 900; letter-spacing: -1px; color: var(--text-1); margin: 0 0 8px 0; }
+    .anc-page-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
+    .anc-page-title { font-family: var(--font-head); font-size: 32px; font-weight: 900; letter-spacing: -1px; color: var(--text-1); margin: 0 0 8px 0; line-height: 1.1; }
     .anc-page-sub { font-size: 14px; color: var(--text-3); font-weight: 500; margin: 0; }
     
-    /* Tabs & Toolbar */
-    .anc-tabs { display: flex; gap: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
-    .anc-tab { padding: 0 0 12px 0; font-size: 14px; font-weight: 700; color: var(--text-3); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.2s; margin-bottom: -1px; }
+    /* Tabs */
+    .anc-tabs { display: flex; gap: 24px; margin-bottom: 24px; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+    .anc-tabs::-webkit-scrollbar { display: none; }
+    .anc-tab { padding: 0 0 12px 0; font-size: 14px; font-weight: 700; color: var(--text-3); background: transparent; border: none; border-bottom: 2px solid transparent; cursor: pointer; transition: all 0.2s; margin-bottom: -1px; white-space: nowrap; }
     .anc-tab:hover { color: var(--text-1); }
     .anc-tab.active { color: var(--text-1); border-bottom-color: var(--text-1); }
     
+    /* Toolbar & Chips */
     .anc-toolbar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 32px; }
-    
     .anc-chips { display: flex; gap: 8px; flex-wrap: wrap; }
-    .anc-chip { padding: 6px 14px; font-size: 12px; font-weight: 700; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); color: var(--text-2); cursor: pointer; transition: all 0.2s; }
-    .anc-chip:hover { border-color: var(--text-3); color: var(--text-1); }
+    
+    /* Correction du Chip pour le Dark Mode */
+    .anc-chip { padding: 8px 16px; font-size: 12.5px; font-weight: 700; border-radius: 20px; border: 1px solid var(--border); background: var(--surface-2); color: var(--text-1); cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.02); }
+    .anc-chip:hover { border-color: var(--border-strong); background: var(--bg-2); }
     .anc-chip.active { background: var(--text-1); color: var(--surface); border-color: var(--text-1); }
     
-    .anc-search-wrap { position: relative; min-width: 280px; }
+    /* Recherche */
+    .anc-search-wrap { position: relative; min-width: 280px; flex: 1; max-width: 400px; }
     .anc-search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-3); }
-    .anc-search { width: 100%; border: 1px solid var(--border); background: var(--surface); padding: 10px 16px 10px 40px; border-radius: 8px; font-size: 13.5px; color: var(--text-1); transition: all 0.2s; outline: none; }
+    .anc-search { width: 100%; border: 1px solid var(--border); background: var(--surface); padding: 10px 16px 10px 40px; border-radius: 12px; font-size: 13.5px; color: var(--text-1); transition: all 0.2s; outline: none; }
     .anc-search:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
     
     /* Cards */
-    .anc-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); transition: border-color 0.2s; position: relative; overflow: hidden; }
-    .anc-card:hover { border-color: var(--border-strong); }
+    .anc-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.02); transition: border-color 0.2s; position: relative; overflow: hidden; }
+    .anc-card:hover { border-color: var(--border-strong); box-shadow: 0 6px 16px rgba(0,0,0,0.04); }
     .anc-card.pinned { border-color: var(--orange-border); }
     .anc-card.pinned::after { content: ''; position: absolute; top: 0; right: 0; border-width: 0 40px 40px 0; border-style: solid; border-color: transparent var(--orange-light) transparent transparent; pointer-events: none; }
     .anc-card.pinned::before { content: '📌'; position: absolute; top: 6px; right: 8px; font-size: 12px; z-index: 1; pointer-events: none; }
-    .anc-card.archived { opacity: 0.6; filter: grayscale(80%); }
+    .anc-card.archived { opacity: 0.65; filter: grayscale(70%); border-style: dashed; }
     
     .anc-header { padding: 20px 24px; display: flex; gap: 16px; align-items: flex-start; border-bottom: 1px solid var(--bg-2); }
-    .anc-av { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900; color: white; flex-shrink: 0; }
+    .anc-av { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 900; color: white; flex-shrink: 0; }
     
-    .anc-title { font-family: var(--font-head); font-size: 18px; font-weight: 800; color: var(--text-1); margin: 0 0 8px 0; line-height: 1.3; }
+    .anc-title { font-family: var(--font-head); font-size: 18px; font-weight: 800; color: var(--text-1); margin: 0 0 8px 0; line-height: 1.3; word-break: break-word; }
     .anc-meta { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-3); font-weight: 600; flex-wrap: wrap; }
     
     .anc-badge { font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.05em; padding: 2px 8px; border-radius: 20px; border: 1px solid currentColor; }
@@ -73,7 +78,7 @@ let _annDebounce   = null;
     .anc-fade { position: absolute; bottom: 0; left: 0; right: 0; height: 60px; background: linear-gradient(to bottom, transparent, var(--surface)); pointer-events: none; }
     .anc-body-content.expanded .anc-fade { display: none; }
     
-    .anc-footer { padding: 12px 24px; background: var(--bg-1); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; }
+    .anc-footer { padding: 12px 24px; background: var(--bg-1); border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 12px; flex-wrap: wrap; }
     
     /* Rich Text Render */
     .rt-content h3 { font-size: 16px; font-weight: 800; color: var(--text-1); margin: 16px 0 8px; }
@@ -84,15 +89,25 @@ let _annDebounce   = null;
     .rt-content strong { color: var(--text-1); font-weight: 800; }
     
     /* Toolbar Modal */
-    .md-toolbar { display: flex; gap: 4px; padding: 8px; background: var(--bg-2); border: 1px solid var(--border); border-bottom: none; border-radius: 8px 8px 0 0; }
-    .md-btn { background: transparent; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; color: var(--text-2); font-size: 13px; font-weight: 700; transition: all 0.15s; }
+    .md-toolbar { display: flex; gap: 4px; padding: 8px; background: var(--bg-2); border: 1px solid var(--border); border-bottom: none; border-radius: 12px 12px 0 0; overflow-x: auto; }
+    .md-btn { background: transparent; border: none; padding: 6px 10px; border-radius: 6px; cursor: pointer; color: var(--text-2); font-size: 13px; font-weight: 700; transition: all 0.15s; white-space: nowrap; }
     .md-btn:hover { background: var(--surface); color: var(--text-1); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
 
+    /* === RESPONSIVE MOBILE FIXES === */
     @media (max-width: 768px) {
       .anc-container { padding: 20px 16px; }
+      
+      /* Fix Header Bouton Rédiger */
+      .anc-page-header { flex-direction: column; align-items: stretch; gap: 16px; }
+      .anc-page-header .btn-primary { width: 100%; justify-content: center; padding: 14px; font-size: 15px; }
+      
+      .anc-search-wrap { width: 100%; max-width: 100%; }
       .anc-header { padding: 16px; flex-direction: column; gap: 12px; }
       .anc-body { padding: 16px; }
-      .anc-search-wrap { width: 100%; }
+      
+      /* Fix Footer Boutons (Grille 2x2) */
+      .anc-footer { padding: 12px 16px; justify-content: center; gap: 8px; }
+      .anc-footer .btn { flex: 1 1 calc(50% - 8px); justify-content: center; font-size: 12.5px; padding: 8px; }
     }
   `;
   document.head.appendChild(s);
@@ -102,7 +117,7 @@ let _annDebounce   = null;
 
 function setAnnoncesTab(tab) {
   _annTab = tab;
-  // Si on change d'onglet, on vide la recherche pour éviter la confusion
+  // Vidage de la recherche au changement d'onglet
   _annSearch = ''; 
   const searchInput = $('ann-inline-search');
   if (searchInput) searchInput.value = '';
@@ -124,9 +139,9 @@ function setAnnoncesFilter(f) {
 function setAnnoncesSearch(val) {
   _annSearch = (val || '').trim().toLowerCase();
   
-  // Si on fait une recherche, on désactive visuellement les onglets (car la recherche est globale)
+  // Désactive visuellement les onglets si on cherche globalement
   if (_annSearch.length > 0) {
-    document.querySelectorAll('.anc-tab').forEach(btn => btn.style.opacity = '0.5');
+    document.querySelectorAll('.anc-tab').forEach(btn => btn.style.opacity = '0.4');
   } else {
     document.querySelectorAll('.anc-tab').forEach(btn => btn.style.opacity = '1');
   }
@@ -153,7 +168,7 @@ function formatRichText(text) {
   html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
   html = html.replace(/^- (.*$)/gim, '<ul><li>$1</li></ul>');
-  html = html.replace(/<\/ul>\n<ul>/g, '\n'); // Fusionne les listes
+  html = html.replace(/<\/ul>\n<ul>/g, '\n'); 
   html = html.replace(/\n/g, '<br>');
   return html;
 }
@@ -195,13 +210,13 @@ async function renderAnnonces() {
   $('page').innerHTML = `
     <div class="anc-container">
       
-      <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:32px;">
+      <div class="anc-page-header">
         <div>
           <h1 class="anc-page-title">Panneau d'affichage</h1>
           <p class="anc-page-sub">Informations et communications officielles de la résidence.</p>
         </div>
         ${isManagerUser ? `
-          <button type="button" class="btn btn-primary" style="font-weight:800;" onclick="openNewAnnonce()">
+          <button type="button" class="btn btn-primary" style="font-weight:800; box-shadow:0 4px 12px rgba(0,0,0,0.2);" onclick="openNewAnnonce()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="margin-right:6px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Rédiger une annonce
           </button>
@@ -265,7 +280,7 @@ function _annoncesApplyFilters() {
   
   let out = _annRawData.filter(a => typeof annonceReaderCanSee === 'function' ? annonceReaderCanSee(a) : true);
 
-  // RECHERCHE GLOBALE : Si texte tapé, on cherche partout (sauf brouillons pour les non-managers)
+  // RECHERCHE GLOBALE : Cherche dans Actifs + Archives
   if (_annSearch) {
     const s = _annSearch;
     out = out.filter(a => 
@@ -273,7 +288,7 @@ function _annoncesApplyFilters() {
       (isManagerUser || !a.brouillon) // Un résident ne trouve pas les brouillons via la recherche
     );
   } else {
-    // FILTRES D'ONGLETS NORMAUX (Seulement si aucune recherche)
+    // FILTRES D'ONGLETS NORMAUX
     if (isManagerUser) {
       if (_annTab === 'brouillon') {
         out = out.filter(a => a.brouillon === true);
@@ -334,11 +349,16 @@ function _renderAnnoncesList() {
   const isManagerUser = typeof canManageAnnonces === 'function' ? canManageAnnonces() : false;
 
   if (!list.length) {
+    const msgMap = {
+      publie: "Aucune annonce officielle publiée pour le moment.",
+      brouillon: "Vous n'avez aucun brouillon en attente.",
+      archive: "Les archives sont vides."
+    };
     el.innerHTML = `
-      <div style="padding:60px 20px; text-align:center; background:var(--surface); border:1px solid var(--border); border-radius:16px;">
-        <div style="font-size:32px; margin-bottom:12px; opacity:0.6;">📭</div>
-        <div style="font-size:16px; font-weight:800; color:var(--text-1); margin-bottom:6px;">${_annSearch ? 'Aucun résultat trouvé' : 'Rien à afficher'}</div>
-        <div style="font-size:13.5px; color:var(--text-3);">${_annSearch ? 'Votre recherche n\'a donné aucun résultat, même dans les archives.' : 'Aucune annonce dans cette section.'}</div>
+      <div style="padding:60px 20px; text-align:center; background:var(--surface); border:1px dashed var(--border); border-radius:16px;">
+        <div style="font-size:40px; margin-bottom:16px; opacity:0.5;">📭</div>
+        <div style="font-size:16px; font-weight:800; color:var(--text-1); margin-bottom:8px;">${_annSearch ? 'Aucun résultat trouvé' : 'Rien à afficher'}</div>
+        <div style="font-size:14px; color:var(--text-3); max-width:300px; margin:0 auto;">${_annSearch ? 'Votre recherche n\'a donné aucun résultat, même dans les archives.' : msgMap[_annTab] || ''}</div>
       </div>`;
     return;
   }
@@ -373,7 +393,7 @@ function _renderAnnoncesList() {
             <span style="color:var(--border-strong);">·</span>
             <span>${dateStr}</span>
             ${isManagerUser && a.visibility_mode === 'roles' ? `<span style="color:var(--text-3); font-weight:700;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Restreint (${visText})</span>` : ''}
-            ${_annSearch && a.archive ? `<span class="anc-badge" style="color:var(--orange);">ARCHIVÉE</span>` : ''}
+            ${_annSearch && a.archive ? `<span class="anc-badge" style="color:var(--text-3); border-color:var(--text-3);">ARCHIVÉE</span>` : ''}
           </div>
         </div>
       </div>
@@ -460,7 +480,7 @@ function openNewAnnonce(existing) {
       </div>
     </div>
 
-    <div class="fg" id="anc-vis-roles" style="display:${mode === 'roles' ? 'block' : 'none'}; background:var(--bg-2); border:1px solid var(--border); border-radius:10px; padding:16px;">
+    <div class="fg" id="anc-vis-roles" style="display:${mode === 'roles' ? 'block' : 'none'}; background:var(--bg-2); border:1px solid var(--border); border-radius:12px; padding:16px;">
       <label class="label">Accès restreint aux rôles suivants :</label>
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">${roleChecks}</div>
       <div style="display:flex; gap:8px; border-top:1px solid var(--border); padding-top:12px;">
@@ -478,10 +498,10 @@ function openNewAnnonce(existing) {
         <div style="width:1px; background:var(--border); margin:0 4px;"></div>
         <button type="button" class="md-btn" onclick="insertMD('- ', '')" title="Liste">● Liste</button>
       </div>
-      <textarea id="anc-contenu" class="input" rows="8" placeholder="Détails, dates, consignes... Le formatage sera conservé." style="border-radius:0 0 8px 8px; border-top:none; resize:vertical; font-family:inherit;">${safeContenu}</textarea>
+      <textarea id="anc-contenu" class="input" rows="8" placeholder="Détails, dates, consignes... Le formatage sera conservé." style="border-radius:0 0 12px 12px; border-top:none; resize:vertical; font-family:inherit;">${safeContenu}</textarea>
     </div>
 
-    <div class="fg" style="background:var(--surface); padding:16px; border-radius:10px; border:1px solid var(--border); display:flex; flex-direction:column; gap:12px;">
+    <div class="fg" style="background:var(--bg-2); padding:16px; border-radius:12px; border:1px solid var(--border); display:flex; flex-direction:column; gap:12px;">
       <label style="display:flex; align-items:center; gap:10px; cursor:pointer; font-size:13.5px; font-weight:600; color:var(--text-1);">
         <input type="checkbox" id="anc-epingle" ${existing?.epingle ? 'checked' : ''} style="width:16px; height:16px;">
         <span>📌 Épingler en haut du fil d'actualité</span>
@@ -496,7 +516,7 @@ function openNewAnnonce(existing) {
   overlay.className = 'overlay open';
   overlay.id = 'modal-annonce';
   overlay.innerHTML = `
-    <div class="modal" style="max-width:600px; border-radius:16px;">
+    <div class="modal" style="max-width:600px; border-radius:20px;">
       <div class="mh" style="padding:20px 24px; border-bottom:1px solid var(--border); background:var(--bg-1);">
         <span class="mh-title" style="font-size:20px; font-weight:900; color:var(--text-1);">${isEdit ? "Modifier l'annonce" : 'Créer une annonce'}</span>
         <button type="button" class="mclose" style="font-size:24px;" onclick="document.getElementById('modal-annonce')?.remove()">×</button>
@@ -521,15 +541,16 @@ async function saveAnnonce(id) {
   if (!titre) { toast('Le titre est requis', 'err'); return; }
 
   const type    = $('anc-type')?.value || 'info';
-  const visMode = $('anc-vis-mode')?.value || 'public';
+  const isManagerUser = typeof canManageAnnonces === 'function' ? canManageAnnonces() : false;
+  const visMode = isManagerUser ? ($('anc-vis-mode')?.value || 'public') : 'public';
+
   let visRoles = [];
-  
   if (visMode === 'roles') {
     visRoles = [...document.querySelectorAll('.anc-role-cb:checked')].map(cb => cb.value);
     if (!visRoles.length) { toast('Choisissez au moins un rôle.', 'warn'); return; }
   }
 
-  const isBrouillon = $('anc-brouillon')?.checked || false;
+  const isBrouillon = isManagerUser ? ($('anc-brouillon')?.checked || false) : false;
 
   const payload = {
     titre,
@@ -565,6 +586,7 @@ async function saveAnnonce(id) {
       await _notifierNouvelleAnnonce(data, type, titre, visMode, visRoles, payload.contenu);
     }
   } catch (err) {
+    console.error('[annonces]', err);
     if (btn) { btn.disabled = false; btn.textContent = id ? 'Mettre à jour' : 'Publier'; }
     toast('Erreur lors de la sauvegarde.', 'err');
   }
@@ -593,7 +615,7 @@ async function toggleArchive(annonceId, isArchived) {
     const { error } = await sb.from('annonces').update({ archive: isArchived, epingle: false }).eq('id', annonceId);
     
     if (error) {
-       toast('⚠️ La colonne "archive" manque dans votre base de données Supabase. Veuillez l\'ajouter (BOOLEAN).', 'warn');
+       toast('⚠️ Colonne "archive" introuvable. Avez-vous lancé la commande SQL ?', 'err');
        return;
     }
 
