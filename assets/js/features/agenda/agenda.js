@@ -1,448 +1,378 @@
 // ════════════════════════════════════════════════════════════════
-//  AGENDA
+//  AGENDA FEATURE
 //  assets/js/features/agenda/agenda.js
 // ════════════════════════════════════════════════════════════════
 
 const EVENT_TYPES = {
-  ag:         { label:'AG',         color:'#6366f1', bg:'rgba(99,102,241,.12)'  },
-  reunion_cs: { label:'CS',         color:'#f59e0b', bg:'rgba(245,158,11,.12)'  },
-  artisan:    { label:'Artisan',    color:'#10b981', bg:'rgba(16,185,129,.12)'  },
-  controle:   { label:'Contrôle',   color:'#ef4444', bg:'rgba(239,68,68,.12)'   },
-  autre:      { label:'Autre',      color:'#6b7280', bg:'rgba(107,114,128,.12)' },
+  ag:         { label:'AG',         color:'#6366f1', dot:'violet' },
+  reunion_cs: { label:'CS',         color:'#f59e0b', dot:'orange' },
+  artisan:    { label:'Artisan',    color:'#10b981', dot:'green'  },
+  controle:   { label:'Contrôle',   color:'#ef4444', dot:'red'    },
+  autre:      { label:'Autre',      color:'#6b7280', dot:'gray'   },
 };
 
-let _agendaDate  = new Date();
-let _agendaView  = 'cal';
-let _selectedDay = null;
+let _agendaDate = new Date();
+let _agendaEvents = [];
+let _agendaView = 'cal';
 
-// ── HELPERS ──────────────────────────────────────────────────────
-function _agendaEvents() { return cache.evenements || []; }
-
-function _fmtDate(iso) {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short' });
-}
-function _fmtHeure(iso) {
-  if (!iso) return '';
-  return new Date(iso).toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
-}
-function _dateStr(d) {
-  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-}
-function _esc(s) {
-  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ── RENDER PRINCIPAL ─────────────────────────────────────────────
-async function renderAgenda() {
-  $('page').innerHTML = `
-  <style>
-    .agenda-layout { display:grid; grid-template-columns:1fr 340px; gap:20px; margin-top:20px; }
-    @media(max-width:900px){ .agenda-layout{ grid-template-columns:1fr; } }
-
-    .cal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:18px; }
-    .cal-title  { font-family:var(--font-head); font-weight:800; font-size:18px; color:var(--text-1); }
-
-    .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
-    .cal-dow  { text-align:center; font-size:11px; font-weight:600; color:var(--text-3);
-                text-transform:uppercase; letter-spacing:.06em; padding:6px 0 10px; }
-
-    .cal-day  { position:relative; aspect-ratio:1; display:flex; flex-direction:column;
-                align-items:center; justify-content:flex-start; padding-top:6px;
-                border-radius:10px; cursor:pointer; transition:background .15s;
-                font-size:13px; color:var(--text-2); user-select:none; }
-    .cal-day:hover     { background:var(--surface-2,rgba(0,0,0,.04)); }
-    .cal-day-empty     { cursor:default; pointer-events:none; }
-    .cal-day-num       { font-weight:500; line-height:1; }
-    .cal-today .cal-day-num {
-      background:var(--accent); color:#fff; width:26px; height:26px;
-      border-radius:50%; display:flex; align-items:center; justify-content:center;
-      font-weight:700;
+// ── Chargement des données ──
+async function loadEvents() {
+  try {
+    // Vérification RLS automatique par Supabase, ajout d'une sécurité réseau
+    const { data, error } = await sb.from('evenements').select('*').order('date_debut', { ascending: true });
+    if (error) { 
+      console.error('Erreur chargement agenda:', error.message); 
+      return; 
     }
-    .cal-selected { background:var(--surface-2,rgba(0,0,0,.04)); outline:2px solid var(--accent); outline-offset:-2px; }
-    .cal-has-ev   { color:var(--text-1); font-weight:600; }
-    .cal-dots     { display:flex; gap:3px; margin-top:3px; align-items:center; justify-content:center; }
-    .cal-dot      { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
-    .cal-dot-more { font-size:9px; color:var(--text-3); line-height:1; }
+    _agendaEvents = data || [];
+  } catch (e) {
+    console.error('Exception chargement agenda:', e);
+  }
+}
 
-    .ev-card { display:flex; align-items:stretch; background:var(--surface-1);
-               border:1px solid var(--border); border-radius:12px; overflow:hidden;
-               margin-bottom:8px; transition:box-shadow .15s, transform .15s; }
-    .ev-card:hover     { box-shadow:0 4px 16px rgba(0,0,0,.07); transform:translateY(-1px); }
-    .ev-card-stripe    { width:4px; flex-shrink:0; }
-    .ev-card-body      { flex:1; padding:12px 14px; min-width:0; }
-    .ev-card-head      { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; margin-bottom:5px; }
-    .ev-card-title     { font-weight:700; font-size:14px; color:var(--text-1); line-height:1.3; }
-    .ev-card-badge     { flex-shrink:0; font-size:10px; font-weight:700; padding:2px 8px;
-                         border-radius:20px; letter-spacing:.04em; white-space:nowrap; }
-    .ev-card-meta      { font-size:12px; color:var(--text-3); display:flex; flex-direction:column; gap:3px; }
-    .ev-card-meta span { display:flex; align-items:center; gap:5px; }
+// ── Rendu de la page principale ──
+async function renderAgenda() {
+  const page = $('page');
+  if (!page) return;
 
-    .ag-section-title { font-family:var(--font-head); font-weight:700; font-size:11px;
-                        color:var(--text-3); text-transform:uppercase; letter-spacing:.08em;
-                        margin:20px 0 10px; padding-bottom:6px; border-bottom:1px solid var(--border); }
-
-    .view-toggle        { display:flex; border:1px solid var(--border); border-radius:var(--r-sm); overflow:hidden; }
-    .view-toggle button { border:none; border-radius:0; padding:6px 14px; font-size:13px;
-                          cursor:pointer; transition:background .15s, color .15s;
-                          background:transparent; color:var(--text-2); font-family:inherit; }
-    .view-toggle button.active { background:var(--accent); color:#fff; }
-  </style>
-
+  // On injecte la structure de base
+  page.innerHTML = `
   <div style="padding:24px;">
-    <div class="ph" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-      <div><h1>Agenda</h1><p>Réunions, passages artisans, contrôles…</p></div>
+    <div class="ph" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:24px;">
+      <div>
+        <h1 style="font-size:24px;font-weight:800;color:var(--text-1);margin:0;">Agenda</h1>
+        <p style="color:var(--text-2);margin:4px 0 0;font-size:14px;">Réunions, passages artisans, contrôles…</p>
+      </div>
       <div style="display:flex;gap:8px;align-items:center;">
-        <div class="view-toggle">
-          <button id="view-cal-btn"  class="active" onclick="setAgendaView('cal')">📅 Calendrier</button>
-          <button id="view-list-btn" onclick="setAgendaView('list')">☰ Liste</button>
+        <div style="display:flex;border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;">
+          <button class="btn btn-ghost btn-sm" id="view-cal-btn" onclick="setAgendaView('cal')" style="border-radius:0;border:none;background:var(--accent);color:#fff;">📅 Calendrier</button>
+          <button class="btn btn-ghost btn-sm" id="view-list-btn" onclick="setAgendaView('list')" style="border-radius:0;border:none;">☰ Liste</button>
         </div>
-        ${isManager() ? `<button class="btn btn-primary" onclick="openNewEvent()">+ Ajouter</button>` : ''}
+        ${(typeof canManageAgenda === 'function' && canManageAgenda()) ? `<button class="btn btn-primary" onclick="openNewEvent()">+ Ajouter</button>` : ''}
       </div>
     </div>
 
     <div id="agenda-cal-view">
-      <div class="agenda-layout">
+      <div class="agenda-layout" style="display:grid;grid-template-columns:1fr 300px;gap:20px;align-items:start;">
         <div class="agenda-calendar">
           <div class="card" style="padding:20px;">
-            <div class="cal-header">
-              <button class="btn btn-ghost btn-sm" onclick="agendaMonth(-1)">‹</button>
-              <div class="cal-title" id="cal-title"></div>
-              <button class="btn btn-ghost btn-sm" onclick="agendaMonth(1)">›</button>
+            <div class="cal-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <button class="btn btn-secondary btn-sm" onclick="agendaMonth(-1)">‹ Mois préc.</button>
+              <div class="cal-title" id="cal-title" style="font-weight:700;font-size:16px;text-transform:capitalize;"></div>
+              <button class="btn btn-secondary btn-sm" onclick="agendaMonth(1)">Mois suiv. ›</button>
             </div>
             <div class="cal-grid" id="cal-grid"></div>
           </div>
         </div>
         <div class="agenda-sidebar-panel">
           <div class="card" style="padding:16px;">
-            <div style="font-family:var(--font-head);font-weight:700;font-size:14px;margin-bottom:14px;" id="agenda-side-title">
-              Prochains événements
-            </div>
+            <div style="font-family:var(--font-head);font-weight:700;font-size:14px;margin-bottom:12px;color:var(--text-1);" id="agenda-side-title">Prochains événements</div>
             <div id="agenda-side-list">
-              <div style="text-align:center;padding:30px 0;color:var(--text-3);font-size:13px;">Chargement…</div>
+              <div style="text-align:center;padding:20px;color:var(--text-3);font-size:13px;">Chargement…</div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div id="agenda-list-view" style="display:none;margin-top:4px;">
+    <div id="agenda-list-view" style="display:none;max-width:800px;margin:0 auto;">
       <div id="agenda-full-list"></div>
     </div>
   </div>`;
 
-  await loadEvenementsCache();
-  _agendaView  = 'cal';
-  _selectedDay = null;
-  renderCal();
-}
-
-// ── CALENDRIER ───────────────────────────────────────────────────
-function renderCal() {
-  const titleEl = $('cal-title');
-  const gridEl  = $('cal-grid');
-  if (!titleEl || !gridEl) return;
-
-  const y = _agendaDate.getFullYear();
-  const m = _agendaDate.getMonth();
-  titleEl.textContent = _agendaDate.toLocaleDateString('fr-FR', { month:'long', year:'numeric' });
-
-  const jours = ['LU','MA','ME','JE','VE','SA','DI'];
-  let html = jours.map(j => `<div class="cal-dow">${j}</div>`).join('');
-
-  const firstDow    = (new Date(y, m, 1).getDay() + 6) % 7;
-  const daysInMonth = new Date(y, m + 1, 0).getDate();
-  const todayStr    = _dateStr(new Date());
-
-  const evMap = {};
-  _agendaEvents().forEach(e => {
-    const d = e.date_debut?.slice(0, 10);
-    if (!d) return;
-    (evMap[d] = evMap[d] || []).push(e);
-  });
-
-  for (let i = 0; i < firstDow; i++) html += `<div class="cal-day cal-day-empty"></div>`;
-
-  for (let d = 1; d <= daysInMonth; d++) {
-    const ds  = `${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const evs = evMap[ds] || [];
-    const isToday    = ds === todayStr;
-    const isSelected = ds === _selectedDay;
-
-    const dots = evs.length ? `<div class="cal-dots">${
-      evs.slice(0, 3).map(e => `<span class="cal-dot" style="background:${(EVENT_TYPES[e.type]||EVENT_TYPES.autre).color}"></span>`).join('')
-      + (evs.length > 3 ? `<span class="cal-dot-more">+${evs.length-3}</span>` : '')
-    }</div>` : '';
-
-    html += `<div
-      class="cal-day${isToday?' cal-today':''}${isSelected?' cal-selected':''}${evs.length?' cal-has-ev':''}"
-      onclick="agendaSelectDay('${ds}')"
-      title="${evs.length ? evs.length+' événement(s)' : ''}"
-    ><span class="cal-day-num">${d}</span>${dots}</div>`;
+  await loadEvents();
+  
+  // Prise en compte du responsive sur petits écrans
+  if (window.innerWidth <= 768) {
+    const layout = document.querySelector('.agenda-layout');
+    if (layout) layout.style.gridTemplateColumns = '1fr';
   }
 
-  gridEl.innerHTML = html;
-  renderSidePanel();
-}
-
-function agendaSelectDay(ds) {
-  _selectedDay = (_selectedDay === ds) ? null : ds;
   renderCal();
 }
 
-function agendaMonth(delta) {
-  _agendaDate = new Date(_agendaDate.getFullYear(), _agendaDate.getMonth() + delta, 1);
-  _selectedDay = null;
+// ── Gestion de la vue (Calendrier / Liste) ──
+function setAgendaView(v) {
+  _agendaView = v;
+  const calView = $('agenda-cal-view');
+  const listView = $('agenda-list-view');
+  
+  if (calView) calView.style.display = v === 'cal' ? '' : 'none';
+  if (listView) listView.style.display = v === 'list' ? '' : 'none';
+  
+  const calBtn = $('view-cal-btn');
+  const listBtn = $('view-list-btn');
+
+  if (calBtn) {
+    calBtn.style.background = v === 'cal' ? 'var(--accent)' : '';
+    calBtn.style.color = v === 'cal' ? '#fff' : '';
+  }
+  if (listBtn) {
+    listBtn.style.background = v === 'list' ? 'var(--accent)' : '';
+    listBtn.style.color = v === 'list' ? '#fff' : '';
+  }
+
+  if (v === 'list') renderAgendaList();
+  else renderCal();
+}
+
+function agendaMonth(dir) {
+  _agendaDate.setMonth(_agendaDate.getMonth() + dir);
   renderCal();
 }
 
-// ── PANNEAU LATÉRAL ───────────────────────────────────────────────
-function renderSidePanel() {
-  const titleEl = $('agenda-side-title');
-  const listEl  = $('agenda-side-list');
-  if (!titleEl || !listEl) return;
+// ── Logique du Calendrier ──
+function renderCal() {
+  const grid = $('cal-grid');
+  const title = $('cal-title');
+  if (!grid || !title) return;
 
-  if (_selectedDay) {
-    const evs = _agendaEvents().filter(e => e.date_debut?.slice(0,10) === _selectedDay);
-    const label = new Date(_selectedDay + 'T12:00').toLocaleDateString('fr-FR', { weekday:'long', day:'numeric', month:'long' });
-    titleEl.textContent = label.charAt(0).toUpperCase() + label.slice(1);
-    listEl.innerHTML = evs.length
-      ? evs.map(e => renderEventCard(e)).join('')
-      : `<div style="text-align:center;padding:30px 0;color:var(--text-3);font-size:13px;">Aucun événement ce jour.</div>`;
+  const year = _agendaDate.getFullYear();
+  const month = _agendaDate.getMonth();
+  const monthNames = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+  title.textContent = `${monthNames[month]} ${year}`;
+
+  let firstDay = new Date(year, month, 1).getDay();
+  firstDay = firstDay === 0 ? 6 : firstDay - 1; // Ajustement pour Lundi = début de semaine
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  let html = `<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center;font-weight:600;font-size:12px;color:var(--text-3);margin-bottom:8px;">
+                <div>Lu</div><div>Ma</div><div>Me</div><div>Je</div><div>Ve</div><div>Sa</div><div>Di</div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:4px;">`;
+
+  // Cases vides (mois précédent)
+  for (let i = 0; i < firstDay; i++) {
+    html += `<div style="padding:10px;border-radius:var(--r-sm);background:transparent;"></div>`;
+  }
+
+  const today = new Date();
+  
+  for (let d = 1; d <= daysInMonth; d++) {
+    const currentDateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = today.getDate() === d && today.getMonth() === month && today.getFullYear() === year;
+
+    // Récupérer les événements du jour
+    const dayEvents = _agendaEvents.filter(e => e.date_debut && e.date_debut.startsWith(currentDateStr));
+    
+    let dotsHtml = '';
+    if (dayEvents.length > 0) {
+      dotsHtml = `<div style="display:flex;justify-content:center;gap:2px;margin-top:4px;">` + 
+                 dayEvents.slice(0,3).map(e => {
+                   const t = EVENT_TYPES[e.type] || EVENT_TYPES.autre;
+                   return `<span style="display:block;width:6px;height:6px;border-radius:50%;background:${t.color};"></span>`;
+                 }).join('') + 
+                 `</div>`;
+    }
+
+    const bgClass = isToday ? 'background:var(--accent);color:#fff;' : 'background:var(--bg-2);cursor:pointer;';
+    const borderClass = isToday ? '' : 'border:1px solid var(--border);';
+    const hoverClass = isToday ? '' : 'onmouseover="this.style.filter=\'brightness(1.1)\'" onmouseout="this.style.filter=\'none\'"';
+
+    html += `<div style="padding:10px 4px;border-radius:var(--r-sm);text-align:center;${bgClass}${borderClass}" ${hoverClass} onclick="showEventsForDate('${currentDateStr}')">
+               <span style="font-size:14px;font-weight:500;">${d}</span>
+               ${dotsHtml}
+             </div>`;
+  }
+  
+  html += `</div>`;
+  grid.innerHTML = html;
+
+  // Afficher les prochains événements dans la barre latérale par défaut
+  showEventsForDate(null);
+}
+
+// ── Panneau latéral et Liste des événements ──
+function showEventsForDate(dateStr) {
+  const list = $('agenda-side-list');
+  const title = $('agenda-side-title');
+  if (!list || !title) return;
+
+  let filtered = [];
+  if (dateStr) {
+    const parts = dateStr.split('-');
+    title.textContent = `Événements du ${parts[2]}/${parts[1]}/${parts[0]}`;
+    filtered = _agendaEvents.filter(e => e.date_debut && e.date_debut.startsWith(dateStr));
+  } else {
+    title.textContent = `Prochains événements`;
+    const now = new Date();
+    // Normaliser 'now' pour inclure les événements du jour même
+    now.setHours(0,0,0,0); 
+    filtered = _agendaEvents.filter(e => new Date(e.date_debut) >= now).slice(0, 5);
+  }
+
+  if (filtered.length === 0) {
+    list.innerHTML = `<div style="text-align:center;padding:20px;color:var(--text-3);font-size:13px;background:var(--bg-2);border-radius:8px;">Aucun événement.</div>`;
     return;
   }
 
-  titleEl.textContent = 'Prochains événements';
-  const now = new Date();
-  const upcoming = _agendaEvents().filter(e => e.date_debut && new Date(e.date_debut) >= now).slice(0, 7);
-  listEl.innerHTML = upcoming.length
-    ? upcoming.map(e => renderEventCard(e)).join('')
-    : `<div style="text-align:center;padding:30px 0;color:var(--text-3);font-size:13px;">Aucun événement à venir.</div>`;
-}
-
-// ── VUE LISTE ─────────────────────────────────────────────────────
-function setAgendaView(v) {
-  _agendaView = v;
-  const calView  = $('agenda-cal-view');
-  const listView = $('agenda-list-view');
-  if (!calView || !listView) return;
-  calView.style.display  = v === 'cal'  ? '' : 'none';
-  listView.style.display = v === 'list' ? '' : 'none';
-  $('view-cal-btn')?.classList.toggle('active',  v === 'cal');
-  $('view-list-btn')?.classList.toggle('active', v === 'list');
-  if (v === 'list') renderAgendaList();
+  list.innerHTML = filtered.map(e => renderEventItem(e)).join('');
 }
 
 function renderAgendaList() {
   const el = $('agenda-full-list');
   if (!el) return;
-  const now      = new Date();
-  const upcoming = _agendaEvents().filter(e => e.date_debut && new Date(e.date_debut) >= now);
-  const past     = _agendaEvents().filter(e => e.date_debut && new Date(e.date_debut) < now).reverse();
+  const now = new Date();
+  now.setHours(0,0,0,0);
+
+  const upcoming = _agendaEvents.filter(e => new Date(e.date_debut) >= now);
+  const past = _agendaEvents.filter(e => new Date(e.date_debut) < now).reverse();
+
   if (!upcoming.length && !past.length) {
-    el.innerHTML = emptyState('📅', 'Agenda vide', 'Aucun événement programmé.');
+    el.innerHTML = `<div style="text-align:center;padding:40px;color:var(--text-3);">
+                      <div style="font-size:40px;margin-bottom:12px;">📅</div>
+                      <div style="font-size:16px;font-weight:600;color:var(--text-1);">Agenda vide</div>
+                      <div style="font-size:14px;margin-top:4px;">Aucun événement programmé pour le moment.</div>
+                    </div>`;
     return;
   }
+
   let html = '';
   if (upcoming.length) {
-    html += `<div class="ag-section-title">À venir</div>` + upcoming.map(e => renderEventCard(e, true)).join('');
+    html += `<div style="font-family:var(--font-head);font-weight:700;font-size:13px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">À venir</div>`;
+    html += upcoming.map(e => renderEventItem(e)).join('');
   }
   if (past.length) {
-    html += `<div class="ag-section-title">Passés</div><div style="opacity:.55;">` + past.slice(0,12).map(e => renderEventCard(e, true)).join('') + `</div>`;
+    html += `<div style="font-family:var(--font-head);font-weight:700;font-size:13px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;margin:24px 0 12px;">Passés</div>`;
+    html += `<div style="opacity:.6;">${past.slice(0,10).map(e => renderEventItem(e)).join('')}</div>`;
   }
   el.innerHTML = html;
 }
 
-// ── CARD ÉVÉNEMENT ────────────────────────────────────────────────
-function renderEventCard(e, withEditBtn = false) {
-  const type  = EVENT_TYPES[e.type] || EVENT_TYPES.autre;
-  const heure = _fmtHeure(e.date_debut);
-  const fin   = e.date_fin ? ` → ${_fmtHeure(e.date_fin)}` : '';
-  return `<div class="ev-card">
-    <div class="ev-card-stripe" style="background:${type.color};"></div>
-    <div class="ev-card-body">
-      <div class="ev-card-head">
-        <div class="ev-card-title">${_esc(e.titre||'Sans titre')}</div>
-        <span class="ev-card-badge" style="background:${type.bg};color:${type.color};">${type.label}</span>
+function renderEventItem(e) {
+  const t = EVENT_TYPES[e.type] || EVENT_TYPES.autre;
+  
+  // Formatage propre de la date et de l'heure
+  const dateObj = new Date(e.date_debut);
+  const dateStr = dateObj.toLocaleDateString('fr-FR', { weekday:'short', day:'numeric', month:'short', year:'numeric' });
+  const timeStr = e.heure_debut ? e.heure_debut.substring(0, 5) : '';
+
+  return `
+    <div style="background:var(--bg-1);border:1px solid var(--border);border-left:4px solid ${t.color};border-radius:var(--r-sm);padding:14px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;">
+        <div style="font-weight:700;font-size:15px;color:var(--text-1);">${e.titre}</div>
+        <div style="font-size:11px;padding:3px 8px;border-radius:12px;background:${t.color}15;color:${t.color};font-weight:700;white-space:nowrap;margin-left:8px;">${t.label}</div>
       </div>
-      <div class="ev-card-meta">
-        <span>📅 ${_fmtDate(e.date_debut)}${heure ? ' · '+heure+fin : ''}</span>
-        ${e.lieu        ? `<span>📍 ${_esc(e.lieu)}</span>` : ''}
-        ${e.description ? `<span style="margin-top:2px;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${_esc(e.description)}</span>` : ''}
+      <div style="font-size:13px;color:var(--text-2);display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
+        <span style="display:flex;align-items:center;gap:4px;">📅 <span style="text-transform:capitalize;">${dateStr}</span> ${timeStr ? 'à '+timeStr : ''}</span>
+        ${e.lieu ? `<span style="display:flex;align-items:center;gap:4px;">📍 ${e.lieu}</span>` : ''}
       </div>
+      ${e.description ? `<div style="font-size:13px;color:var(--text-3);margin-top:10px;line-height:1.5;background:var(--bg-2);padding:10px;border-radius:6px;">${e.description}</div>` : ''}
     </div>
-    ${withEditBtn && isManager() ? `
-    <div style="display:flex;align-items:center;padding:0 10px;">
-      <button class="btn btn-ghost btn-xs" onclick="openEditEvent('${e.id}')" title="Modifier">✏️</button>
-    </div>` : ''}
-  </div>`;
+  `;
 }
 
-// ── MODAL AJOUT / ÉDITION ─────────────────────────────────────────
-function openNewEvent() { _openEventModal(null); }
-
-function openEditEvent(id) {
-  const ev = _agendaEvents().find(e => String(e.id) === String(id));
-  _openEventModal(ev || null);
-}
-
-function _openEventModal(ev) {
-  const isEdit = !!ev;
-
-  // Construit la date/heure locale pour l'input datetime-local
-  function toLocalInput(iso) {
-    if (!iso) return '';
-    const d = new Date(iso);
-    const pad = n => String(n).padStart(2,'0');
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-  }
-
-  const defDebut = ev?.date_debut ? toLocalInput(ev.date_debut) : (() => {
-    const d = new Date(); d.setDate(d.getDate()+1); d.setHours(10,0,0,0);
-    const pad = n => String(n).padStart(2,'0');
-    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T10:00`;
-  })();
-
-  const typeOptions = Object.entries(EVENT_TYPES)
-    .map(([k,v]) => `<option value="${k}"${ev?.type===k?' selected':''}>${v.label} — ${_typeDesc(k)}</option>`)
-    .join('');
-
-  // Supprime une éventuelle modal résiduelle
-  const existing = $('m-agenda');
-  if (existing) existing.remove();
-
-  // ── FIX : classe "open" ajoutée dès la création ──
-  document.body.insertAdjacentHTML('beforeend', `
-    <div class="overlay open" id="m-agenda" onclick="if(event.target===this)closeModal('m-agenda')" style="z-index:900;">
-      <div class="modal" style="max-width:520px;">
+// ── Modale dynamique pour la création d'événement (Syndic/Admin) ──
+function openNewEvent() {
+  let modal = $('m-agenda');
+  
+  // Si la modale n'existe pas encore dans le DOM, on la crée pour ne pas avoir à toucher index.html
+  if (!modal) {
+    const div = document.createElement('div');
+    div.className = 'overlay';
+    div.id = 'm-agenda';
+    div.innerHTML = `
+      <div class="modal">
         <div class="mh">
-          <span class="mh-title">${isEdit ? '✏️ Modifier l\'événement' : '📅 Nouvel événement'}</span>
+          <span class="mh-title">Nouvel événement</span>
           <button class="mclose" onclick="closeModal('m-agenda')">×</button>
         </div>
-        <div class="mb" style="display:flex;flex-direction:column;gap:14px;">
-
-          <!-- Titre -->
-          <div class="fg" style="margin:0;">
+        <div class="mb">
+          <div class="fg">
             <label class="label">Titre *</label>
-            <input type="text" id="ev-titre" class="input"
-              placeholder="Ex : Assemblée Générale annuelle"
-              value="${_esc(ev?.titre||'')}">
+            <input type="text" id="ev-titre" class="input" placeholder="Ex: Réunion préparatoire travaux">
           </div>
-
-          <!-- Type -->
-          <div class="fg" style="margin:0;">
-            <label class="label">Type d'événement</label>
-            <select id="ev-type" class="select">${typeOptions}</select>
-          </div>
-
-          <!-- Dates -->
-          <div style="display:flex;gap:10px;">
-            <div class="fg" style="margin:0;flex:1;">
-              <label class="label">Début *</label>
-              <input type="datetime-local" id="ev-debut" class="input" value="${defDebut}">
+          <div class="fg-row">
+            <div class="fg" style="margin:0;">
+              <label class="label">Catégorie</label>
+              <select id="ev-type" class="select">
+                <option value="ag">Assemblée Générale</option>
+                <option value="reunion_cs">Réunion Conseil Syndical</option>
+                <option value="artisan">Intervention Artisan</option>
+                <option value="controle">Contrôle / Vérification</option>
+                <option value="autre">Autre</option>
+              </select>
             </div>
-            <div class="fg" style="margin:0;flex:1;">
-              <label class="label">Fin <span style="color:var(--text-3);font-weight:400;">(optionnel)</span></label>
-              <input type="datetime-local" id="ev-fin" class="input" value="${toLocalInput(ev?.date_fin)}">
+            <div class="fg" style="margin:0;">
+              <label class="label">Lieu</label>
+              <input type="text" id="ev-lieu" class="input" placeholder="Ex: Hall Tour 15">
             </div>
           </div>
-
-          <!-- Lieu -->
-          <div class="fg" style="margin:0;">
-            <label class="label">Lieu</label>
-            <input type="text" id="ev-lieu" class="input"
-              placeholder="Ex : Salle de réunion Tour 15, sous-sol…"
-              value="${_esc(ev?.lieu||'')}">
+          <div class="fg-row" style="margin-top:14px;">
+            <div class="fg" style="margin:0;">
+              <label class="label">Date de début *</label>
+              <input type="date" id="ev-date" class="input">
+            </div>
+            <div class="fg" style="margin:0;">
+              <label class="label">Heure <span style="font-weight:400;color:var(--text-3);">(Optionnel)</span></label>
+              <input type="time" id="ev-heure" class="input">
+            </div>
           </div>
-
-          <!-- Description / ordre du jour -->
-          <div class="fg" style="margin:0;">
-            <label class="label">Description / ordre du jour</label>
-            <textarea id="ev-desc" class="textarea" rows="3"
-              placeholder="Points abordés, informations pratiques, documents joints…">${_esc(ev?.description||'')}</textarea>
+          <div class="fg" style="margin-top:14px;">
+            <label class="label">Détails de l'événement</label>
+            <textarea id="ev-desc" class="textarea" placeholder="Ordre du jour, informations d'accès..."></textarea>
           </div>
-
-          <!-- Rappel info -->
-          <div style="background:var(--blue-light,rgba(59,130,246,.06));border:1px solid var(--blue-border,rgba(59,130,246,.15));border-radius:8px;padding:10px 14px;font-size:12px;color:var(--text-3);line-height:1.5;">
-            💡 L'événement sera visible par tous les résidents connectés dès l'enregistrement.
-          </div>
-
         </div>
-        <div class="mf" style="justify-content:${isEdit?'space-between':'flex-end'};">
-          ${isEdit ? `<button class="btn btn-danger btn-sm" onclick="deleteEvent('${ev.id}')">🗑 Supprimer</button>` : ''}
-          <div style="display:flex;gap:8px;">
-            <button class="btn btn-secondary" onclick="closeModal('m-agenda')">Annuler</button>
-            <button class="btn btn-primary" id="ev-submit-btn" onclick="submitEvent(${isEdit?`'${ev.id}'`:'null'})">
-              ${isEdit ? 'Enregistrer les modifications' : 'Ajouter à l\'agenda'}
-            </button>
-          </div>
+        <div class="mf">
+          <button class="btn btn-secondary" onclick="closeModal('m-agenda')">Annuler</button>
+          <button class="btn btn-primary" onclick="submitEvent()">Enregistrer</button>
         </div>
       </div>
-    </div>`);
+    `;
+    document.body.appendChild(div);
+  }
 
-  setTimeout(() => $('ev-titre')?.focus(), 60);
+  // Réinitialisation des champs du formulaire
+  $('ev-titre').value = '';
+  $('ev-lieu').value = '';
+  $('ev-date').value = '';
+  $('ev-heure').value = '';
+  $('ev-desc').value = '';
+  
+  // Affichage de la modale
+  $('m-agenda').style.display = 'flex';
 }
 
-function _typeDesc(k) {
-  const map = { ag:'Assemblée générale', reunion_cs:'Conseil syndical', artisan:'Passage artisan', controle:'Contrôle technique', autre:'Autre' };
-  return map[k] || '';
-}
+// ── Sauvegarde de l'événement dans Supabase ──
+async function submitEvent() {
+  const titre = $('ev-titre').value.trim();
+  const date = $('ev-date').value;
+  
+  if (!titre || !date) {
+    if (typeof toast === 'function') toast('Le titre et la date sont obligatoires', 'err');
+    return;
+  }
 
-// ── SUBMIT ────────────────────────────────────────────────────────
-async function submitEvent(id) {
-  const titre = $('ev-titre')?.value.trim();
-  if (!titre) { toast('Le titre est obligatoire.', 'error'); return; }
-  const debut = $('ev-debut')?.value;
-  if (!debut) { toast('La date de début est obligatoire.', 'error'); return; }
-
-  // Désactive le bouton pendant l'envoi
-  const btn = $('ev-submit-btn');
-  if (btn) { btn.disabled = true; btn.textContent = 'Enregistrement…'; }
-
-  const payload = {
-    titre,
-    type:        $('ev-type')?.value || 'autre',
-    date_debut:  new Date(debut).toISOString(),
-    date_fin:    $('ev-fin')?.value ? new Date($('ev-fin').value).toISOString() : null,
-    lieu:        $('ev-lieu')?.value.trim()  || null,
-    description: $('ev-desc')?.value.trim()  || null,
-    created_by:  id ? undefined : (window.currentUser?.id ?? null),
+  const evt = {
+    titre: titre,
+    type: $('ev-type').value,
+    lieu: $('ev-lieu').value.trim() || null,
+    date_debut: date,
+    heure_debut: $('ev-heure').value || null,
+    description: $('ev-desc').value.trim() || null,
+    created_by: typeof user !== 'undefined' && user ? user.id : null
   };
-  if (id) delete payload.created_by;
 
   try {
-    const { error } = id
-      ? await sb.from('evenements').update(payload).eq('id', id)
-      : await sb.from('evenements').insert(payload);
-    if (error) throw error;
+    const { error } = await sb.from('evenements').insert([evt]);
+    
+    if (error) {
+      console.error('Erreur Supabase insert agenda:', error.message);
+      if (typeof toast === 'function') toast('Erreur lors de la création', 'err');
+      return;
+    }
 
-    toast(id ? 'Événement modifié ✓' : 'Événement ajouté ✓', 'success');
-    closeModal('m-agenda');
-    await loadEvenementsCache();
-    renderCal();
-    if (_agendaView === 'list') renderAgendaList();
-  } catch (err) {
-    console.error('[agenda] submitEvent', err);
-    toast('Erreur : ' + (err.message || 'impossible d\'enregistrer.'), 'error');
-    if (btn) { btn.disabled = false; btn.textContent = 'Enregistrer'; }
+    if (typeof toast === 'function') toast('Événement ajouté avec succès !', 'ok');
+    
+    if (typeof closeModal === 'function') closeModal('m-agenda');
+    else $('m-agenda').style.display = 'none';
+
+    // Rafraîchissement des données et de la vue
+    await loadEvents();
+    if (_agendaView === 'cal') renderCal();
+    else renderAgendaList();
+
+  } catch (e) {
+    console.error('Crash submitEvent:', e);
   }
 }
-
-// ── DELETE ────────────────────────────────────────────────────────
-async function deleteEvent(id) {
-  if (!confirm('Supprimer définitivement cet événement ?')) return;
-  try {
-    const { error } = await sb.from('evenements').delete().eq('id', id);
-    if (error) throw error;
-    toast('Événement supprimé.', 'success');
-    closeModal('m-agenda');
-    await loadEvenementsCache();
-    renderCal();
-    if (_agendaView === 'list') renderAgendaList();
-  } catch (err) {
-    console.error('[agenda] deleteEvent', err);
-    toast('Erreur : ' + (err.message || 'impossible de supprimer.'), 'error');
-  }
-}
-
-// ── MODE SOMBRE ──

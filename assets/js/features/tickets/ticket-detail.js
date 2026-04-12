@@ -1,128 +1,17 @@
-// ── TICKET DETAIL — Design refactorisé ─────────────────────────────────────
-
-(function injectDetailStyles() {
-  if (document.getElementById('td-styles')) return;
-  const s = document.createElement('style');
-  s.id = 'td-styles';
-  s.textContent = `
-    @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&display=swap');
-    :root {
-      --td-ink: #0f0e0c; --td-ink2: #4a4844; --td-ink3: #8a8784; --td-ink4: #c4c2be;
-      --td-surface: #ffffff; --td-bg: #f5f4f0; --td-border: #e8e6e0; --td-border2: #d0cdc6;
-      --td-red: #c0392b; --td-red-bg: #fdf1f0; --td-red-txt: #8b1a14;
-      --td-orange: #c05c20; --td-orange-bg: #fef4ed; --td-orange-txt: #8b3a10;
-      --td-blue: #1a4fa0; --td-blue-bg: #eef4fd; --td-blue-txt: #0f3070;
-      --td-green: #1a7a3c; --td-green-bg: #edfaf3; --td-green-txt: #0e5228;
-      --td-amber: #92670a; --td-amber-bg: #fdf8ec; --td-amber-border: #e8d48a;
-    }
-    #m-detail .modal-inner   { font-family: 'Geist', system-ui, sans-serif; color: var(--td-ink); -webkit-font-smoothing: antialiased; }
-    #m-detail .td-photo-zone { width: 100%; height: 220px; background: #e8e5df; overflow: hidden; position: relative; cursor: zoom-in; }
-    #m-detail .td-photo-zone img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s ease; }
-    #m-detail .td-photo-zone:hover img { transform: scale(1.03); }
-    #m-detail .td-photo-count { position: absolute; bottom: 12px; right: 12px; background: rgba(15,14,12,.55); color: #fff; font-size: 11px; font-weight: 500; padding: 3px 8px; border-radius: 20px; letter-spacing: .02em; }
-    #m-detail .td-thumbs { display: flex; gap: 6px; padding: 10px 20px 0; flex-wrap: wrap; }
-    #m-detail .td-thumb { width: 66px; height: 66px; border-radius: 8px; overflow: hidden; border: 2px solid transparent; cursor: pointer; transition: border-color .15s; flex-shrink: 0; }
-    #m-detail .td-thumb.active { border-color: var(--td-ink); }
-    #m-detail .td-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    #m-detail .td-header-body { padding: 18px 22px 16px; border-bottom: 1px solid var(--td-border); }
-    #m-detail .td-badges { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-bottom: 11px; }
-    #m-detail .td-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 10.5px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; padding: 3px 9px; border-radius: 20px; }
-    #m-detail .td-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-    #m-detail .td-b-critique  { background: var(--td-red-bg);    color: var(--td-red-txt);    border: 1px solid #f5c4c0; }
-    #m-detail .td-b-important { background: var(--td-orange-bg); color: var(--td-orange-txt); border: 1px solid #f5d4b8; }
-    #m-detail .td-b-normal    { background: var(--td-blue-bg);   color: var(--td-blue-txt);   border: 1px solid #c8daf8; }
-    #m-detail .td-b-nouveau   { background: var(--td-blue-bg);   color: var(--td-blue-txt);   border: 1px solid #c8daf8; }
-    #m-detail .td-b-en_cours  { background: #f0f8ff;             color: #1a5fa0;              border: 1px solid #c0d8f0; }
-    #m-detail .td-b-transmis  { background: #f5f0fe;             color: #4a22b0;              border: 1px solid #d4bef8; }
-    #m-detail .td-b-attente   { background: var(--td-amber-bg);  color: var(--td-amber);      border: 1px solid var(--td-amber-border); }
-    #m-detail .td-b-resolu    { background: var(--td-green-bg);  color: var(--td-green-txt);  border: 1px solid #b8e8cc; }
-    #m-detail .td-b-clos      { background: var(--td-bg);        color: var(--td-ink3);       border: 1px solid var(--td-border2); }
-    #m-detail .td-b-cat       { background: var(--td-bg);        color: var(--td-ink2);       border: 1px solid var(--td-border2); }
-    #m-detail .td-b-interne   { background: var(--td-amber-bg);  color: var(--td-amber);      border: 1px solid var(--td-amber-border); font-size: 10px; padding: 2px 7px; }
-    #m-detail .td-title { font-family: 'Instrument Serif', serif; font-size: 21px; line-height: 1.25; color: var(--td-ink); margin-bottom: 14px; }
-    #m-detail .td-meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--td-border); border: 1px solid var(--td-border); border-radius: 10px; overflow: hidden; }
-    #m-detail .td-meta-cell { background: var(--td-surface); padding: 9px 13px; }
-    #m-detail .td-meta-cell:nth-child(odd) { background: var(--td-bg); }
-    #m-detail .td-meta-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--td-ink4); margin-bottom: 2px; }
-    #m-detail .td-meta-val   { font-size: 13px; font-weight: 500; color: var(--td-ink); }
-    #m-detail .td-meta-sub   { font-size: 11px; color: var(--td-ink3); margin-top: 1px; }
-    #m-detail .td-section { border-bottom: 1px solid var(--td-border); padding: 16px 22px; }
-    #m-detail .td-section:last-child { border-bottom: none; }
-    #m-detail .td-section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: var(--td-ink4); margin-bottom: 11px; display: flex; align-items: center; gap: 7px; }
-    #m-detail .td-section-label::after { content: ''; flex: 1; height: 1px; background: var(--td-border); }
-    #m-detail .td-photo-upload { display: flex; align-items: center; gap: 10px; padding: 11px 14px; border: 2px dashed var(--td-border2); border-radius: 10px; cursor: pointer; transition: border-color .2s, background .2s; font-size: 13px; color: var(--td-ink3); }
-    #m-detail .td-photo-upload:hover { border-color: var(--td-ink3); background: var(--td-bg); }
-    #m-detail .td-desc { font-size: 13.5px; line-height: 1.7; color: var(--td-ink2); }
-    #m-detail .td-statut-ctrl { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--td-bg); border: 1px solid var(--td-border); border-radius: 10px; padding: 11px 14px; }
-    #m-detail .td-statut-label { font-size: 11.5px; font-weight: 600; color: var(--td-ink3); white-space: nowrap; }
-    #m-detail .td-statut-select { appearance: none; -webkit-appearance: none; background: var(--td-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23888' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 10px center; border: 1px solid var(--td-border2); border-radius: 8px; padding: 6px 28px 6px 11px; font-size: 13px; font-weight: 500; color: var(--td-ink); cursor: pointer; font-family: inherit; transition: border-color .15s; }
-    #m-detail .td-statut-select:focus { outline: none; border-color: var(--td-blue); box-shadow: 0 0 0 3px rgba(26,79,160,.12); }
-    #m-detail .td-note-interne { background: var(--td-amber-bg); border: 1px solid var(--td-amber-border); border-radius: 8px; padding: 7px 11px; font-size: 12px; color: var(--td-amber); flex: 1; min-width: 160px; }
-    #m-detail .td-syndic-note { font-size: 11px; color: var(--td-ink3); }
-    #m-detail .td-hist { padding-left: 7px; }
-    #m-detail .td-hist-item { display: flex; gap: 13px; align-items: flex-start; padding: 7px 0; position: relative; }
-    #m-detail .td-hist-item + .td-hist-item::before { content: ''; position: absolute; left: 6px; top: -7px; width: 1px; height: 7px; background: var(--td-border); }
-    #m-detail .td-hist-dot { width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0; border: 2px solid var(--td-surface); margin-top: 3px; }
-    #m-detail .td-hist-dot.active { background: var(--td-ink); box-shadow: 0 0 0 2px var(--td-border2); }
-    #m-detail .td-hist-dot.past   { background: var(--td-border2); }
-    #m-detail .td-hist-meta { font-size: 11px; color: var(--td-ink3); margin-top: 3px; }
-    #m-detail .td-comment { background: var(--td-bg); border: 1px solid var(--td-border); border-radius: 10px; padding: 10px 13px; margin-bottom: 8px; transition: border-color .15s; }
-    #m-detail .td-comment:hover { border-color: var(--td-border2); }
-    #m-detail .td-comment.private { background: var(--td-amber-bg); border-color: var(--td-amber-border); }
-    #m-detail .td-cm-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; gap: 8px; }
-    #m-detail .td-cm-author { font-size: 12px; font-weight: 600; color: var(--td-ink); display: flex; align-items: center; gap: 6px; }
-    #m-detail .td-cm-date   { font-size: 11px; color: var(--td-ink4); white-space: nowrap; }
-    #m-detail .td-cm-text   { font-size: 13px; line-height: 1.6; color: var(--td-ink2); }
-    #m-detail .td-mention-list { background: var(--td-surface); border: 1px solid var(--td-border2); border-radius: 10px; padding: 4px; box-shadow: 0 8px 24px rgba(0,0,0,.08); margin-top: 4px; }
-    #m-detail .td-mention-item { display: flex; align-items: center; gap: 9px; padding: 7px 10px; border-radius: 7px; cursor: pointer; transition: background .12s; }
-    #m-detail .td-mention-item:hover { background: var(--td-bg); }
-    #m-detail .td-mention-av { width: 28px; height: 28px; border-radius: 50%; background: var(--td-blue-bg); color: var(--td-blue-txt); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; }
-    #m-detail .td-mention-name { font-size: 13px; font-weight: 600; color: var(--td-ink); }
-    #m-detail .td-mention-role { font-size: 11px; color: var(--td-ink3); }
-    #m-detail .td-textarea { width: 100%; border: 1px solid var(--td-border2); border-radius: 10px; padding: 10px 13px; font-size: 13px; font-family: inherit; color: var(--td-ink); resize: vertical; min-height: 66px; background: var(--td-surface); transition: border-color .15s; outline: none; }
-    #m-detail .td-textarea:focus { border-color: var(--td-blue); box-shadow: 0 0 0 3px rgba(26,79,160,.1); }
-    #m-detail .td-textarea::placeholder { color: var(--td-ink4); }
-    #m-detail .td-btn { display: inline-flex; align-items: center; gap: 6px; font-family: 'Geist', inherit; font-size: 13px; font-weight: 500; padding: 7px 15px; border-radius: 8px; cursor: pointer; transition: background .15s, color .15s, border-color .15s, transform .1s; border: 1px solid transparent; white-space: nowrap; text-decoration: none; }
-    #m-detail .td-btn:active { transform: scale(.97); }
-    #m-detail .td-btn-primary { background: var(--td-ink); color: #fff; border-color: var(--td-ink); }
-    #m-detail .td-btn-primary:hover { background: #2c2b28; }
-    #m-detail .td-btn-ghost { background: transparent; color: var(--td-ink2); border-color: var(--td-border2); }
-    #m-detail .td-btn-ghost:hover { background: var(--td-bg); }
-    #m-detail .td-btn-danger { background: transparent; color: var(--td-red); border-color: #f5c4c0; }
-    #m-detail .td-btn-danger:hover { background: var(--td-red-bg); }
-    #m-detail .td-btn-sm { padding: 5px 12px; font-size: 12px; }
-    #m-detail .td-check-label { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--td-ink3); cursor: pointer; user-select: none; }
-    #m-detail .td-check-label input { width: 14px; height: 14px; accent-color: var(--td-ink); cursor: pointer; }
-    #m-detail .td-empty { font-size: 13px; color: var(--td-ink3); padding: 4px 0 10px; font-style: italic; }
-    #m-detail .td-no-comment { font-size: 12px; color: var(--td-ink3); font-style: italic; padding: 6px 0; }
-    #m-detail .td-footer { border-top: 1px solid var(--td-border); padding: 13px 22px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--td-bg); }
-    #m-detail .td-footer-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-    #m-detail .td-no-photo-zone { padding: 0 22px 16px; border-bottom: 1px solid var(--td-border); }
-  `;
-  document.head.appendChild(s);
-})();
-
-function tdBadgeUrgence(urgence) {
-  const map = { critique: ['td-b-critique', '● Critique'], important: ['td-b-important', '● Important'], normal: ['td-b-normal', '● Normal'] };
-  const [cls, label] = map[urgence] || map.normal;
-  return `<span class="td-badge ${cls}">${label}</span>`;
-}
-
-function tdBadgeStatut(statut) {
-  const map = { nouveau: ['td-b-nouveau', 'Nouveau'], en_cours: ['td-b-en_cours', 'En cours'], transmis_syndic: ['td-b-transmis', 'Transmis syndic'], attente_intervention: ['td-b-attente', 'En attente'], résolu: ['td-b-resolu', 'Résolu'], clos: ['td-b-clos', 'Clos'] };
-  const [cls, label] = map[statut] || ['td-b-clos', statut];
-  return `<span class="td-badge ${cls}">${label}</span>`;
-}
-
-const ICON_CLOSE = `<svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" style="width:14px;height:14px;flex-shrink:0;"><path d="M10 3H6L1 8l5 5h4l5-5-5-5z"/></svg>`;
-const ICON_PDF   = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" style="width:13px;height:13px;flex-shrink:0;"><rect x="2" y="4" width="12" height="10" rx="1.5"/><path d="M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1"/><line x1="6" y1="8" x2="10" y2="8"/><line x1="6" y1="11" x2="9" y2="11"/></svg>`;
-const ICON_DEL   = `<svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" style="width:13px;height:13px;flex-shrink:0;"><polyline points="2,4 14,4"/><path d="M6 4V3h4v1"/><path d="M3 4l1 9a1 1 0 001 1h6a1 1 0 001-1l1-9"/></svg>`;
-const ICON_CAM   = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" style="width:18px;height:18px;flex-shrink:0;color:var(--td-ink4);"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>`;
+// ════════════════════════════════════════════════════════════════
+//  TICKET DETAIL (Affichage et interactions d'un signalement)
+//  assets/js/features/tickets/ticket-detail.js
+// ════════════════════════════════════════════════════════════════
 
 async function openDetail(id) {
   const t = cache.tickets.find(x => x.id === id);
   if (!t) return;
-  if (!canViewTicket(t)) { toast('Vous n\'avez pas accès à ce signalement', 'err'); return; }
+
+  // Vérification côté client (la RLS Supabase est le vrai verrou)
+  if (typeof canViewTicket === 'function' && !canViewTicket(t)) {
+    toast('Vous n\'avez pas accès à ce signalement', 'err');
+    return;
+  }
 
   const [{ data: comments }, { data: history }] = await Promise.all([
     sb.from('commentaires').select('*, profiles(nom, prenom, role)').eq('ticket_id', id).order('created_at'),
@@ -130,235 +19,400 @@ async function openDetail(id) {
   ]);
 
   const isAuthor = t.auteur_id === user.id;
-  const statutLabels = { nouveau: 'Nouveau', en_cours: 'En cours', transmis_syndic: 'Transmis au syndic', attente_intervention: "En attente d'intervention", résolu: 'Résolu', clos: 'Clos' };
-  const catLabels = { ascenseur: 'Ascenseur', fuite: 'Fuite / eau', electricite: 'Électricité', securite: 'Sécurité', proprete: 'Propreté', espaces_verts: 'Espaces verts', serrurerie: 'Serrurerie', parking: 'Parking', autre: 'Autre' };
+  const statutLabels = { nouveau: 'Nouveau', en_cours: 'En cours', transmis_syndic: 'Transmis syndic', attente_intervention: 'En attente', résolu: 'Résolu', clos: 'Clos' };
   const statutHistory = (history || []).filter(h => h.details?.statut || h.action === 'Ticket créé' || h.action === 'Statut modifié');
   const allPhotos = t.photos_urls?.length ? t.photos_urls : (t.photo_url ? [t.photo_url] : []);
-  const showPhotoUpload = !isSyndic() && (isManager() || isAuthor);
+  
+  // Vérification sécurisée des rôles
+  const isSyndicUser = typeof isSyndic === 'function' ? isSyndic() : false;
+  const isManagerUser = typeof isManager === 'function' ? isManager() : false;
+  const isCoproUser = typeof isCopro === 'function' ? isCopro() : true;
+  
+  const showPhotoUpload = !isSyndicUser && (isManagerUser || isAuthor);
 
-  $('m-detail-title').textContent = t.titre;
+  const titleEl = $('m-detail-title');
+  if (titleEl) titleEl.textContent = t.titre;
 
-  const photoBlock = allPhotos.length > 0
-    ? `<div class="td-photo-zone" id="td-photo-main" onclick="window.open('${allPhotos[0]}','_blank')">
-        <img id="td-main-img" src="${allPhotos[0]}" alt="photo signalement">
-        ${allPhotos.length > 1 ? `<div class="td-photo-count" id="td-photo-count">1 / ${allPhotos.length}</div>` : ''}
-       </div>
-       ${allPhotos.length > 1 ? `<div class="td-thumbs" id="td-thumbs">${allPhotos.map((url, i) => `<div class="td-thumb ${i === 0 ? 'active' : ''}" onclick="tdSwitchPhoto(${i}, '${url}', ${allPhotos.length})"><img src="${url}" alt=""></div>`).join('')}</div>` : ''}`
-    : showPhotoUpload
-      ? `<div class="td-no-photo-zone"><label class="td-photo-upload">${ICON_CAM}<span>Ajouter une photo</span><input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadTicketPhoto('${t.id}', this)"></label></div>`
-      : '';
+  // Construction du corps de la modale
+  let bodyHtml = ``;
 
-  const metaGrid = `<div class="td-meta-grid">
-    <div class="td-meta-cell"><div class="td-meta-label">Emplacement</div><div class="td-meta-val">${escHtml(t.batiment || '—')}</div>${t.zone ? `<div class="td-meta-sub">${escHtml(t.zone)}</div>` : ''}</div>
-    <div class="td-meta-cell"><div class="td-meta-label">Déclaré par</div><div class="td-meta-val">${escHtml(displayName(t.auteur_prenom, t.auteur_nom, t.auteur_email, 'N/A'))}</div>${t.auteur_lot ? `<div class="td-meta-sub">Lot ${t.auteur_lot}</div>` : ''}</div>
-    <div class="td-meta-cell"><div class="td-meta-label">Date</div><div class="td-meta-val">${fmt(t.created_at)}</div><div class="td-meta-sub">${depuisJours(t.created_at)}</div></div>
-    <div class="td-meta-cell"><div class="td-meta-label">Référence</div><div class="td-meta-val" style="font-family:monospace;font-size:11.5px;letter-spacing:.04em;">${t.id.substring(0,8).toUpperCase()}</div></div>
-  </div>`;
+  // 1. Galerie Photos
+  if (allPhotos.length > 0) {
+    bodyHtml += `
+    <div style="margin-bottom:20px;">
+      ${allPhotos.length === 1
+        ? `<div class="photo-wrapper single" style="border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+            <img src="${allPhotos[0]}" style="width:100%; max-height:300px; object-fit:cover; cursor:zoom-in; transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'" onclick="window.open('${allPhotos[0]}','_blank')">
+           </div>`
+        : `<div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(100px, 1fr)); gap:8px;">
+            ${allPhotos.map(url => `
+              <div style="border-radius:8px; overflow:hidden; aspect-ratio:1; box-shadow:0 2px 4px rgba(0,0,0,0.1);">
+                <img src="${url}" style="width:100%; height:100%; object-fit:cover; cursor:zoom-in; transition:transform 0.3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onclick="window.open('${url}','_blank')">
+              </div>
+            `).join('')}
+           </div>`
+      }
+    </div>`;
+  } else if (showPhotoUpload) {
+    bodyHtml += `
+    <div style="margin-bottom:20px;" id="ticket-photo-upload-zone">
+      <label style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; padding:24px; background:var(--bg-2); border:2px dashed var(--border); border-radius:12px; cursor:pointer; transition:all 0.2s;" onmouseenter="this.style.borderColor='var(--primary)'; this.style.background='var(--primary-light)'" onmouseleave="this.style.borderColor='var(--border)'; this.style.background='var(--bg-2)'">
+        <span style="font-size:28px;">📸</span>
+        <span style="font-size:13px; font-weight:600; color:var(--text-2);">Ajouter une photo</span>
+        <input type="file" accept="image/*" capture="environment" style="display:none;" onchange="uploadTicketPhoto('${t.id}', this)">
+      </label>
+    </div>`;
+  }
 
-  const statutBlock = canChangeTicketStatus() ? `
-    <div class="td-section">
-      <div class="td-section-label">Gestion</div>
-      <div class="td-statut-ctrl">
-        <span class="td-statut-label">Statut :</span>
-        <select class="td-statut-select" onchange="changeStatut('${t.id}', this.value)">
+  // 2. Métadonnées (Badges)
+  const formatD = typeof fmt === 'function' ? fmt(t.created_at) : new Date(t.created_at).toLocaleDateString();
+  const formatD_jours = typeof depuisJours === 'function' ? depuisJours(t.created_at) : '';
+  const authorName = typeof displayName === 'function' ? displayName(t.auteur_prenom, t.auteur_nom, t.auteur_email, 'N/A') : (t.auteur_nom || 'N/A');
+
+  bodyHtml += `
+    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; padding:12px; background:var(--bg-1); border-radius:12px; border:1px solid var(--border);">
+      ${typeof badgeUrgence === 'function' ? badgeUrgence(t.urgence) : `<span>${t.urgence}</span>`}
+      ${typeof badgeStatut === 'function' ? badgeStatut(t.statut) : `<span>${t.statut}</span>`}
+      <div style="width:100%; height:1px; background:var(--border); margin:4px 0;"></div>
+      <span style="font-size:12px; color:var(--text-2); display:flex; align-items:center; gap:4px;">📍 <strong style="color:var(--text-1);">${escHtml(t.batiment || '?')}</strong>${t.zone ? ' — ' + escHtml(t.zone) : ''}</span>
+      <span style="font-size:12px; color:var(--text-2); display:flex; align-items:center; gap:4px;">👤 <strong style="color:var(--text-1);">${escHtml(authorName)}</strong>${t.auteur_lot ? ' · Lot ' + escHtml(t.auteur_lot) : ''}</span>
+      <span style="font-size:12px; color:var(--text-2); display:flex; align-items:center; gap:4px;">📅 <strong style="color:var(--text-1);">${formatD}</strong> <span style="opacity:0.6;">(${formatD_jours})</span></span>
+    </div>`;
+
+  // 3. Description
+  if (t.description) {
+    bodyHtml += `
+      <div style="background:var(--bg-1); padding:16px; border-radius:12px; margin-bottom:24px; border:1px solid var(--border);">
+        <div style="font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-3); margin-bottom:8px;">Description</div>
+        <p style="font-size:14px; line-height:1.6; color:var(--text-1); white-space:pre-wrap; margin:0;">${escHtml(t.description)}</p>
+      </div>`;
+  }
+
+  // 4. Contrôles de statut (Syndic/Admin)
+  if (typeof canChangeTicketStatus === 'function' && canChangeTicketStatus()) {
+    bodyHtml += `
+    <div style="margin-bottom:24px; padding:16px; background:var(--surface-2); border-radius:12px; border:1px solid var(--border);">
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+        <label style="font-size:12px; font-weight:700; color:var(--text-2); text-transform:uppercase; letter-spacing:.05em;">Modifier le statut :</label>
+        <select class="select" style="width:auto; font-weight:600; padding-top:6px; padding-bottom:6px;" onchange="changeStatut('${t.id}', this.value)">
           ${['nouveau','en_cours','transmis_syndic','attente_intervention','résolu','clos'].map(s =>
-            `<option value="${s}" ${s === t.statut ? 'selected' : ''}>${statutLabels[s]}</option>`
+            `<option value="${s}" ${s === t.statut ? 'selected' : ''}>${statutLabels[s] || s}</option>`
           ).join('')}
         </select>
-        ${isSyndic() ? `<span class="td-syndic-note">Mode syndic — statut et commentaires uniquement.</span>` : ''}
-        ${t.note_interne && !isCopro() ? `<div class="td-note-interne"><strong>Note interne :</strong> ${escHtml(t.note_interne)}</div>` : ''}
+        ${isSyndicUser ? `<span style="font-size:11px; color:var(--text-3); background:var(--bg-2); padding:4px 8px; border-radius:6px;">Mode Syndic</span>` : ''}
       </div>
-    </div>` : '';
+      ${t.note_interne && !isCoproUser ? `
+        <div style="margin-top:12px; font-size:12.5px; background:var(--amber-light); color:var(--amber); border:1px solid var(--amber-border); border-radius:8px; padding:10px;">
+          <strong style="text-transform:uppercase; font-size:10px; display:block; margin-bottom:2px;">Note interne (Privé)</strong>
+          ${escHtml(t.note_interne)}
+        </div>` : ''}
+    </div>`;
+  }
 
-  const histBlock = statutHistory.length > 1 ? `
-    <div class="td-section">
-      <div class="td-section-label">Historique</div>
-      <div class="td-hist">
+  // 5. Historique (Timeline)
+  if (statutHistory.length > 1) {
+    bodyHtml += `
+    <div style="margin-bottom:24px;">
+      <div style="font-family:var(--font-head); font-weight:800; font-size:13px; color:var(--text-3); text-transform:uppercase; letter-spacing:.05em; margin-bottom:16px; display:flex; align-items:center; gap:6px;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Historique d'intervention
+      </div>
+      <div style="position:relative; padding-left:24px;">
+        <div style="position:absolute; left:8px; top:8px; bottom:8px; width:2px; background:var(--border); border-radius:1px;"></div>
         ${statutHistory.map((h, i) => {
           const isLast = i === statutHistory.length - 1;
           const statut = h.details?.statut || (h.action === 'Ticket créé' ? 'nouveau' : null);
-          return `<div class="td-hist-item">
-            <div class="td-hist-dot ${isLast ? 'active' : 'past'}"></div>
-            <div>
-              <div>${statut ? tdBadgeStatut(statut) : `<span style="font-size:13px;font-weight:500;color:var(--td-ink);">${escHtml(h.action)}</span>`}</div>
-              <div class="td-hist-meta">${escHtml(h.user_nom || 'Système')} · ${depuisJours(h.created_at)}</div>
+          const hFormatD = typeof depuisJours === 'function' ? depuisJours(h.created_at) : '';
+          
+          return `
+          <div style="display:flex; align-items:flex-start; gap:12px; margin-bottom:16px; position:relative;">
+            <div style="width:14px; height:14px; border-radius:50%; background:${isLast ? 'var(--primary)' : 'var(--border)'}; border:3px solid var(--surface); flex-shrink:0; margin-top:2px; position:absolute; left:-23px; box-shadow:${isLast ? '0 0 0 3px var(--primary-light)' : 'none'};"></div>
+            <div style="background:${isLast ? 'var(--bg-1)' : 'transparent'}; padding:${isLast ? '8px 12px' : '0'}; border-radius:8px; border:${isLast ? '1px solid var(--border)' : 'none'}; width:100%;">
+              <div style="font-size:13px; font-weight:600; color:var(--text-1);">${statut && typeof badgeStatut === 'function' ? badgeStatut(statut) : escHtml(h.action)}</div>
+              <div style="font-size:11px; color:var(--text-3); margin-top:4px;">Par ${escHtml(h.user_nom || 'Système')} · ${hFormatD}</div>
             </div>
           </div>`;
         }).join('')}
       </div>
-    </div>` : '';
+    </div>`;
+  }
 
-  const cmList = (comments || []);
-  const cmHtml = cmList.length
-    ? cmList.map(c => `
-        <div class="td-comment${c.prive ? ' private' : ''}">
-          <div class="td-cm-head">
-            <span class="td-cm-author">${escHtml(displayName(c.profiles?.prenom, c.profiles?.nom, null, '?'))}${c.prive ? `<span class="td-badge td-b-interne">Interne</span>` : ''}</span>
-            <span class="td-cm-date">${fmt(c.created_at)}</span>
-          </div>
-          <div class="td-cm-text">${escHtml(c.texte)}</div>
-        </div>`).join('')
-    : `<div class="td-empty">Aucun commentaire pour l'instant.</div>`;
-
-  const inputHtml = canComment(t.auteur_id) ? `
-    <div style="position:relative;margin-top:4px;">
-      <textarea id="new-comment" class="td-textarea"
-        placeholder="${isSyndic() ? 'Commentaire visible par tous…' : 'Ajouter un commentaire… (@ pour mentionner)'}"
-        oninput="onCommentInput(event)"></textarea>
-      <div class="td-mention-list" id="mention-list" style="display:none;"></div>
-    </div>
-    ${Permissions.has('tickets.comment_private') ? `
-    <div style="margin-top:8px;">
-      <label class="td-check-label">
-        <input type="checkbox" id="comment-prive">
-        Note interne (non visible copropriétaires)
-      </label>
-    </div>` : ''}
-    <div style="display:flex;justify-content:flex-end;margin-top:9px;">
-      <button class="td-btn td-btn-primary td-btn-sm" onclick="submitComment('${t.id}')">Publier</button>
-    </div>`
-    : `<p class="td-no-comment">Vous ne pouvez pas commenter ce signalement.</p>`;
-
-  const footerHtml = `
-    <div class="td-footer">
-      <button class="td-btn td-btn-ghost" onclick="closeModal('m-detail')">${ICON_CLOSE} Fermer</button>
-      <div class="td-footer-actions">
-        ${Permissions.has('tickets.export_pdf') ? `<button class="td-btn td-btn-ghost td-btn-sm" onclick="exportTicketPDF('${t.id}')">${ICON_PDF} Exporter PDF</button>` : ''}
-        ${canDeleteTicket() ? `<button class="td-btn td-btn-danger td-btn-sm" onclick="deleteTicket('${t.id}')">${ICON_DEL} Supprimer</button>` : ''}
+  // 6. Commentaires
+  bodyHtml += `
+    <div style="margin-top:12px;">
+      <div style="font-family:var(--font-head); font-weight:800; font-size:14px; margin-bottom:16px; color:var(--text-1); display:flex; align-items:center; gap:6px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        Discussion (${(comments || []).length})
       </div>
+      
+      <div id="comments-list" style="margin-bottom:20px; display:flex; flex-direction:column; gap:12px;">
+        ${!(comments || []).length
+          ? '<div style="font-size:13px; color:var(--text-3); text-align:center; padding:16px; background:var(--bg-2); border-radius:8px;">Aucun message pour l\'instant. Soyez le premier à commenter.</div>'
+          : (comments || []).map(c => {
+              const isMe = c.auteur_id === user.id;
+              const authorNameC = typeof displayName === 'function' ? displayName(c.profiles?.prenom, c.profiles?.nom, null, '?') : '?';
+              const cDate = typeof fmt === 'function' ? fmt(c.created_at) : new Date(c.created_at).toLocaleDateString();
+              
+              return `
+              <div class="comment-bubble ${isMe ? 'me' : ''} ${c.prive ? 'private' : ''}" style="
+                background: ${c.prive ? 'var(--amber-light)' : (isMe ? 'var(--primary-light)' : 'var(--bg-1)')};
+                border: 1px solid ${c.prive ? 'var(--amber-border)' : (isMe ? 'transparent' : 'var(--border)')};
+                padding: 12px 16px; border-radius: 12px;
+                border-bottom-${isMe ? 'right' : 'left'}-radius: 4px;
+                align-self: ${isMe ? 'flex-end' : 'flex-start'};
+                max-width: 85%;
+              ">
+                <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px; gap:12px;">
+                  <span style="font-size:11px; font-weight:700; color:${isMe ? 'var(--primary)' : 'var(--text-2)'};">${escHtml(authorNameC)}${c.prive ? ' 🔒 (Interne)' : ''}</span>
+                  <span style="font-size:10px; color:var(--text-3); white-space:nowrap;">${cDate}</span>
+                </div>
+                <div style="font-size:13.5px; color:${isMe ? 'var(--text-1)' : 'var(--text-1)'}; line-height:1.5; white-space:pre-wrap; word-break:break-word;">${escHtml(c.texte)}</div>
+              </div>`;
+            }).join('')}
+      </div>
+
+      ${typeof canComment === 'function' && canComment(t.auteur_id) ? `
+      <div style="background:var(--bg-1); border:1px solid var(--border); border-radius:12px; padding:12px; position:relative; box-shadow:0 4px 12px rgba(0,0,0,0.02);">
+        <textarea id="new-comment" class="textarea" style="min-height:50px; border:none; background:transparent; padding:0; font-size:14px; resize:none; overflow:hidden;"
+          placeholder="${isSyndicUser ? 'Commentaire visible par tous...' : 'Écrire un message... (tapez @ pour mentionner)'}"
+          oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'; if(typeof onCommentInput === 'function') onCommentInput(event)"></textarea>
+        
+        <div class="mention-list" id="mention-list" style="display:none; position:absolute; bottom:100%; left:0; right:0; background:var(--surface); border:1px solid var(--border); border-radius:8px; box-shadow:0 -4px 16px rgba(0,0,0,0.1); margin-bottom:8px; z-index:10;"></div>
+        
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:12px; border-top:1px solid var(--border); padding-top:12px;">
+          <div>
+            ${typeof Permissions !== 'undefined' && Permissions.has('tickets.comment_private') ? `
+            <label style="display:flex; align-items:center; gap:6px; font-size:11.5px; cursor:pointer; color:var(--amber); font-weight:600; padding:4px 8px; background:var(--amber-light); border-radius:6px;">
+              <input type="checkbox" id="comment-prive" style="accent-color:var(--amber);"> Note interne
+            </label>` : ''}
+          </div>
+          <button id="btn-submit-comment" class="btn btn-primary btn-sm" style="border-radius:20px; padding:6px 16px;" onclick="submitComment('${t.id}')">
+            Envoyer <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:4px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
+        </div>
+      </div>
+      ` : `<div style="font-size:13px; color:var(--text-3); font-style:italic; padding:12px; text-align:center; background:var(--bg-2); border-radius:8px;">Vous ne pouvez pas commenter ce signalement.</div>`}
     </div>`;
 
-  d($('m-detail-body'), `
-    <div class="modal-inner">
-      ${photoBlock}
-      <div class="td-header-body">
-        <div class="td-badges">
-          ${tdBadgeUrgence(t.urgence)}
-          ${tdBadgeStatut(t.statut)}
-          ${t.categorie ? `<span class="td-badge td-b-cat">${escHtml(catLabels[t.categorie] || t.categorie)}</span>` : ''}
-        </div>
-        <div class="td-title">${escHtml(t.titre)}</div>
-        ${metaGrid}
-      </div>
-      ${t.description ? `<div class="td-section"><div class="td-section-label">Description</div><p class="td-desc">${escHtml(t.description)}</p></div>` : ''}
-      ${statutBlock}
-      ${histBlock}
-      <div class="td-section">
-        <div class="td-section-label">Commentaires <span style="font-size:12px;font-weight:500;color:var(--td-ink3);text-transform:none;letter-spacing:0;">(${cmList.length})</span></div>
-        <div id="comments-list">${cmHtml}</div>
-        ${inputHtml}
-      </div>
-    </div>
-  `);
+  const bodyEl = $('m-detail-body');
+  if (bodyEl) bodyEl.innerHTML = bodyHtml;
 
-  d($('m-detail-footer'), footerHtml);
-  openModal('m-detail');
-}
+  // Footer Actions
+  let footerHtml = `<button class="btn btn-secondary" onclick="closeModal('m-detail')">Fermer</button>`;
+  
+  if (typeof Permissions !== 'undefined' && Permissions.has('tickets.export_pdf')) {
+    footerHtml += `<button class="btn btn-ghost btn-sm" onclick="exportTicketPDF('${t.id}')" title="Générer un PDF de ce signalement">🖨️ Imprimer</button>`;
+  }
+  
+  if (typeof canDeleteTicket === 'function' && canDeleteTicket()) {
+    footerHtml += `<button class="btn btn-ghost btn-sm" style="color:var(--red); margin-left:auto;" onclick="deleteTicket('${t.id}')">Supprimer</button>`;
+  }
+  
+  const footerEl = $('m-detail-footer');
+  if (footerEl) {
+    footerEl.style.display = 'flex';
+    footerEl.style.justifyContent = 'flex-start';
+    footerEl.style.gap = '8px';
+    footerEl.innerHTML = footerHtml;
+  }
 
-function tdSwitchPhoto(idx, url, total) {
-  const img  = document.getElementById('td-main-img');
-  const cnt  = document.getElementById('td-photo-count');
-  const zone = document.getElementById('td-photo-main');
-  if (img)  img.src = url;
-  if (cnt)  cnt.textContent = (idx + 1) + ' / ' + total;
-  if (zone) zone.onclick = () => window.open(url, '_blank');
-  document.querySelectorAll('#td-thumbs .td-thumb').forEach((el, i) => el.classList.toggle('active', i === idx));
+  if (typeof openModal === 'function') openModal('m-detail');
 }
 
 async function uploadTicketPhoto(ticketId, input) {
-  if (isSyndic()) return;
+  if (typeof isSyndic === 'function' && isSyndic()) return;
+  
   const file = input.files[0];
   if (!file) return;
-  toast('Upload en cours…', 'ok');
-  const path = ticketId + '/' + Date.now() + '.' + file.name.split('.').pop();
-  const { error } = await sb.storage.from('tickets').upload(path, file, { upsert: true });
-  if (error) { toast('Erreur upload : ' + error.message, 'err'); return; }
-  const { data: urlData } = sb.storage.from('tickets').getPublicUrl(path);
-  await sb.from('tickets').update({ photo_url: urlData?.publicUrl }).eq('id', ticketId);
-  const t = cache.tickets.find(x => x.id === ticketId);
-  if (t) t.photo_url = urlData?.publicUrl;
-  toast('Photo ajoutée ✓', 'ok');
-  openDetail(ticketId);
+  
+  const zone = $('ticket-photo-upload-zone');
+  if (zone) zone.innerHTML = `<div style="padding:24px; text-align:center; color:var(--primary); font-weight:600;"><span class="spinner" style="display:inline-block; width:20px; height:20px; border:3px solid var(--primary); border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite; vertical-align:middle; margin-right:8px;"></span>Envoi de l'image en cours...</div>`;
+
+  try {
+    const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const path = `${ticketId}/${Date.now()}.${ext}`;
+    
+    const { error } = await sb.storage.from('tickets').upload(path, file, { 
+      upsert: true,
+      contentType: file.type || 'image/jpeg' 
+    });
+    
+    if (error) throw error;
+    
+    const { data: urlData } = sb.storage.from('tickets').getPublicUrl(path);
+    if (!urlData?.publicUrl) throw new Error("Impossible de récupérer l'URL de l'image");
+
+    const t = cache.tickets.find(x => x.id === ticketId);
+    
+    // Si c'est la première photo, on la met dans photo_url, sinon on l'ajoute à photos_urls
+    const currentUrls = t.photos_urls || (t.photo_url ? [t.photo_url] : []);
+    currentUrls.push(urlData.publicUrl);
+
+    const updatePayload = {
+      photo_url: currentUrls[0],
+      photos_urls: currentUrls
+    };
+
+    const { error: dbErr } = await sb.from('tickets').update(updatePayload).eq('id', ticketId);
+    if (dbErr) throw dbErr;
+
+    if (t) {
+      t.photo_url = currentUrls[0];
+      t.photos_urls = currentUrls;
+    }
+    
+    toast('Photo ajoutée avec succès ✓', 'ok');
+    openDetail(ticketId); // Recharge la modale pour afficher la photo
+    
+  } catch (err) {
+    console.error('Upload Error:', err);
+    toast('Erreur lors de l\'envoi : ' + err.message, 'err');
+    openDetail(ticketId); // Restaure l'état précédent en cas d'erreur
+  }
 }
 
 async function changeStatut(id, statut) {
-  if (!canChangeTicketStatus()) { toast('Permission insuffisante', 'err'); return; }
-  const { error } = await sb.from('tickets').update({ statut, updated_at: new Date().toISOString() }).eq('id', id);
-  if (error) { toast('Erreur mise à jour', 'err'); return; }
-  const t = cache.tickets.find(x => x.id === id);
-  if (t) t.statut = statut;
-  await addLog('Statut modifié', 'ticket', id, { statut });
-  await sendEmailNotif('statut_change', { ...t, statut });
-  if (statut === 'transmis_syndic') {
-    await sendEmailDirect('nouveau_ticket', null, { ...t, statut, titre: '[Transmis au syndic] ' + t.titre });
+  if (typeof canChangeTicketStatus === 'function' && !canChangeTicketStatus()) { 
+    toast('Permission insuffisante', 'err'); 
+    return; 
   }
-  if (statut === 'résolu' || statut === 'clos') {
-    await sendEmailDirect('statut_change', null, { ...t, statut, titre: '[' + (statut === 'résolu' ? '✅ Résolu' : '📁 Clos') + '] ' + t.titre });
-    await publishFeedEvent('resolved', '✅ Signalement résolu : ' + t.titre + (t.batiment ? ' — ' + t.batiment : ''));
+
+  try {
+    const { error } = await sb.from('tickets').update({ statut, updated_at: new Date().toISOString() }).eq('id', id);
+    if (error) throw error;
+
+    const t = cache.tickets.find(x => x.id === id);
+    if (t) t.statut = statut;
+    
+    if (typeof addLog === 'function') await addLog('Statut modifié', 'ticket', id, { statut });
+    
+    // Notifications asynchrones (ne bloquent pas l'UI si échec)
+    if (typeof sendEmailNotif === 'function') {
+      sendEmailNotif('statut_change', { ...t, statut }).catch(console.warn);
+    }
+    
+    if (statut === 'transmis_syndic' && typeof sendEmailDirect === 'function') {
+      sendEmailDirect('nouveau_ticket', null, { ...t, statut, titre: '[Transmis au syndic] ' + t.titre }).catch(console.warn);
+    }
+    
+    if ((statut === 'résolu' || statut === 'clos')) {
+      if (typeof sendEmailDirect === 'function') {
+        sendEmailDirect('statut_change', null, { ...t, statut, titre: '[' + (statut === 'résolu' ? '✅ Résolu' : '📁 Clos') + '] ' + t.titre }).catch(console.warn);
+      }
+      if (typeof publishFeedEvent === 'function') {
+        publishFeedEvent('resolved', '✅ Signalement résolu : ' + t.titre + (t.batiment ? ' — ' + t.batiment : '')).catch(console.warn);
+      }
+    }
+    
+    toast('Statut mis à jour', 'ok');
+    
+    // Mise à jour de l'UI globale
+    if (typeof updateBadges === 'function') updateBadges();
+    if (typeof currentPage !== 'undefined') {
+      if (currentPage === 'tickets' && typeof filterTickets === 'function') filterTickets();
+      if (currentPage === 'dashboard' && typeof renderDashboard === 'function') renderDashboard();
+    }
+    
+    // Recharge la modale pour afficher le nouvel historique
+    openDetail(id);
+
+  } catch (err) {
+    toast('Erreur de mise à jour du statut', 'err');
   }
-  // ✅ Notif in-app à l'auteur
-  if (t && t.auteur_id && t.auteur_id !== user.id) {
-    await createNotifications([{
-      userId:      t.auteur_id,
-      sujet:       `📋 Statut mis à jour : ${t.titre}`,
-      corps:       `Nouveau statut : ${statut}`,
-      type:        'statut_change',
-      referenceId: id,
-    }]);
-  }
-  toast('Statut mis à jour', 'ok');
-  updateBadges();
-  if (currentPage === 'tickets')   filterTickets();
-  if (currentPage === 'dashboard') renderDashboard();
 }
 
-// ✅ PATCHÉ : notifCommentaireTicket remplace sendEmailNotif
 async function submitComment(ticketId) {
-  const texte = $('new-comment')?.value.trim();
+  const inputEl = $('new-comment');
+  const texte = inputEl?.value.trim();
   if (!texte) return;
+  
   const prive = $('comment-prive')?.checked || false;
   const t = cache.tickets.find(x => x.id === ticketId);
-  if (!canComment(t?.auteur_id, prive)) { toast('Permission insuffisante', 'err'); return; }
-  const { error } = await sb.from('commentaires').insert({ ticket_id: ticketId, auteur_id: user.id, texte, prive });
-  if (error) { toast('Erreur commentaire', 'err'); return; }
-  await addLog('Commentaire', 'ticket', ticketId, { prive });
-  // ✅ Notif unifiée (in-app + mentions)
-  await notifCommentaireTicket(t, texte, prive);
-  toast('Commentaire publié', 'ok');
-  openDetail(ticketId);
+  
+  if (typeof canComment === 'function' && !canComment(t?.auteur_id, prive)) { 
+    toast('Vous ne pouvez pas publier ce commentaire', 'err'); 
+    return; 
+  }
+
+  const btn = $('btn-submit-comment');
+  if (btn) { btn.disabled = true; btn.textContent = '...'; }
+
+  try {
+    const { error } = await sb.from('commentaires').insert({ ticket_id: ticketId, auteur_id: user.id, texte, prive });
+    if (error) throw error;
+    
+    if (typeof addLog === 'function') await addLog('Commentaire', 'ticket', ticketId, { prive });
+    if (typeof sendEmailNotif === 'function') sendEmailNotif('commentaire', t).catch(console.warn);
+    
+    toast('Message envoyé', 'ok');
+    openDetail(ticketId); // Recharge les commentaires
+  } catch (err) {
+    toast('Erreur lors de la publication', 'err');
+    if (btn) { btn.disabled = false; btn.innerHTML = 'Envoyer'; }
+  }
 }
 
+// ── Logique des Mentions (@) ──
 async function onCommentInput(e) {
-  if (isSyndic()) return;
+  if (typeof isSyndic === 'function' && isSyndic()) return;
+  
   const ta = e.target;
   const val = ta.value;
   const before = val.substring(0, ta.selectionStart);
-  const atMatch = before.match(/@(\w*)$/);
+  
+  // Cherche le symbole '@' suivi de lettres à la fin de ce qui a été tapé
+  const atMatch = before.match(/@([a-zA-ZÀ-ÿ-]*)$/);
   const ml = $('mention-list');
-  if (!atMatch) { if (ml) ml.style.display = 'none'; return; }
-  const query = atMatch[1].toLowerCase();
-  if (!cache.managers) {
-    const { data } = await sb.from('profiles').select('id,nom,prenom,email,role')
-      .in('role', ['administrateur','syndic','membre_cs']).eq('actif', true);
-    cache.managers = data || [];
+  
+  if (!atMatch) { 
+    if (ml) ml.style.display = 'none'; 
+    return; 
   }
+  
+  const query = atMatch[1].toLowerCase();
+  
+  // Chargement des gestionnaires si pas en cache
+  if (!cache.managers) {
+    try {
+      const { data } = await sb.from('profiles').select('id,nom,prenom,email,role').in('role', ['administrateur','syndic','membre_cs']).eq('actif', true);
+      cache.managers = data || [];
+    } catch(err) {
+      cache.managers = [];
+    }
+  }
+  
+  // Filtrage
   const matches = cache.managers.filter(m =>
     m.id !== user.id && (
       (m.prenom || '').toLowerCase().startsWith(query) ||
-      (m.nom    || '').toLowerCase().startsWith(query) ||
-      (m.email  || '').toLowerCase().startsWith(query)
+      (m.nom || '').toLowerCase().startsWith(query) ||
+      (m.email || '').toLowerCase().startsWith(query)
     )
   ).slice(0, 5);
-  if (!ml || !matches.length) { if (ml) ml.style.display = 'none'; return; }
-  const roleLabels = { administrateur: 'Admin', syndic: 'Syndic', membre_cs: 'CS' };
-  ml.innerHTML = matches.map(m => `
-    <div class="td-mention-item" onclick="insertMention('${m.id}','${(m.prenom || m.nom || m.email).replace(/'/g,"\\'")}')">
-      <div class="td-mention-av">${(m.prenom || m.nom || '?').charAt(0).toUpperCase()}</div>
+  
+  if (!ml || !matches.length) { 
+    if (ml) ml.style.display = 'none'; 
+    return; 
+  }
+  
+  // Affichage de la liste de mentions
+  const roleLabels = { administrateur: 'Admin', syndic: 'Syndic', membre_cs: 'Conseil Syndical' };
+  
+  ml.innerHTML = matches.map(m => {
+    const init = (m.prenom || m.nom || '?').charAt(0).toUpperCase();
+    const safeName = (m.prenom || m.nom || m.email).replace(/'/g,"\\'");
+    const dName = typeof displayName === 'function' ? displayName(m.prenom, m.nom, m.email) : safeName;
+    
+    return `
+    <div class="mention-item" onclick="insertMention('${m.id}','${safeName}')" style="display:flex; align-items:center; gap:10px; padding:8px 12px; cursor:pointer; border-bottom:1px solid var(--border); transition:background 0.2s;" onmouseover="this.style.background='var(--bg-2)'" onmouseout="this.style.background='transparent'">
+      <div style="width:24px; height:24px; border-radius:50%; background:var(--primary); color:white; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:bold;">${init}</div>
       <div>
-        <div class="td-mention-name">${escHtml(displayName(m.prenom, m.nom, m.email))}</div>
-        <div class="td-mention-role">${roleLabels[m.role] || m.role}</div>
+        <div style="font-weight:600; font-size:13px; color:var(--text-1);">${escHtml(dName)}</div>
+        <div style="font-size:10px; color:var(--text-3); text-transform:uppercase; letter-spacing:0.05em;">${roleLabels[m.role] || m.role}</div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+  
   ml.style.display = 'block';
 }
 
@@ -366,45 +420,157 @@ function insertMention(userId, name) {
   const ta = $('new-comment');
   const ml = $('mention-list');
   if (!ta) return;
+  
   const before = ta.value.substring(0, ta.selectionStart);
-  ta.value = before.replace(/@\w*$/, '@' + name + ' ') + ta.value.substring(ta.selectionStart);
+  const after = ta.value.substring(ta.selectionStart);
+  
+  // Remplace la portion "@texte" par "@NomComplet "
+  const newBefore = before.replace(/@[a-zA-ZÀ-ÿ-]*$/, '@' + name + ' ');
+  
+  ta.value = newBefore + after;
+  
+  // Replace le curseur juste après l'espace
+  ta.selectionStart = ta.selectionEnd = newBefore.length;
   ta.focus();
+  
   if (ml) ml.style.display = 'none';
 }
 
 async function deleteTicket(id) {
-  if (!canDeleteTicket()) { toast('Suppression réservée aux administrateurs', 'err'); return; }
-  if (!confirm('Supprimer ce signalement ?')) return;
-  const { error } = await sb.from('tickets').delete().eq('id', id);
-  if (error) { toast('Erreur suppression', 'err'); return; }
-  cache.tickets = cache.tickets.filter(t => t.id !== id);
-  closeModal('m-detail');
-  toast('Signalement supprimé', 'ok');
-  updateBadges();
-  renderPage(currentPage);
+  if (typeof canDeleteTicket === 'function' && !canDeleteTicket()) { 
+    toast('Suppression réservée aux administrateurs', 'err'); 
+    return; 
+  }
+  
+  if (!confirm('Voulez-vous vraiment supprimer définitivement ce signalement et ses photos ?')) return;
+  
+  try {
+    const { error } = await sb.from('tickets').delete().eq('id', id);
+    if (error) throw error;
+    
+    cache.tickets = cache.tickets.filter(t => t.id !== id);
+    if (typeof closeModal === 'function') closeModal('m-detail');
+    toast('Signalement supprimé', 'ok');
+    
+    if (typeof updateBadges === 'function') updateBadges();
+    if (typeof renderPage === 'function' && typeof currentPage !== 'undefined') renderPage(currentPage);
+    
+  } catch (err) {
+    toast('Erreur lors de la suppression', 'err');
+  }
 }
 
 async function exportTicketPDF(ticketId) {
-  if (!Permissions.has('tickets.export_pdf')) return;
+  if (typeof Permissions !== 'undefined' && !Permissions.has('tickets.export_pdf')) return;
+  
   const t = cache.tickets.find(x => x.id === ticketId);
   if (!t) return;
-  const urgLabels  = { critique: 'Critique', important: 'Important', normal: 'Normal' };
-  const urgColors  = { critique: '#c0392b', important: '#c05c20', normal: '#1a4fa0' };
-  const urgBg      = { critique: '#fdf1f0', important: '#fef4ed', normal: '#eef4fd' };
+  
+  const urgLabels = { critique: 'Critique', important: 'Important', normal: 'Normal' };
+  const urgColors = { critique: '#dc2626', important: '#ea580c', normal: '#2563eb' };
+  const urgBg    = { critique: '#fef2f2', important: '#fff7ed', normal: '#eff6ff' };
   const statLabels = { nouveau: 'Nouveau', en_cours: 'En cours', transmis_syndic: 'Transmis au syndic', attente_intervention: 'En attente', résolu: 'Résolu ✓', clos: 'Clos' };
   const catLabels  = { ascenseur: 'Ascenseur', fuite: 'Fuite / eau', electricite: 'Électricité', securite: 'Sécurité', proprete: 'Propreté', espaces_verts: 'Espaces verts', serrurerie: 'Serrurerie', parking: 'Parking', autre: 'Autre' };
+  
   const today = new Date().toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   const allPhotos = t.photos_urls?.length ? t.photos_urls : (t.photo_url ? [t.photo_url] : []);
+  
+  const authorName = typeof displayName === 'function' ? displayName(t.auteur_prenom,t.auteur_nom,t.auteur_email,'—') : 'N/A';
+  const profileName = typeof displayNameFromProfile === 'function' ? displayNameFromProfile(profile, user?.email) : 'Syndic';
+  const formatD = typeof fmt === 'function' ? fmt(t.created_at) : new Date(t.created_at).toLocaleDateString();
+
   const win = window.open('', '_blank');
-  win.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8"><title>Fiche incident</title>
-  <style>*{box-sizing:border-box;margin:0;padding:0;}@page{size:A4;margin:18mm 16mm;}body{font-family:'Helvetica Neue',Arial,sans-serif;color:#0f0e0c;font-size:12px;line-height:1.5;}.header{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:14px;border-bottom:2px solid #0f0e0c;margin-bottom:20px;}.org{font-size:10px;color:#9b9890;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}.doc-type{font-family:'Georgia',serif;font-size:22px;font-weight:700;}.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:700;margin-right:6px;}.meta-grid{display:grid;grid-template-columns:1fr 1fr;border:1px solid #e8e6e0;border-radius:8px;overflow:hidden;margin:16px 0;}.meta-cell{padding:10px 14px;border-bottom:1px solid #e8e6e0;}.meta-cell:nth-last-child(-n+2){border-bottom:none;}.meta-cell:nth-child(odd){border-right:1px solid #e8e6e0;background:#f5f4f0;}.meta-label{font-size:9.5px;font-weight:700;text-transform:uppercase;color:#9b9890;margin-bottom:3px;}.meta-value{font-size:12.5px;font-weight:600;}.section{margin-top:18px;}.section-label{font-size:9.5px;font-weight:700;text-transform:uppercase;color:#9b9890;margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid #e8e6e0;}.desc-box{background:#f5f4f0;border:1px solid #e8e6e0;border-radius:6px;padding:12px 14px;font-size:12.5px;line-height:1.6;white-space:pre-wrap;}.photos-grid{display:grid;gap:8px;margin-top:8px;}.one{grid-template-columns:1fr;}.two{grid-template-columns:1fr 1fr;}.three{grid-template-columns:1fr 1fr 1fr;}.photos-grid img{width:100%;border-radius:6px;border:1px solid #e8e6e0;object-fit:cover;max-height:200px;}.footer{margin-top:32px;padding-top:10px;border-top:1px solid #e8e6e0;display:flex;justify-content:space-between;font-size:9.5px;color:#9b9890;}</style></head><body>
-  <div class="header"><div><div class="org">Résidence le Floréal · 13-19 Rue du Moucherotte, 38360 Sassenage</div><div class="doc-type">Fiche d'incident</div></div><div style="text-align:right;font-size:10px;color:#9b9890;"><div>N° ${t.id.substring(0,8).toUpperCase()}</div><div>${today}</div><div>${escHtml(displayNameFromProfile(profile, user?.email))}</div></div></div>
-  <div style="font-size:17px;font-weight:700;margin-bottom:12px;font-family:'Georgia',serif;">${escHtml(t.titre)}</div>
-  <div><span class="badge" style="background:${urgBg[t.urgence]};color:${urgColors[t.urgence]};">${urgLabels[t.urgence]||t.urgence}</span><span class="badge" style="background:#edfaf3;color:#0e5228;">${statLabels[t.statut]||t.statut}</span>${t.categorie?`<span class="badge" style="background:#f5f4f0;color:#4a4844;">${catLabels[t.categorie]||t.categorie}</span>`:''}</div>
-  <div class="meta-grid"><div class="meta-cell"><div class="meta-label">Bâtiment</div><div class="meta-value">${escHtml(t.batiment||'—')}</div></div><div class="meta-cell"><div class="meta-label">Zone</div><div class="meta-value">${escHtml(t.zone||'—')}</div></div><div class="meta-cell"><div class="meta-label">Date</div><div class="meta-value">${fmt(t.created_at)}</div></div><div class="meta-cell"><div class="meta-label">Déclaré par</div><div class="meta-value">${escHtml(displayName(t.auteur_prenom,t.auteur_nom,t.auteur_email,'—'))}${t.auteur_lot?' · Lot '+t.auteur_lot:''}</div></div></div>
-  ${t.description?`<div class="section"><div class="section-label">Description</div><div class="desc-box">${escHtml(t.description)}</div></div>`:''}
-  ${allPhotos.length?`<div class="section"><div class="section-label">Photos (${allPhotos.length})</div><div class="photos-grid ${allPhotos.length===1?'one':allPhotos.length===2?'two':'three'}">${allPhotos.map(url=>`<img src="${url}">`).join('')}</div></div>`:''}
-  <div class="footer"><span>CoproSync · Résidence le Floréal</span><span>Document confidentiel</span></div>
-  <script>window.onload=()=>{window.print();}<\/script></body></html>`);
+  if (!win) { toast('Popup bloquée par le navigateur', 'err'); return; }
+  
+  win.document.write(`<!DOCTYPE html>
+  <html lang="fr">
+  <head>
+    <meta charset="UTF-8">
+    <title>Fiche Incident - ${t.reference || t.id.substring(0,8)}</title>
+    <style>
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      @page { size: A4; margin: 15mm; }
+      body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: #111827; font-size: 11px; line-height: 1.5; }
+      
+      .header { display: flex; justify-content: space-between; align-items: flex-end; padding-bottom: 12px; border-bottom: 2px solid #111827; margin-bottom: 24px; }
+      .org { font-size: 9px; color: #6b7280; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+      .doc-type { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+      
+      .title-box { margin-bottom: 16px; }
+      .ticket-title { font-size: 18px; font-weight: 800; color: #111827; margin-bottom: 8px; line-height: 1.3; }
+      .badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 700; margin-right: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+      
+      .meta-grid { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden; margin-bottom: 24px; }
+      .meta-cell { padding: 12px; border-bottom: 1px solid #e5e7eb; }
+      .meta-cell:nth-last-child(-n+2) { border-bottom: none; }
+      .meta-cell:nth-child(odd) { border-right: 1px solid #e5e7eb; background: #f9fafb; }
+      .meta-label { font-size: 9px; font-weight: 700; text-transform: uppercase; color: #6b7280; margin-bottom: 4px; }
+      .meta-value { font-size: 13px; font-weight: 600; color: #1f2937; }
+      
+      .section { margin-bottom: 24px; page-break-inside: avoid; }
+      .section-label { font-size: 10px; font-weight: 800; text-transform: uppercase; color: #374151; padding-bottom: 6px; border-bottom: 1px solid #e5e7eb; margin-bottom: 12px; letter-spacing: 0.05em; }
+      .desc-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; font-size: 13px; line-height: 1.6; white-space: pre-wrap; color: #374151; }
+      
+      .photos-grid { display: grid; gap: 12px; margin-top: 12px; }
+      .photos-grid.n1 { grid-template-columns: 1fr; }
+      .photos-grid.n2, .photos-grid.n4 { grid-template-columns: 1fr 1fr; }
+      .photos-grid.n3, .photos-grid.n5 { grid-template-columns: 1fr 1fr 1fr; }
+      .photos-grid img { width: 100%; border-radius: 8px; border: 1px solid #e5e7eb; object-fit: cover; max-height: 250px; }
+      
+      .footer { position: fixed; bottom: 0; left: 0; right: 0; padding-top: 8px; border-top: 1px solid #e5e7eb; display: flex; justify-content: space-between; font-size: 8px; color: #9ca3af; text-transform: uppercase; letter-spacing: 0.05em; }
+      @media print { button { display: none !important; } }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div>
+        <div class="org">CoproSync · Résidence le Floréal</div>
+        <div class="doc-type">Fiche d'Incident</div>
+      </div>
+      <div style="text-align:right; font-size:10px; color:#6b7280; line-height:1.6;">
+        <div><strong>Réf :</strong> ${(t.reference || t.id.substring(0,8)).toUpperCase()}</div>
+        <div><strong>Édité le :</strong> ${today}</div>
+        <div><strong>Par :</strong> ${escHtml(profileName)}</div>
+      </div>
+    </div>
+    
+    <div class="title-box">
+      <div class="ticket-title">${escHtml(t.titre)}</div>
+      <div>
+        <span class="badge" style="background:${urgBg[t.urgence]||'#f3f4f6'}; color:${urgColors[t.urgence]||'#374151'};">${urgLabels[t.urgence]||t.urgence}</span>
+        <span class="badge" style="background:#f0fdf4; color:#16a34a;">${statLabels[t.statut]||t.statut}</span>
+        ${t.categorie ? `<span class="badge" style="background:#f3f4f6; color:#4b5563;">${catLabels[t.categorie]||t.categorie}</span>` : ''}
+      </div>
+    </div>
+    
+    <div class="meta-grid">
+      <div class="meta-cell"><div class="meta-label">Bâtiment / Zone</div><div class="meta-value">${escHtml(t.batiment||'Général')}${t.zone ? ' — ' + escHtml(t.zone) : ''}</div></div>
+      <div class="meta-cell"><div class="meta-label">Date de signalement</div><div class="meta-value">${formatD}</div></div>
+      <div class="meta-cell"><div class="meta-label">Déclaré par</div><div class="meta-value">${escHtml(authorName)}${t.auteur_lot ? ' · Lot '+escHtml(t.auteur_lot) : ''}</div></div>
+      <div class="meta-cell"><div class="meta-label">Contact</div><div class="meta-value">${escHtml(t.auteur_email || '—')}</div></div>
+    </div>
+    
+    ${t.description ? `
+    <div class="section">
+      <div class="section-label">Description du problème</div>
+      <div class="desc-box">${escHtml(t.description)}</div>
+    </div>` : ''}
+    
+    ${allPhotos.length ? `
+    <div class="section">
+      <div class="section-label">Photos jointes (${allPhotos.length})</div>
+      <div class="photos-grid n${Math.min(allPhotos.length, 5)}">
+        ${allPhotos.map(url => `<img src="${url}">`).join('')}
+      </div>
+    </div>` : ''}
+    
+    <div class="footer">
+      <span>Généré par CoproSync</span>
+      <span>Document confidentiel</span>
+    </div>
+    
+    <script>window.onload=()=>{ setTimeout(()=>{window.print();window.close();}, 500); }<\/script>
+  </body>
+  </html>`);
   win.document.close();
 }
