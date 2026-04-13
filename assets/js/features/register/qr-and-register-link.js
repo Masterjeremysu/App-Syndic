@@ -206,13 +206,11 @@ function printQR() {
 
   <div class="content">
 
-    <!-- Badge top -->
     <div class="top-badge">
       <div class="top-badge-dot"></div>
       Résidence le Floréal · Sassenage
     </div>
 
-    <!-- Hero -->
     <div class="hero">
       <div class="hero-eyebrow">Votre résidence numérique</div>
       <div class="hero-title">Rejoignez<br><em>CoproSync</em></div>
@@ -225,14 +223,11 @@ function printQR() {
       <div class="divider-line"></div>
     </div>
 
-    <!-- QR Code -->
     <div class="qr-frame">
       <div class="qr-label">Scannez pour créer votre compte</div>
       <div id="qr-print"></div>
-      <div class="qr-url">${registerUrl}</div>
     </div>
 
-    <!-- Steps -->
     <div class="steps">
       <div class="step">
         <div class="step-num">1</div>
@@ -251,7 +246,6 @@ function printQR() {
       </div>
     </div>
 
-    <!-- Features -->
     <div class="features">
       <div class="feature"><div class="feature-dot"></div>Signalements</div>
       <div class="feature"><div class="feature-dot"></div>Messagerie</div>
@@ -260,7 +254,6 @@ function printQR() {
       <div class="feature"><div class="feature-dot"></div>Agenda</div>
     </div>
 
-    <!-- Footer -->
     <div class="footer">
       <div>
         <div class="footer-brand">CoproSync</div>
