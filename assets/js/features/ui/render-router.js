@@ -104,16 +104,7 @@ function renderPage(p) {
       break;
 
     // --- SECTION ADMINISTRATION ---
-    case 'admin': 
-      // FIX CRITIQUE : Route pour "Admin Accès"
-      if (typeof renderAdmin === 'function') {
-        renderAdmin();
-      } else {
-        console.error("Module admin.js non chargé");
-        renderDashboard();
-      }
-      break;
-
+   
     case 'users':
       renderUsers();
       break;
